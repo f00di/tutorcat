@@ -1,4 +1,5 @@
 const CONTACT_EMAIL = "hello@tutorcat.example";
+const DATA_URL = "./data/tutors.json";
 
 const FILTER_OPTIONS = [
   { label: "All", value: "All" },
@@ -91,7 +92,7 @@ const WIZARD_STEPS = [
   },
 ];
 
-const profiles = [
+const FALLBACK_PROFILES = [
   {
     id: "maya-patel",
     name: "Maya Patel",
@@ -410,6 +411,9 @@ const profiles = [
   },
 ];
 
+let profiles = [];
+let dataLoadNotice = "";
+
 const tutorGrid = document.querySelector("#tutorGrid");
 const emptyState = document.querySelector("#emptyState");
 const searchInput = document.querySelector("#searchInput");
@@ -451,11 +455,176 @@ const escapeHtml = (value) =>
 
 const normalizeText = (value) => String(value ?? "").toLowerCase().trim();
 
+const uniqueList = (items) => {
+  const seen = new Set();
+  return items
+    .map((item) => String(item ?? "").trim())
+    .filter(Boolean)
+    .filter((item) => {
+      const key = item.toLowerCase();
+      if (seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    });
+};
+
+const asArray = (value) => {
+  if (Array.isArray(value)) return uniqueList(value);
+  if (value === null || value === undefined || value === "") return [];
+  return uniqueList(String(value).split(/[\n,;|]+/));
+};
+
+const parseNumber = (value) => {
+  if (value === null || value === undefined || value === "") return null;
+  const number = Number(value);
+  if (Number.isFinite(number)) return number;
+  const match = String(value).match(/\d+(?:\.\d+)?/);
+  return match ? Number(match[0]) : null;
+};
+
+const countryAliases = new Map([
+  ["us", "United States"],
+  ["usa", "United States"],
+  ["u.s.", "United States"],
+  ["united states of america", "United States"],
+  ["uk", "United Kingdom"],
+  ["u.k.", "United Kingdom"],
+  ["uae", "UAE"],
+  ["u.a.e.", "UAE"],
+  ["united arab emirates", "UAE"],
+  ["czechia", "Czech Republic"],
+]);
+
+const normalizeCountryName = (country) => {
+  const cleaned = String(country ?? "").trim();
+  return countryAliases.get(cleaned.toLowerCase()) || cleaned;
+};
+
+const normalizeProfileType = (profileType, profile) => {
+  const raw = normalizeText(profileType);
+  if (raw.includes("tutor") && (raw.includes("counselor") || raw.includes("counsellor"))) {
+    return "Tutor + Counselor";
+  }
+  if (raw.includes("counselor") || raw.includes("counsellor") || raw.includes("counsel")) {
+    return "Counselor";
+  }
+  if (raw.includes("tutor")) return "Tutor";
+
+  const hasSubjects = profile.subjects.length > 0;
+  const hasCounseling = profile.countries.length > 0 || profile.counselingTopics.length > 0;
+  if (hasSubjects && hasCounseling) return "Tutor + Counselor";
+  if (hasCounseling) return "Counselor";
+  return "Tutor";
+};
+
+const makeInitials = (name) =>
+  String(name ?? "")
+    .trim()
+    .split(/\s+/)
+    .filter(Boolean)
+    .slice(0, 2)
+    .map((part) => part[0]?.toUpperCase() || "")
+    .join("") || "TC";
+
+const slugify = (value) =>
+  String(value ?? "")
+    .toLowerCase()
+    .replace(/&/g, "and")
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+
+const deriveSupportTypes = (profile) => {
+  const supportTypes = [];
+  if (profile.profileType.includes("Tutor")) supportTypes.push("Academic tutoring");
+  if (
+    profile.subjects.some((subject) =>
+      ["test prep", "sat/act", "ielts/toefl"].includes(normalizeText(subject))
+    )
+  ) {
+    supportTypes.push("Test prep");
+  }
+  if (profile.profileType.includes("Counselor") || profile.countries.length || profile.counselingTopics.length) {
+    supportTypes.push("Country counseling", "University pathway planning");
+  }
+  return uniqueList(supportTypes);
+};
+
+const deriveExperienceYears = (profile) => {
+  if (Number.isFinite(profile.experienceYears)) return profile.experienceYears;
+  const parsed = parseNumber(profile.experience);
+  return parsed ?? 0;
+};
+
+const normalizeOutcomes = (outcomes) => {
+  const outcomeItems = Array.isArray(outcomes) ? outcomes : asArray(outcomes);
+  return outcomeItems.map((outcome) => {
+    if (Array.isArray(outcome)) {
+      return [outcome[0] || "", outcome[1] || "", outcome[2] || "", outcome[3] || ""];
+    }
+    return [outcome, "", "", ""];
+  });
+};
+
+const normalizeLoadedProfile = (rawProfile, index) => {
+  const profile = {
+    id: String(rawProfile.id || "").trim(),
+    name: String(rawProfile.name || `TutorCat Specialist ${index + 1}`).trim(),
+    initials: String(rawProfile.initials || "").trim(),
+    profileType: String(rawProfile.profileType || "").trim(),
+    role: String(rawProfile.role || "").trim(),
+    subjects: asArray(rawProfile.subjects),
+    countries: asArray(rawProfile.countries).map(normalizeCountryName),
+    counselingTopics: asArray(rawProfile.counselingTopics),
+    educationOrExperience: String(rawProfile.educationOrExperience || "").trim(),
+    location: String(rawProfile.location || "").trim(),
+    sessionModes: asArray(rawProfile.sessionModes),
+    languages: asArray(rawProfile.languages),
+    currentStudents: parseNumber(rawProfile.currentStudents),
+    improvement: String(rawProfile.improvement || "").trim(),
+    experience: String(rawProfile.experience || "").trim(),
+    availability: String(rawProfile.availability || "").trim(),
+    rating: parseNumber(rawProfile.rating),
+    reviewCount: parseNumber(rawProfile.reviewCount),
+    shortBio: String(rawProfile.shortBio || "").trim(),
+    parentNote: String(rawProfile.parentNote || "").trim(),
+    outcomes: normalizeOutcomes(rawProfile.outcomes),
+    tags: asArray(rawProfile.tags),
+    imageUrl: String(rawProfile.imageUrl || "").trim(),
+  };
+
+  profile.profileType = normalizeProfileType(profile.profileType, profile);
+  profile.initials = profile.initials || makeInitials(profile.name);
+  profile.role = profile.role || `${profile.subjects[0] || "Education"} specialist`;
+  profile.id = profile.id || slugify(`${profile.name} ${profile.profileType}`) || `profile-${index + 1}`;
+  profile.sessionModes = profile.sessionModes.length ? profile.sessionModes : ["Online"];
+  profile.supportTypes = deriveSupportTypes(profile);
+  profile.studentLevels = uniqueList([...profile.tags, ...profile.subjects]);
+  profile.experienceYears = deriveExperienceYears(profile);
+  return profile;
+};
+
+const normalizeLoadedProfiles = (loadedProfiles) =>
+  loadedProfiles.map(normalizeLoadedProfile).filter((profile) => profile.name && profile.role);
+
 const toOption = (option) =>
   typeof option === "string" ? { label: option, value: option } : option;
 
 const formatList = (items, fallback = "Not specified") =>
   items && items.length ? items.join(", ") : fallback;
+
+const formatRating = (profile) =>
+  profile.rating === null
+    ? "Rating not listed"
+    : `${profile.rating.toFixed(1)} (${profile.reviewCount ?? 0} sample reviews)`;
+
+const formatStudentLoad = (profile) =>
+  profile.currentStudents === null
+    ? "Student load not listed"
+    : `${profile.currentStudents} active students`;
+
+const formatExperience = (profile) => profile.experience || "Experience not listed";
+
+const formatAvailability = (profile) => profile.availability || "Availability on request";
 
 const createMailto = (subject, body) =>
   `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(
@@ -465,7 +634,7 @@ const createMailto = (subject, body) =>
 const profileTypeClass = (profile) =>
   profile.profileType === "Tutor + Counselor" ? "TutorCounselor" : profile.profileType;
 
-const renderChips = (items, className, limit = items.length) =>
+const renderChips = (items = [], className, limit = items.length) =>
   items
     .slice(0, limit)
     .map((item) => `<span class="${className}">${escapeHtml(item)}</span>`)
@@ -577,30 +746,34 @@ const sortProfiles = (items, query) => {
   const profilesToSort = [...items];
 
   if (sortMode === "experience") {
-    return profilesToSort.sort((a, b) => b.experienceYears - a.experienceYears);
+    return profilesToSort.sort((a, b) => (b.experienceYears || 0) - (a.experienceYears || 0));
   }
 
   if (sortMode === "rating") {
-    return profilesToSort.sort((a, b) => b.rating - a.rating || b.reviewCount - a.reviewCount);
+    return profilesToSort.sort(
+      (a, b) => (b.rating || 0) - (a.rating || 0) || (b.reviewCount || 0) - (a.reviewCount || 0)
+    );
   }
 
   if (sortMode === "load") {
-    return profilesToSort.sort((a, b) => a.currentStudents - b.currentStudents);
+    return profilesToSort.sort(
+      (a, b) => (a.currentStudents ?? Number.POSITIVE_INFINITY) - (b.currentStudents ?? Number.POSITIVE_INFINITY)
+    );
   }
 
   return profilesToSort.sort((a, b) => {
     const scoreA =
       getSearchScore(a, query) +
       (matchesFilter(a, activeFilter) && activeFilter !== "All" ? 20 : 0) +
-      a.rating * 3 +
-      a.experienceYears -
-      a.currentStudents * 0.5;
+      (a.rating || 0) * 3 +
+      (a.experienceYears || 0) -
+      (a.currentStudents || 0) * 0.5;
     const scoreB =
       getSearchScore(b, query) +
       (matchesFilter(b, activeFilter) && activeFilter !== "All" ? 20 : 0) +
-      b.rating * 3 +
-      b.experienceYears -
-      b.currentStudents * 0.5;
+      (b.rating || 0) * 3 +
+      (b.experienceYears || 0) -
+      (b.currentStudents || 0) * 0.5;
     return scoreB - scoreA;
   });
 };
@@ -652,17 +825,15 @@ const renderProfileCard = (profile) => {
       <div class="card-meta">
         <div>
           <strong>Rating</strong>
-          <span>${escapeHtml(profile.rating.toFixed(1))} (${escapeHtml(
-    profile.reviewCount
-  )} sample reviews)</span>
+          <span>${escapeHtml(formatRating(profile))}</span>
         </div>
         <div>
           <strong>Experience</strong>
-          <span>${escapeHtml(profile.experience)}</span>
+          <span>${escapeHtml(formatExperience(profile))}</span>
         </div>
         <div>
           <strong>Availability</strong>
-          <span>${escapeHtml(profile.availability)}</span>
+          <span>${escapeHtml(formatAvailability(profile))}</span>
         </div>
         <div>
           <strong>Mode</strong>
@@ -698,9 +869,10 @@ const renderCards = () => {
   const query = searchInput.value.trim();
   const filterText = activeFilter === "All" ? "all specialists" : filterLabel;
   const searchText = query ? ` matching "${query}"` : "";
-  catalogStatus.textContent = `${visibleProfiles.length} specialist${
+  const countText = `${visibleProfiles.length} specialist${
     visibleProfiles.length === 1 ? "" : "s"
   } shown for ${filterText}${searchText}.`;
+  catalogStatus.textContent = dataLoadNotice ? `${dataLoadNotice} ${countText}` : countText;
 };
 
 const setActiveFilter = (value) => {
@@ -741,12 +913,12 @@ const renderProfilePanel = (profile) => {
       id: "overview",
       label: "Overview",
       content: `
-        <p>${escapeHtml(profile.shortBio)}</p>
+        <p>${escapeHtml(profile.shortBio || "Profile summary will be added soon.")}</p>
         <ul class="panel-list">
           ${renderPanelList([
             ["Profile type", profile.profileType],
-            ["Experience", profile.educationOrExperience],
-            ["Location", profile.location],
+            ["Experience", profile.educationOrExperience || formatExperience(profile)],
+            ["Location", profile.location || "Location not listed"],
             ["Languages", formatList(profile.languages)],
           ])}
         </ul>
@@ -768,7 +940,7 @@ const renderProfilePanel = (profile) => {
       id: "outcomes",
       label: "Outcomes",
       content: `
-        <p>${escapeHtml(profile.improvement)}</p>
+        <p>${escapeHtml(profile.improvement || "Outcome details will be added when available.")}</p>
         <table class="outcome-table">
           <thead>
             <tr>
@@ -786,7 +958,7 @@ const renderProfilePanel = (profile) => {
       id: "notes",
       label: "Parent/student notes",
       content: `
-        <p>${escapeHtml(profile.parentNote)}</p>
+        <p>${escapeHtml(profile.parentNote || "Parent/student notes will be added when available.")}</p>
         <ul class="panel-list">
           ${renderPanelList([
             ["Best support types", formatList(profile.supportTypes)],
@@ -802,10 +974,10 @@ const renderProfilePanel = (profile) => {
       content: `
         <ul class="panel-list">
           ${renderPanelList([
-            ["Availability", profile.availability],
+            ["Availability", formatAvailability(profile)],
             ["Session modes", formatList(profile.sessionModes)],
-            ["Current student load", `${profile.currentStudents} active students`],
-            ["Rating", `${profile.rating.toFixed(1)} from ${profile.reviewCount} sample reviews`],
+            ["Current student load", formatStudentLoad(profile)],
+            ["Rating", formatRating(profile)],
           ])}
         </ul>
       `,
@@ -837,15 +1009,15 @@ const renderProfilePanel = (profile) => {
 
     <div class="panel-metrics" aria-label="${escapeHtml(profile.name)} profile metrics">
       <div class="panel-metric">
-        <strong>${escapeHtml(profile.currentStudents)}</strong>
+        <strong>${escapeHtml(profile.currentStudents ?? "-")}</strong>
         <span>current students</span>
       </div>
       <div class="panel-metric">
-        <strong>${escapeHtml(profile.rating.toFixed(1))}</strong>
+        <strong>${escapeHtml(profile.rating === null ? "-" : profile.rating.toFixed(1))}</strong>
         <span>sample rating</span>
       </div>
       <div class="panel-metric">
-        <strong>${escapeHtml(profile.experience)}</strong>
+        <strong>${escapeHtml(formatExperience(profile))}</strong>
         <span>experience</span>
       </div>
     </div>
@@ -1250,6 +1422,46 @@ const handleContactSubmit = (event) => {
   );
 };
 
+const extractProfilesFromPayload = (payload) => {
+  if (Array.isArray(payload)) return payload;
+  if (payload && Array.isArray(payload.profiles)) return payload.profiles;
+  return [];
+};
+
+const loadProfiles = async () => {
+  catalogStatus.textContent = "Loading specialists...";
+  tutorGrid.innerHTML = "";
+  emptyState.hidden = true;
+  wizardResults.innerHTML = "";
+  wizardContent.innerHTML = "<p>Loading specialists...</p>";
+
+  try {
+    const response = await fetch(DATA_URL, { cache: "no-store" });
+    if (!response.ok) {
+      throw new Error(`HTTP ${response.status}`);
+    }
+
+    const payload = await response.json();
+    const loadedProfiles = normalizeLoadedProfiles(extractProfilesFromPayload(payload));
+    if (!loadedProfiles.length) {
+      throw new Error("No public profiles found in data/tutors.json");
+    }
+
+    profiles = loadedProfiles;
+    dataLoadNotice = "";
+  } catch (error) {
+    profiles = normalizeLoadedProfiles(FALLBACK_PROFILES);
+    dataLoadNotice = "Could not load data/tutors.json. Showing fallback sample profiles.";
+  }
+};
+
+const initializeApp = async () => {
+  renderFilterButtons();
+  await loadProfiles();
+  renderCards();
+  renderWizardStep();
+};
+
 filterGroup.addEventListener("click", (event) => {
   const button = event.target.closest(".filter-button");
   if (!button) return;
@@ -1359,6 +1571,4 @@ document.addEventListener("keydown", (event) => {
   }
 });
 
-renderFilterButtons();
-renderCards();
-renderWizardStep();
+initializeApp();

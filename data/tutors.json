@@ -1,0 +1,43 @@
+{
+  "lastUpdated": "2026-06-26T19:48:37.337Z",
+  "sourceSheet": "Sheet1",
+  "profiles": [
+    {
+      "id": "muhammad-hassan-ansari-tutor-counselor",
+      "name": "Muhammad Hassan Ansari",
+      "initials": "MH",
+      "profileType": "Tutor + Counselor",
+      "role": "Math tutor and United States counselor",
+      "subjects": [
+        "Math",
+        "Computer Science"
+      ],
+      "countries": [
+        "United States"
+      ],
+      "counselingTopics": [],
+      "educationOrExperience": "Gems Cambridge International School Abu dhabi Banyas; California State University, Long Beach.; Bachelor in Computer Science",
+      "location": "",
+      "sessionModes": [
+        "Online"
+      ],
+      "languages": [],
+      "currentStudents": 2,
+      "improvement": "",
+      "experience": "",
+      "availability": "",
+      "rating": null,
+      "reviewCount": null,
+      "shortBio": "",
+      "parentNote": "",
+      "outcomes": [],
+      "tags": [
+        "IGCSE",
+        "A-level",
+        "Calc I",
+        "Calc II"
+      ],
+      "imageUrl": ""
+    }
+  ]
+}

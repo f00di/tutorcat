@@ -1,0 +1,5 @@
+{
+  "scripts": {
+    "import:tutors": "node scripts/import-tutors-from-excel.mjs"
+  }
+}
