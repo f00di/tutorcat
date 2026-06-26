@@ -1,0 +1,141 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>TutorCat | Tutor Catalog</title>
+    <link rel="stylesheet" href="styles.css" />
+    <script src="script.js" defer></script>
+  </head>
+  <body>
+    <header class="site-header">
+      <a class="brand" href="#top" aria-label="TutorCat home">
+        <span class="brand-mark">TC</span>
+        <span>TutorCat</span>
+      </a>
+      <nav class="header-nav" aria-label="Primary">
+        <a href="#catalog">Catalog</a>
+        <a href="#results">Results</a>
+        <a href="#contact">Contact</a>
+      </nav>
+    </header>
+
+    <main id="top">
+      <section class="hero" aria-labelledby="hero-title">
+        <img
+          class="hero-image"
+          src="assets/tutor-catalog-hero.png"
+          alt="Tutors and students working together in a modern study center"
+        />
+        <div class="hero-shade"></div>
+        <div class="hero-content">
+          <p class="eyebrow">Private tutoring catalog</p>
+          <h1 id="hero-title">TutorCat</h1>
+          <p class="hero-copy">
+            Find vetted tutors by subject, student load, recent grade outcomes,
+            and where each educator works or studies.
+          </p>
+          <div class="hero-actions" aria-label="Catalog shortcuts">
+            <a class="primary-link" href="#catalog">Browse tutors</a>
+            <a class="secondary-link" href="#results">View outcomes</a>
+          </div>
+        </div>
+      </section>
+
+      <section id="results" class="metrics-section" aria-label="Catalog summary">
+        <div class="metric">
+          <span class="metric-value">32</span>
+          <span class="metric-label">active student seats</span>
+        </div>
+        <div class="metric">
+          <span class="metric-value">91%</span>
+          <span class="metric-label">improved one grade band</span>
+        </div>
+        <div class="metric">
+          <span class="metric-value">8</span>
+          <span class="metric-label">specialized tutors</span>
+        </div>
+        <div class="metric">
+          <span class="metric-value">14</span>
+          <span class="metric-label">school partnerships</span>
+        </div>
+      </section>
+
+      <section id="catalog" class="catalog-section" aria-labelledby="catalog-title">
+        <div class="section-heading">
+          <div>
+            <p class="eyebrow">Tutor profiles</p>
+            <h2 id="catalog-title">Catalog</h2>
+          </div>
+          <p>
+            Compare availability, current roster size, grade history, and
+            education background in one view.
+          </p>
+        </div>
+
+        <div class="toolbar" aria-label="Catalog controls">
+          <label class="search-field">
+            <span>Search</span>
+            <input
+              id="searchInput"
+              type="search"
+              placeholder="Name, subject, school"
+              autocomplete="off"
+            />
+          </label>
+          <div class="filter-group" aria-label="Filter by subject">
+            <button class="filter-button is-active" type="button" data-filter="All">
+              All
+            </button>
+            <button class="filter-button" type="button" data-filter="Math">
+              Math
+            </button>
+            <button class="filter-button" type="button" data-filter="Science">
+              Science
+            </button>
+            <button class="filter-button" type="button" data-filter="English">
+              English
+            </button>
+            <button class="filter-button" type="button" data-filter="Test Prep">
+              Test Prep
+            </button>
+            <button class="filter-button" type="button" data-filter="Language">
+              Language
+            </button>
+          </div>
+        </div>
+
+        <div id="tutorGrid" class="tutor-grid" aria-live="polite"></div>
+        <p id="emptyState" class="empty-state" hidden>
+          No tutors match the current search.
+        </p>
+      </section>
+
+      <section id="contact" class="contact-band" aria-labelledby="contact-title">
+        <div>
+          <p class="eyebrow">Placement support</p>
+          <h2 id="contact-title">Match a student with the right tutor</h2>
+        </div>
+        <a class="primary-link dark" href="mailto:hello@tutorcat.example"
+          >Request placement</a
+        >
+      </section>
+    </main>
+
+    <div id="profileBackdrop" class="profile-backdrop" hidden></div>
+    <aside
+      id="profilePanel"
+      class="profile-panel"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="panelName"
+      aria-describedby="panelTitle"
+      hidden
+    >
+      <button id="closePanel" class="close-button" type="button" aria-label="Close profile">
+        <span aria-hidden="true">&times;</span>
+      </button>
+      <div id="profileContent"></div>
+    </aside>
+  </body>
+</html>
