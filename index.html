@@ -3,7 +3,24 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>TutorCat | Tutor Catalog</title>
+    <title>TutorCat | Tutoring and Study-Destination Counseling</title>
+    <meta
+      name="description"
+      content="TutorCat matches students with vetted academic tutors and country-experienced education counselors for tutoring, test prep, and higher education pathway planning."
+    />
+    <meta
+      property="og:title"
+      content="TutorCat | Tutoring and Study-Destination Counseling"
+    />
+    <meta
+      property="og:description"
+      content="Find the right tutor or country-experienced counselor for academic support, test prep, and study pathways in the US, Canada, Europe, and more."
+    />
+    <meta property="og:type" content="website" />
+    <link
+      rel="icon"
+      href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='12' fill='%230b6b5d'/%3E%3Ctext x='32' y='39' text-anchor='middle' font-family='Arial' font-size='24' font-weight='700' fill='white'%3ETC%3C/text%3E%3C/svg%3E"
+    />
     <link rel="stylesheet" href="styles.css" />
     <script src="script.js" defer></script>
   </head>
@@ -13,10 +30,29 @@
         <span class="brand-mark">TC</span>
         <span>TutorCat</span>
       </a>
-      <nav class="header-nav" aria-label="Primary">
-        <a href="#catalog">Catalog</a>
+
+      <button
+        id="menuToggle"
+        class="menu-toggle"
+        type="button"
+        aria-label="Open navigation"
+        aria-controls="primaryNav"
+        aria-expanded="false"
+      >
+        <span></span>
+        <span></span>
+        <span></span>
+      </button>
+
+      <nav id="primaryNav" class="header-nav" aria-label="Primary">
+        <a href="#catalog">Tutors</a>
+        <a href="#counseling">Counseling</a>
+        <a href="#countries">Countries</a>
+        <a href="#how-it-works">How It Works</a>
         <a href="#results">Results</a>
+        <a href="#faq">FAQ</a>
         <a href="#contact">Contact</a>
+        <a class="nav-cta" href="#match">Find My Match</a>
       </nav>
     </header>
 
@@ -27,100 +63,538 @@
           src="assets/tutor-catalog-hero.png"
           alt="Tutors and students working together in a modern study center"
         />
-        <div class="hero-shade"></div>
+        <div class="hero-shade" aria-hidden="true"></div>
         <div class="hero-content">
-          <p class="eyebrow">Private tutoring catalog</p>
-          <h1 id="hero-title">TutorCat</h1>
+          <p class="eyebrow">Academic support and study-destination guidance</p>
+          <h1 id="hero-title">
+            Find the right tutor or study-destination counselor for your student.
+          </h1>
           <p class="hero-copy">
-            Find vetted tutors by subject, student load, recent grade outcomes,
-            and where each educator works or studies.
+            TutorCat matches students with vetted academic tutors and
+            country-experienced counselors for study pathways in the US,
+            Canada, Germany, Netherlands, Czech Republic, and more.
           </p>
-          <div class="hero-actions" aria-label="Catalog shortcuts">
-            <a class="primary-link" href="#catalog">Browse tutors</a>
-            <a class="secondary-link" href="#results">View outcomes</a>
+          <div class="hero-actions" aria-label="Primary actions">
+            <a class="primary-link" href="#match">Find My Match</a>
+            <a class="secondary-link" href="#catalog">Browse Specialists</a>
+          </div>
+          <ul class="trust-chips" aria-label="TutorCat support options">
+            <li>Academic tutoring</li>
+            <li>Parent counseling</li>
+            <li>Country-specific guidance</li>
+            <li>Online sessions</li>
+          </ul>
+        </div>
+      </section>
+
+      <section class="metrics-section" aria-labelledby="metrics-title">
+        <div class="section-shell metrics-shell">
+          <div class="metrics-heading">
+            <p class="eyebrow">Sample platform metrics</p>
+            <h2 id="metrics-title">A clearer way to compare tutoring support.</h2>
+          </div>
+          <div class="metric-grid">
+            <div class="metric">
+              <span class="metric-value">32</span>
+              <span class="metric-label">active student seats tracked</span>
+            </div>
+            <div class="metric">
+              <span class="metric-value">91%</span>
+              <span class="metric-label">sample grade-band improvement records</span>
+            </div>
+            <div class="metric">
+              <span class="metric-value">8</span>
+              <span class="metric-label">sample specialist profiles</span>
+            </div>
+            <div class="metric">
+              <span class="metric-value">14</span>
+              <span class="metric-label">sample school partnership entries</span>
+            </div>
           </div>
         </div>
       </section>
 
-      <section id="results" class="metrics-section" aria-label="Catalog summary">
-        <div class="metric">
-          <span class="metric-value">32</span>
-          <span class="metric-label">active student seats</span>
-        </div>
-        <div class="metric">
-          <span class="metric-value">91%</span>
-          <span class="metric-label">improved one grade band</span>
-        </div>
-        <div class="metric">
-          <span class="metric-value">8</span>
-          <span class="metric-label">specialized tutors</span>
-        </div>
-        <div class="metric">
-          <span class="metric-value">14</span>
-          <span class="metric-label">school partnerships</span>
+      <section id="match" class="wizard-section" aria-labelledby="match-title">
+        <div class="section-shell">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">Guided matching</p>
+              <h2 id="match-title">Find My Match</h2>
+            </div>
+            <p>
+              Answer a few questions and TutorCat will recommend tutors or
+              counselors whose subjects, destinations, level, and session modes
+              fit the request.
+            </p>
+          </div>
+
+          <div class="wizard-layout">
+            <section class="wizard-card" aria-label="Matching wizard">
+              <div class="wizard-progress">
+                <span id="wizardStepLabel">Step 1 of 7</span>
+                <div class="progress-track" aria-hidden="true">
+                  <span id="wizardProgressBar"></span>
+                </div>
+              </div>
+              <div id="wizardContent" class="wizard-content"></div>
+              <div class="wizard-actions">
+                <button id="wizardBack" class="ghost-button" type="button" disabled>
+                  Back
+                </button>
+                <button id="wizardReset" class="text-button" type="button">
+                  Reset
+                </button>
+              </div>
+            </section>
+
+            <aside class="wizard-summary" aria-labelledby="wizard-summary-title">
+              <p class="eyebrow">Current request</p>
+              <h3 id="wizard-summary-title">Matching summary</h3>
+              <dl id="wizardSummaryList" class="summary-list"></dl>
+            </aside>
+          </div>
+
+          <div
+            id="wizardResults"
+            class="wizard-results"
+            aria-live="polite"
+          ></div>
         </div>
       </section>
 
       <section id="catalog" class="catalog-section" aria-labelledby="catalog-title">
-        <div class="section-heading">
-          <div>
-            <p class="eyebrow">Tutor profiles</p>
-            <h2 id="catalog-title">Catalog</h2>
+        <div class="section-shell">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">Browse specialists</p>
+              <h2 id="catalog-title">Tutors and counselors</h2>
+            </div>
+            <p>
+              Search by name, subject, destination, counseling topic, or
+              keyword. Use filters and sorting to narrow the list quickly.
+            </p>
           </div>
-          <p>
-            Compare availability, current roster size, grade history, and
-            education background in one view.
+
+          <div class="toolbar" aria-label="Catalog controls">
+            <label class="search-field">
+              <span>Search</span>
+              <input
+                id="searchInput"
+                type="search"
+                placeholder="Name, subject, country, topic"
+                autocomplete="off"
+              />
+            </label>
+            <label class="sort-field">
+              <span>Sort</span>
+              <select id="sortSelect">
+                <option value="best">Best match</option>
+                <option value="experience">Most experience</option>
+                <option value="rating">Highest rating</option>
+                <option value="load">Lowest current student load</option>
+              </select>
+            </label>
+          </div>
+
+          <div
+            id="filterGroup"
+            class="filter-group"
+            aria-label="Filter specialists"
+          ></div>
+
+          <div id="catalogStatus" class="catalog-status" aria-live="polite"></div>
+          <div id="tutorGrid" class="tutor-grid" aria-live="polite"></div>
+          <div id="emptyState" class="empty-state" hidden>
+            <h3>No specialists match the current search.</h3>
+            <p>
+              Try clearing the search, choosing All, or searching for a broader
+              topic such as counseling, math, applications, or online.
+            </p>
+            <button id="clearFilters" class="secondary-action" type="button">
+              Clear filters
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <section id="counseling" class="counseling-section" aria-labelledby="counseling-title">
+        <div class="section-shell">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">Education counseling</p>
+              <h2 id="counseling-title">Country-specific counseling</h2>
+            </div>
+            <p>
+              Connect with tutors, mentors, or counselors who have studied,
+              worked, or advised students in the destination your family is
+              exploring.
+            </p>
+          </div>
+
+          <div id="countries" class="country-grid" aria-label="Country counseling options">
+            <article class="country-card">
+              <h3>United States</h3>
+              <dl>
+                <dt>Best for</dt>
+                <dd>Liberal arts, research universities, test-optional planning.</dd>
+                <dt>Common parent questions</dt>
+                <dd>Major fit, application timing, scholarships, SAT/ACT choices.</dd>
+                <dt>Session topics</dt>
+                <dd>College list strategy, essays, activities, parent checkpoints.</dd>
+                <dt>Suggested timeline</dt>
+                <dd>Start 12-18 months before application deadlines.</dd>
+              </dl>
+              <button class="country-action" type="button" data-country="United States">
+                Find a counselor for this country
+              </button>
+            </article>
+
+            <article class="country-card">
+              <h3>Canada</h3>
+              <dl>
+                <dt>Best for</dt>
+                <dd>Structured degree pathways, co-op programs, public universities.</dd>
+                <dt>Common parent questions</dt>
+                <dd>Province differences, grade requirements, program selection.</dd>
+                <dt>Session topics</dt>
+                <dd>University comparison, application documents, scholarship planning.</dd>
+                <dt>Suggested timeline</dt>
+                <dd>Start 10-14 months before intended enrollment.</dd>
+              </dl>
+              <button class="country-action" type="button" data-country="Canada">
+                Find a counselor for this country
+              </button>
+            </article>
+
+            <article class="country-card">
+              <h3>Germany</h3>
+              <dl>
+                <dt>Best for</dt>
+                <dd>Engineering, sciences, public universities, lower tuition options.</dd>
+                <dt>Common parent questions</dt>
+                <dd>Language requirements, Studienkolleg, direct admission eligibility.</dd>
+                <dt>Session topics</dt>
+                <dd>Program fit, documentation checklist, language-test planning.</dd>
+                <dt>Suggested timeline</dt>
+                <dd>Start 12-20 months before the first application window.</dd>
+              </dl>
+              <button class="country-action" type="button" data-country="Germany">
+                Find a counselor for this country
+              </button>
+            </article>
+
+            <article class="country-card">
+              <h3>Netherlands</h3>
+              <dl>
+                <dt>Best for</dt>
+                <dd>English-taught bachelor programs, international classrooms.</dd>
+                <dt>Common parent questions</dt>
+                <dd>Numerus fixus, housing timelines, applied vs research universities.</dd>
+                <dt>Session topics</dt>
+                <dd>Program search, motivation letters, practical transition planning.</dd>
+                <dt>Suggested timeline</dt>
+                <dd>Start 9-15 months before intake.</dd>
+              </dl>
+              <button class="country-action" type="button" data-country="Netherlands">
+                Find a counselor for this country
+              </button>
+            </article>
+
+            <article class="country-card">
+              <h3>Czech Republic</h3>
+              <dl>
+                <dt>Best for</dt>
+                <dd>Medicine, technical fields, European study options.</dd>
+                <dt>Common parent questions</dt>
+                <dd>Entrance exams, English-taught programs, cost expectations.</dd>
+                <dt>Session topics</dt>
+                <dd>School shortlist, exam preparation plan, document checklist.</dd>
+                <dt>Suggested timeline</dt>
+                <dd>Start 8-14 months before entrance assessments.</dd>
+              </dl>
+              <button class="country-action" type="button" data-country="Czech Republic">
+                Find a counselor for this country
+              </button>
+            </article>
+
+            <article class="country-card">
+              <h3>United Kingdom</h3>
+              <dl>
+                <dt>Best for</dt>
+                <dd>Focused degree tracks, UCAS planning, A-level and IB alignment.</dd>
+                <dt>Common parent questions</dt>
+                <dd>Course choice, predicted grades, personal statements.</dd>
+                <dt>Session topics</dt>
+                <dd>Course strategy, application calendar, interview preparation.</dd>
+                <dt>Suggested timeline</dt>
+                <dd>Start 12-18 months before UCAS deadlines.</dd>
+              </dl>
+              <button class="country-action" type="button" data-country="United Kingdom">
+                Find a counselor for this country
+              </button>
+            </article>
+          </div>
+
+          <p class="disclaimer">
+            TutorCat counseling sessions are educational guidance sessions, not
+            legal, immigration, or guaranteed admissions advice. Requirements
+            vary by country and institution, so families should verify official
+            requirements before applying.
           </p>
         </div>
+      </section>
 
-        <div class="toolbar" aria-label="Catalog controls">
-          <label class="search-field">
-            <span>Search</span>
-            <input
-              id="searchInput"
-              type="search"
-              placeholder="Name, subject, school"
-              autocomplete="off"
-            />
-          </label>
-          <div class="filter-group" aria-label="Filter by subject">
-            <button class="filter-button is-active" type="button" data-filter="All">
-              All
-            </button>
-            <button class="filter-button" type="button" data-filter="Math">
-              Math
-            </button>
-            <button class="filter-button" type="button" data-filter="Science">
-              Science
-            </button>
-            <button class="filter-button" type="button" data-filter="English">
-              English
-            </button>
-            <button class="filter-button" type="button" data-filter="Test Prep">
-              Test Prep
-            </button>
-            <button class="filter-button" type="button" data-filter="Language">
-              Language
-            </button>
+      <section id="how-it-works" class="process-section" aria-labelledby="process-title">
+        <div class="section-shell">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">How it works</p>
+              <h2 id="process-title">From goal to next step.</h2>
+            </div>
+          </div>
+          <ol class="process-list">
+            <li>
+              <span>01</span>
+              <h3>Tell us your goal</h3>
+              <p>Share the student level, subject, destination, timeline, and family priorities.</p>
+            </li>
+            <li>
+              <span>02</span>
+              <h3>Get matched</h3>
+              <p>Compare tutors or country-experienced counselors with relevant experience.</p>
+            </li>
+            <li>
+              <span>03</span>
+              <h3>Book a focused session</h3>
+              <p>Use the session for tutoring, test prep, pathway planning, or parent questions.</p>
+            </li>
+            <li>
+              <span>04</span>
+              <h3>Review next steps</h3>
+              <p>Leave with a clearer plan for practice, applications, deadlines, or follow-up support.</p>
+            </li>
+          </ol>
+        </div>
+      </section>
+
+      <section id="results" class="results-section" aria-labelledby="results-title">
+        <div class="section-shell">
+          <div class="section-heading">
+            <div>
+              <p class="eyebrow">Results and social proof</p>
+              <h2 id="results-title">Families use TutorCat to make better decisions.</h2>
+            </div>
+            <p>
+              The examples below are clearly labeled sample feedback for this
+              static website. Replace them with verified quotes when available.
+            </p>
+          </div>
+
+          <div class="testimonial-grid">
+            <article class="testimonial-card">
+              <p class="testimonial-label">Sample parent feedback</p>
+              <blockquote>
+                The matching questions helped us explain exactly what our son
+                needed: AP Calculus support, SAT timing, and a tutor who could
+                work online.
+              </blockquote>
+              <cite>Parent of Grade 11 student</cite>
+            </article>
+            <article class="testimonial-card">
+              <p class="testimonial-label">Sample student feedback</p>
+              <blockquote>
+                I liked seeing tutors by subject and current student load. It
+                made the choice feel practical instead of random.
+              </blockquote>
+              <cite>High school student</cite>
+            </article>
+            <article class="testimonial-card">
+              <p class="testimonial-label">Sample international counseling feedback</p>
+              <blockquote>
+                The Germany and Netherlands session gave our family a checklist
+                of questions to verify with official university pages.
+              </blockquote>
+              <cite>Parent exploring Europe pathways</cite>
+            </article>
           </div>
         </div>
-
-        <div id="tutorGrid" class="tutor-grid" aria-live="polite"></div>
-        <p id="emptyState" class="empty-state" hidden>
-          No tutors match the current search.
-        </p>
       </section>
 
-      <section id="contact" class="contact-band" aria-labelledby="contact-title">
-        <div>
-          <p class="eyebrow">Placement support</p>
-          <h2 id="contact-title">Match a student with the right tutor</h2>
+      <section id="faq" class="faq-section" aria-labelledby="faq-title">
+        <div class="section-shell faq-shell">
+          <div>
+            <p class="eyebrow">FAQ</p>
+            <h2 id="faq-title">Common questions</h2>
+          </div>
+          <div class="faq-list">
+            <details>
+              <summary>How does TutorCat match students?</summary>
+              <p>
+                TutorCat compares the student's level, goals, subject or
+                counseling focus, destination, preferred format, urgency, and
+                profile fit.
+              </p>
+            </details>
+            <details>
+              <summary>Can parents join the session?</summary>
+              <p>
+                Yes. Parent participation is especially useful for education
+                counseling, study destination planning, and younger students.
+              </p>
+            </details>
+            <details>
+              <summary>Do you offer country-specific counseling?</summary>
+              <p>
+                Yes. TutorCat can route families to counselors or mentors with
+                experience connected to destinations such as the US, Canada,
+                Germany, Netherlands, Czech Republic, UK, Australia, and UAE.
+              </p>
+            </details>
+            <details>
+              <summary>Can I choose a counselor who studied in the country?</summary>
+              <p>
+                You can request that preference. Profile details show relevant
+                study, work, or advising experience when available.
+              </p>
+            </details>
+            <details>
+              <summary>Is this admissions or immigration advice?</summary>
+              <p>
+                No. Counseling sessions are educational guidance only and do not
+                replace official admissions, visa, legal, or immigration advice.
+              </p>
+            </details>
+            <details>
+              <summary>Do you offer online sessions?</summary>
+              <p>
+                Yes. Many profiles support online sessions, and some support
+                in-person or hybrid formats depending on location.
+              </p>
+            </details>
+            <details>
+              <summary>How do I request a tutor introduction?</summary>
+              <p>
+                Use the matching wizard, a profile request button, or the
+                contact form. Each opens a prefilled email you can review before
+                sending.
+              </p>
+            </details>
+          </div>
         </div>
-        <a class="primary-link dark" href="mailto:hello@tutorcat.example"
-          >Request placement</a
-        >
+      </section>
+
+      <section id="contact" class="contact-section" aria-labelledby="contact-title">
+        <div class="section-shell contact-layout">
+          <div class="contact-copy">
+            <p class="eyebrow">Contact</p>
+            <h2 id="contact-title">Request a tutor or counseling introduction.</h2>
+            <p>
+              Share the student goal and TutorCat will prepare a focused intro
+              request. Your message opens in your email app before sending.
+            </p>
+            <p class="privacy-note">
+              Your message opens in your email app before sending.
+            </p>
+          </div>
+
+          <form id="contactForm" class="contact-form">
+            <div class="form-grid">
+              <label>
+                <span>Parent/student name</span>
+                <input id="contactName" name="name" type="text" required />
+              </label>
+              <label>
+                <span>Email</span>
+                <input id="contactEmail" name="email" type="email" required />
+              </label>
+              <label>
+                <span>Student level</span>
+                <select id="contactLevel" name="level" required>
+                  <option value="">Choose one</option>
+                  <option>Middle school</option>
+                  <option>High school</option>
+                  <option>A-levels/IB/AP</option>
+                  <option>Undergraduate</option>
+                  <option>Transfer student</option>
+                  <option>Other</option>
+                </select>
+              </label>
+              <label>
+                <span>Support type</span>
+                <select id="contactSupport" name="support" required>
+                  <option value="">Choose one</option>
+                  <option>Academic tutoring</option>
+                  <option>Test prep</option>
+                  <option>Country counseling</option>
+                  <option>University pathway planning</option>
+                  <option>Unsure</option>
+                </select>
+              </label>
+              <label>
+                <span>Country of interest</span>
+                <input
+                  id="contactCountry"
+                  name="country"
+                  type="text"
+                  placeholder="US, Canada, Germany, Netherlands..."
+                />
+              </label>
+              <label>
+                <span>Subject/topic</span>
+                <input
+                  id="contactTopic"
+                  name="topic"
+                  type="text"
+                  placeholder="Math, IELTS, applications, scholarships..."
+                  required
+                />
+              </label>
+            </div>
+            <label>
+              <span>Message</span>
+              <textarea
+                id="contactMessage"
+                name="message"
+                rows="5"
+                required
+                placeholder="Tell us about the student's goal, timeline, and preferred format."
+              ></textarea>
+            </label>
+            <button class="primary-link form-submit" type="submit">
+              Open Email Request
+            </button>
+          </form>
+        </div>
       </section>
     </main>
+
+    <footer class="site-footer">
+      <div class="section-shell footer-layout">
+        <div>
+          <a class="brand footer-brand" href="#top" aria-label="TutorCat home">
+            <span class="brand-mark">TC</span>
+            <span>TutorCat</span>
+          </a>
+          <p>
+            Tutoring and educational guidance for families comparing academic
+            support, test prep, and higher education pathways.
+          </p>
+        </div>
+        <p class="footer-disclaimer">
+          TutorCat counseling sessions are educational guidance sessions, not
+          legal, immigration, or guaranteed admissions advice. Requirements vary
+          by country and institution, so families should verify official
+          requirements before applying.
+        </p>
+      </div>
+    </footer>
+
+    <noscript>
+      <div class="noscript-message">
+        TutorCat uses JavaScript for filtering, matching, and prefilled email
+        requests. Please enable JavaScript for the full experience.
+      </div>
+    </noscript>
 
     <div id="profileBackdrop" class="profile-backdrop" hidden></div>
     <aside
@@ -129,7 +603,6 @@
       role="dialog"
       aria-modal="true"
       aria-labelledby="panelName"
-      aria-describedby="panelTitle"
       hidden
     >
       <button id="closePanel" class="close-button" type="button" aria-label="Close profile">
