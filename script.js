@@ -1,4 +1,11 @@
-const CONTACT_EMAIL = "hello@tutorcat.example";
+const CONTACT_EMAIL = "your-email@example.com";
+
+const REVIEW_SUBMISSION_MODE = "mailto";
+const TUTOR_APPLICATION_MODE = "mailto";
+
+const REVIEW_FORM_URL = "";
+const TUTOR_APPLICATION_FORM_URL = "";
+
 const DATA_URL = "./data/tutors.json";
 
 const FILTER_OPTIONS = [
@@ -17,6 +24,7 @@ const FILTER_OPTIONS = [
   { label: "Netherlands", value: "Netherlands" },
   { label: "Czech Republic", value: "Czech Republic" },
   { label: "UK", value: "United Kingdom" },
+  { label: "South Africa", value: "South Africa" },
 ];
 
 const WIZARD_STEPS = [
@@ -435,11 +443,22 @@ const wizardReset = document.querySelector("#wizardReset");
 const wizardSummaryList = document.querySelector("#wizardSummaryList");
 const wizardResults = document.querySelector("#wizardResults");
 const contactForm = document.querySelector("#contactForm");
+const formBackdrop = document.querySelector("#formBackdrop");
+const reviewModal = document.querySelector("#reviewModal");
+const reviewForm = document.querySelector("#reviewForm");
+const reviewProfileSelect = document.querySelector("#reviewProfile");
+const reviewFormStatus = document.querySelector("#reviewFormStatus");
+const applicationModal = document.querySelector("#applicationModal");
+const applicationForm = document.querySelector("#applicationForm");
+const applicationFormStatus = document.querySelector("#applicationFormStatus");
+const openApplicationFormButton = document.querySelector("#openApplicationForm");
 
 let activeFilter = "All";
 let wizardStepIndex = 0;
 let wizardAnswers = {};
 let lastFocusedElement = null;
+let lastModalFocusedElement = null;
+let activeFormModal = null;
 const shortlistedProfiles = new Set();
 
 const htmlEscapes = {
@@ -482,6 +501,83 @@ const parseNumber = (value) => {
   return match ? Number(match[0]) : null;
 };
 
+const parseBoolean = (value) => {
+  if (typeof value === "boolean") return value;
+  if (value === null || value === undefined || value === "") return null;
+
+  const normalized = normalizeText(value);
+  if (["true", "yes", "y", "1", "approved", "verified", "public"].includes(normalized)) {
+    return true;
+  }
+  if (["false", "no", "n", "0", "rejected", "private", "unapproved"].includes(normalized)) {
+    return false;
+  }
+  return null;
+};
+
+const clampRating = (value) => {
+  const rating = parseNumber(value);
+  if (rating === null) return null;
+  return Math.min(5, Math.max(1, rating));
+};
+
+const isSafeImageUrl = (value) => {
+  const url = String(value ?? "").trim();
+  if (!url) return false;
+  return /^(https?:\/\/|\.?\/?assets\/)/i.test(url);
+};
+
+const normalizeReviewStatus = (status) => {
+  const normalized = normalizeText(status || "pending");
+  return [
+    "pending",
+    "awaiting_tutor_verification",
+    "verified_by_tutor",
+    "approved",
+    "rejected",
+  ].includes(normalized)
+    ? normalized
+    : "pending";
+};
+
+const normalizeReview = (review = {}) => ({
+  studentName: String(review.studentName || review.reviewerName || review.name || "").trim(),
+  studentEmail: String(review.studentEmail || review.reviewerEmail || review.email || "").trim(),
+  reviewerType: String(review.reviewerType || "Student").trim(),
+  rating: clampRating(review.rating),
+  comment: String(review.comment || review.review || "").trim(),
+  date: String(review.date || review.submittedDate || "").trim(),
+  sessionType: String(review.sessionType || "Tutoring").trim(),
+  verifiedByTutor: parseBoolean(review.verifiedByTutor) === true,
+  approvedByAdmin: parseBoolean(review.approvedByAdmin) === true,
+  publicPermission: parseBoolean(review.publicPermission) === true,
+  status: normalizeReviewStatus(review.status),
+});
+
+const normalizeReviews = (reviews) =>
+  Array.isArray(reviews)
+    ? reviews
+        .map(normalizeReview)
+        .filter((review) => review.rating !== null || review.comment)
+    : [];
+
+const normalizePublicContactMethod = (rawProfile) => {
+  const source =
+    rawProfile.publicContactMethod && typeof rawProfile.publicContactMethod === "object"
+      ? rawProfile.publicContactMethod
+      : {
+          type: rawProfile.publicContactType,
+          value: rawProfile.publicContactValue,
+          approved: rawProfile.publicContactApproved,
+        };
+
+  return {
+    type: normalizeText(source.type),
+    value: String(source.value || "").trim(),
+    approved: parseBoolean(source.approved) === true,
+  };
+};
+
 const countryAliases = new Map([
   ["us", "United States"],
   ["usa", "United States"],
@@ -489,6 +585,8 @@ const countryAliases = new Map([
   ["united states of america", "United States"],
   ["uk", "United Kingdom"],
   ["u.k.", "United Kingdom"],
+  ["sa", "South Africa"],
+  ["south africa", "South Africa"],
   ["uae", "UAE"],
   ["u.a.e.", "UAE"],
   ["united arab emirates", "UAE"],
@@ -582,14 +680,22 @@ const normalizeLoadedProfile = (rawProfile, index) => {
     currentStudents: parseNumber(rawProfile.currentStudents),
     improvement: String(rawProfile.improvement || "").trim(),
     experience: String(rawProfile.experience || "").trim(),
+    experienceYears: parseNumber(rawProfile.experienceYears),
     availability: String(rawProfile.availability || "").trim(),
-    rating: parseNumber(rawProfile.rating),
-    reviewCount: parseNumber(rawProfile.reviewCount),
     shortBio: String(rawProfile.shortBio || "").trim(),
     parentNote: String(rawProfile.parentNote || "").trim(),
     outcomes: normalizeOutcomes(rawProfile.outcomes),
     tags: asArray(rawProfile.tags),
-    imageUrl: String(rawProfile.imageUrl || "").trim(),
+    imageUrl: isSafeImageUrl(rawProfile.imageUrl) ? String(rawProfile.imageUrl).trim() : "",
+    imageAlt: String(rawProfile.imageAlt || "").trim(),
+    photoApproved: parseBoolean(rawProfile.photoApproved) === true,
+    rating: parseNumber(rawProfile.rating),
+    reviewCount: parseNumber(rawProfile.reviewCount),
+    reviews: normalizeReviews(rawProfile.reviews),
+    email: String(rawProfile.email || "").trim(),
+    verificationContactEmail: String(rawProfile.verificationContactEmail || "").trim(),
+    publicContactMethod: normalizePublicContactMethod(rawProfile),
+    applicationStatus: String(rawProfile.applicationStatus || "approved").trim(),
   };
 
   profile.profileType = normalizeProfileType(profile.profileType, profile);
@@ -612,10 +718,113 @@ const toOption = (option) =>
 const formatList = (items, fallback = "Not specified") =>
   items && items.length ? items.join(", ") : fallback;
 
-const formatRating = (profile) =>
-  profile.rating === null
-    ? "Rating not listed"
-    : `${profile.rating.toFixed(1)} (${profile.reviewCount ?? 0} sample reviews)`;
+const isVerifiedPublicReview = (review) =>
+  review.rating !== null &&
+  review.verifiedByTutor === true &&
+  review.approvedByAdmin === true &&
+  review.publicPermission === true &&
+  review.status === "approved";
+
+function getVerifiedReviewStats(profile) {
+  const verifiedReviews = normalizeReviews(profile.reviews).filter(isVerifiedPublicReview);
+  const verifiedReviewCount = verifiedReviews.length;
+  const averageRating = verifiedReviewCount
+    ? Number(
+        (
+          verifiedReviews.reduce((total, review) => total + review.rating, 0) /
+          verifiedReviewCount
+        ).toFixed(1)
+      )
+    : null;
+
+  return {
+    averageRating,
+    verifiedReviewCount,
+    verifiedReviews,
+  };
+}
+
+const getRatingDisplayInfo = (profile) => {
+  const stats = getVerifiedReviewStats(profile);
+  const hasReviewObjects = Array.isArray(profile.reviews) && profile.reviews.length > 0;
+
+  if (hasReviewObjects) {
+    return {
+      source: "verified",
+      averageRating: stats.averageRating,
+      reviewCount: stats.verifiedReviewCount,
+      verifiedReviews: stats.verifiedReviews,
+    };
+  }
+
+  if (profile.rating !== null && profile.reviewCount !== null) {
+    return {
+      source: "manual",
+      averageRating: clampRating(profile.rating),
+      reviewCount: profile.reviewCount,
+      verifiedReviews: [],
+    };
+  }
+
+  return {
+    source: "none",
+    averageRating: null,
+    reviewCount: 0,
+    verifiedReviews: [],
+  };
+};
+
+const getSortableRating = (profile) => getRatingDisplayInfo(profile).averageRating || 0;
+
+const pluralizeReviews = (count) => `${count} verified review${count === 1 ? "" : "s"}`;
+
+const formatRating = (profile) => {
+  const ratingInfo = getRatingDisplayInfo(profile);
+  if (ratingInfo.averageRating === null) return "No verified public reviews yet.";
+  if (ratingInfo.source === "manual") return "Rating shown from TutorCat records";
+  return `${ratingInfo.averageRating.toFixed(1)} out of 5 based on ${pluralizeReviews(
+    ratingInfo.reviewCount
+  )}`;
+};
+
+const getStarText = (rating) => {
+  if (rating === null) return "☆☆☆☆☆";
+  const filledStars = Math.max(0, Math.min(5, Math.round(rating)));
+  return `${"★".repeat(filledStars)}${"☆".repeat(5 - filledStars)}`;
+};
+
+const renderRatingSummary = (profile, variant = "card") => {
+  const ratingInfo = getRatingDisplayInfo(profile);
+
+  if (ratingInfo.averageRating === null) {
+    return `
+      <div class="rating-summary rating-summary-${variant}">
+        <span class="rating-empty">No verified public reviews yet.</span>
+      </div>
+    `;
+  }
+
+  const ratingText =
+    ratingInfo.source === "manual"
+      ? `Rated ${ratingInfo.averageRating.toFixed(1)} out of 5 based on ${
+          ratingInfo.reviewCount
+        } TutorCat record${ratingInfo.reviewCount === 1 ? "" : "s"}`
+      : `Rated ${ratingInfo.averageRating.toFixed(1)} out of 5 based on ${
+          ratingInfo.reviewCount
+        } verified review${ratingInfo.reviewCount === 1 ? "" : "s"}`;
+  const note =
+    ratingInfo.source === "manual"
+      ? "Rating shown from TutorCat records"
+      : `${ratingInfo.reviewCount} verified review${ratingInfo.reviewCount === 1 ? "" : "s"}`;
+
+  return `
+    <div class="rating-summary rating-summary-${variant}" aria-label="${escapeHtml(ratingText)}">
+      <span class="rating-stars" aria-hidden="true">${getStarText(ratingInfo.averageRating)}</span>
+      <span class="rating-value">${escapeHtml(ratingInfo.averageRating.toFixed(1))}</span>
+      <span class="rating-note">${escapeHtml(note)}</span>
+    </div>
+  `;
+};
 
 const formatStudentLoad = (profile) =>
   profile.currentStudents === null
@@ -626,13 +835,46 @@ const formatExperience = (profile) => profile.experience || "Experience not list
 
 const formatAvailability = (profile) => profile.availability || "Availability on request";
 
-const createMailto = (subject, body) =>
-  `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(
+const sanitizeMailRecipient = (recipient) =>
+  String(recipient || CONTACT_EMAIL)
+    .replace(/[\r\n?&]/g, "")
+    .trim();
+
+const createMailto = (subject, body, recipient = CONTACT_EMAIL) =>
+  `mailto:${sanitizeMailRecipient(recipient)}?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(
     body
   )}`;
 
 const profileTypeClass = (profile) =>
   profile.profileType === "Tutor + Counselor" ? "TutorCounselor" : profile.profileType;
+
+const hasApprovedProfileImage = (profile) =>
+  profile.photoApproved === true && isSafeImageUrl(profile.imageUrl);
+
+const getProfileImageAlt = (profile) =>
+  profile.imageAlt || `Profile photo of ${profile.name}`;
+
+const renderProfileAvatar = (profile, variant = "card") => {
+  const hasPhoto = hasApprovedProfileImage(profile);
+  const ariaAttributes = hasPhoto
+    ? ""
+    : `role="img" aria-label="${escapeHtml(`${profile.name} initials avatar`)}"`;
+
+  return `
+    <span class="profile-avatar profile-avatar-${variant} ${profileTypeClass(profile)}${
+    hasPhoto ? " has-photo" : ""
+  }" data-avatar-name="${escapeHtml(profile.name)}" ${ariaAttributes}>
+      ${
+        hasPhoto
+          ? `<img src="${escapeHtml(profile.imageUrl)}" alt="${escapeHtml(
+              getProfileImageAlt(profile)
+            )}" loading="lazy" decoding="async" />`
+          : ""
+      }
+      <span class="avatar-initials" aria-hidden="true">${escapeHtml(profile.initials)}</span>
+    </span>
+  `;
+};
 
 const renderChips = (items = [], className, limit = items.length) =>
   items
@@ -751,7 +993,9 @@ const sortProfiles = (items, query) => {
 
   if (sortMode === "rating") {
     return profilesToSort.sort(
-      (a, b) => (b.rating || 0) - (a.rating || 0) || (b.reviewCount || 0) - (a.reviewCount || 0)
+      (a, b) =>
+        getSortableRating(b) - getSortableRating(a) ||
+        getRatingDisplayInfo(b).reviewCount - getRatingDisplayInfo(a).reviewCount
     );
   }
 
@@ -765,13 +1009,13 @@ const sortProfiles = (items, query) => {
     const scoreA =
       getSearchScore(a, query) +
       (matchesFilter(a, activeFilter) && activeFilter !== "All" ? 20 : 0) +
-      (a.rating || 0) * 3 +
+      getSortableRating(a) * 3 +
       (a.experienceYears || 0) -
       (a.currentStudents || 0) * 0.5;
     const scoreB =
       getSearchScore(b, query) +
       (matchesFilter(b, activeFilter) && activeFilter !== "All" ? 20 : 0) +
-      (b.rating || 0) * 3 +
+      getSortableRating(b) * 3 +
       (b.experienceYears || 0) -
       (b.currentStudents || 0) * 0.5;
     return scoreB - scoreA;
@@ -807,26 +1051,24 @@ const renderProfileCard = (profile) => {
   return `
     <article class="tutor-card">
       <div class="card-topline">
-        <span class="avatar ${profileTypeClass(profile)}" aria-hidden="true">${escapeHtml(
-          profile.initials
-        )}</span>
+        ${renderProfileAvatar(profile, "card")}
         <div class="card-title">
           <h3>${escapeHtml(profile.name)}</h3>
           <p>${escapeHtml(profile.role)}</p>
         </div>
       </div>
       <span class="type-badge">${escapeHtml(profile.profileType)}</span>
+      ${renderRatingSummary(profile, "card")}
       <div class="chip-list" aria-label="Countries supported">
         ${renderChips(profile.countries, "country-chip", 4)}
       </div>
       <div class="chip-list" aria-label="Subjects and topics">
         ${renderChips(topics, "subject-chip", 5)}
       </div>
+      <div class="chip-list" aria-label="Boards and levels">
+        ${renderChips(profile.tags, "tag-chip", 4)}
+      </div>
       <div class="card-meta">
-        <div>
-          <strong>Rating</strong>
-          <span>${escapeHtml(formatRating(profile))}</span>
-        </div>
         <div>
           <strong>Experience</strong>
           <span>${escapeHtml(formatExperience(profile))}</span>
@@ -907,7 +1149,129 @@ const renderOutcomes = (profile) =>
     )
     .join("");
 
+const REVIEW_POLICY_TEXT =
+  "All TutorCat reviews are verified by the tutor/counselor and approved by TutorCat before being displayed publicly or included in overall ratings.";
+
+const renderVerifiedReviews = (profile) => {
+  const { verifiedReviews } = getVerifiedReviewStats(profile);
+
+  return `
+    <p class="review-policy">${escapeHtml(REVIEW_POLICY_TEXT)}</p>
+    ${
+      verifiedReviews.length
+        ? `
+          <div class="review-list">
+            ${verifiedReviews
+              .map(
+                (review) => `
+                  <article class="review-card">
+                    <div class="review-card-topline">
+                      <strong>${escapeHtml(review.reviewerType || "Student")}</strong>
+                      <span>${escapeHtml(review.date || "Date not listed")}</span>
+                    </div>
+                    <div class="review-rating" aria-label="${escapeHtml(
+                      `Rated ${review.rating.toFixed(1)} out of 5`
+                    )}">
+                      <span class="rating-stars" aria-hidden="true">${getStarText(
+                        review.rating
+                      )}</span>
+                      <span>${escapeHtml(review.rating.toFixed(1))}</span>
+                    </div>
+                    <p>${escapeHtml(review.comment)}</p>
+                    <span class="review-session">${escapeHtml(
+                      review.sessionType || "Session type not listed"
+                    )}</span>
+                  </article>
+                `
+              )
+              .join("")}
+          </div>
+        `
+        : `<p class="empty-reviews">No verified public reviews yet.</p>`
+    }
+  `;
+};
+
+const getApprovedPublicContact = (profile) => {
+  const contact = profile.publicContactMethod;
+  if (!contact || contact.approved !== true || !contact.value) return null;
+
+  const type = normalizeText(contact.type);
+  if (!["email", "whatsapp", "linkedin", "website"].includes(type)) return null;
+  return { type, value: contact.value };
+};
+
+const normalizeExternalUrl = (value) => {
+  try {
+    const url = new URL(value, window.location.href);
+    return ["http:", "https:"].includes(url.protocol) ? url.href : "";
+  } catch (error) {
+    return "";
+  }
+};
+
+const getPublicContactHref = (contact) => {
+  if (!contact) return "";
+
+  if (contact.type === "email") {
+    return `mailto:${sanitizeMailRecipient(contact.value)}`;
+  }
+
+  if (contact.type === "whatsapp") {
+    const normalizedUrl = normalizeExternalUrl(contact.value);
+    if (/^https:\/\/(wa\.me|api\.whatsapp\.com)\//i.test(normalizedUrl)) {
+      return normalizedUrl;
+    }
+    const digits = contact.value.replace(/[^\d]/g, "");
+    return digits ? `https://wa.me/${digits}` : "";
+  }
+
+  return normalizeExternalUrl(contact.value);
+};
+
+const formatPublicContactLabel = (type) => {
+  const labels = {
+    email: "Public email",
+    whatsapp: "WhatsApp",
+    linkedin: "LinkedIn",
+    website: "Website",
+  };
+  return labels[type] || "Public contact";
+};
+
+const renderPublicContact = (profile) => {
+  const contact = getApprovedPublicContact(profile);
+  const href = getPublicContactHref(contact);
+
+  if (!contact || !href) {
+    return `
+      <p class="contact-fallback">
+        No approved public contact is listed for this profile. Use Request intro and TutorCat will route the message.
+      </p>
+    `;
+  }
+
+  return `
+    <div class="public-contact">
+      <span>Approved public contact</span>
+      <a href="${escapeHtml(href)}" ${
+    contact.type === "email" ? "" : 'target="_blank" rel="noopener noreferrer"'
+  }>
+        ${escapeHtml(formatPublicContactLabel(contact.type))}
+      </a>
+    </div>
+  `;
+};
+
 const renderProfilePanel = (profile) => {
+  const ratingInfo = getRatingDisplayInfo(profile);
+  const ratingMetric = ratingInfo.averageRating === null ? "-" : ratingInfo.averageRating.toFixed(1);
+  const ratingMetricLabel =
+    ratingInfo.source === "manual"
+      ? "TutorCat records"
+      : ratingInfo.source === "verified"
+        ? `${ratingInfo.reviewCount} verified`
+        : "rating";
   const tabs = [
     {
       id: "overview",
@@ -955,6 +1319,18 @@ const renderProfilePanel = (profile) => {
       `,
     },
     {
+      id: "reviews",
+      label: "Reviews",
+      content: `
+        ${renderVerifiedReviews(profile)}
+        <button class="secondary-action profile-secondary-action" type="button" data-rate-profile="${escapeHtml(
+          profile.id
+        )}">
+          Rate this tutor
+        </button>
+      `,
+    },
+    {
       id: "notes",
       label: "Parent/student notes",
       content: `
@@ -992,19 +1368,30 @@ const renderProfilePanel = (profile) => {
         )}">
           Request intro
         </button>
+        ${renderPublicContact(profile)}
       `,
     },
   ];
 
   profileContent.innerHTML = `
     <div class="profile-topline">
-      <span class="avatar ${profileTypeClass(profile)}" aria-hidden="true">${escapeHtml(
-    profile.initials
-  )}</span>
+      ${renderProfileAvatar(profile, "panel")}
       <div class="profile-heading">
         <h2 id="panelName">${escapeHtml(profile.name)}</h2>
         <p>${escapeHtml(profile.role)}</p>
+        ${renderRatingSummary(profile, "panel")}
       </div>
+    </div>
+
+    <div class="profile-quick-actions" aria-label="${escapeHtml(profile.name)} actions">
+      <button class="profile-action" type="button" data-request-profile="${escapeHtml(profile.id)}">
+        Request intro
+      </button>
+      <button class="secondary-action profile-secondary-action" type="button" data-rate-profile="${escapeHtml(
+        profile.id
+      )}">
+        Rate this tutor
+      </button>
     </div>
 
     <div class="panel-metrics" aria-label="${escapeHtml(profile.name)} profile metrics">
@@ -1013,8 +1400,8 @@ const renderProfilePanel = (profile) => {
         <span>current students</span>
       </div>
       <div class="panel-metric">
-        <strong>${escapeHtml(profile.rating === null ? "-" : profile.rating.toFixed(1))}</strong>
-        <span>sample rating</span>
+        <strong>${escapeHtml(ratingMetric)}</strong>
+        <span>${escapeHtml(ratingMetricLabel)}</span>
       </div>
       <div class="panel-metric">
         <strong>${escapeHtml(formatExperience(profile))}</strong>
@@ -1110,6 +1497,148 @@ const requestProfileIntro = (profileId) => {
   );
 };
 
+function createTutorVerificationEmail(review, profile) {
+  const studentName = review.studentName || review.reviewerName || "Student/parent name not listed";
+  const studentEmail = review.studentEmail || review.reviewerEmail || "Student/parent email not listed";
+  const submittedDate = review.date || review.submittedDate || new Date().toISOString();
+  const publicPermission = review.publicPermission ? "Yes" : "No";
+
+  const subject = `Please verify TutorCat review — ${studentName} / ${profile.name}`;
+  const body = [
+    `Student/parent name: ${studentName}`,
+    `Student/parent email: ${studentEmail}`,
+    `Tutor/counselor name: ${profile.name}`,
+    `Rating: ${review.rating || "Not listed"}`,
+    `Session type: ${review.sessionType || "Not listed"}`,
+    "",
+    "Review text:",
+    review.comment || "No review text provided.",
+    "",
+    `Submitted date: ${submittedDate}`,
+    `Public display permission: ${publicPermission}`,
+    "",
+    "Please confirm whether the reviewed session actually happened.",
+    "Reply with one of: Verified, Not verified, Needs clarification.",
+  ].join("\n");
+
+  return {
+    recipient: profile.verificationContactEmail || CONTACT_EMAIL,
+    subject,
+    body,
+  };
+}
+
+const appendUrlParams = (url, params) => {
+  if (!url) return "";
+
+  try {
+    const nextUrl = new URL(url, window.location.href);
+    Object.entries(params).forEach(([key, value]) => {
+      if (value !== null && value !== undefined && value !== "") {
+        nextUrl.searchParams.set(key, value);
+      }
+    });
+    return nextUrl.href;
+  } catch (error) {
+    return url;
+  }
+};
+
+const openSubmissionTarget = (url, isExternal) => {
+  if (isExternal) {
+    window.open(url, "_blank", "noopener,noreferrer");
+    return;
+  }
+
+  window.location.href = url;
+};
+
+const getReviewSubmissionTarget = (review, profile) => {
+  const useExternal = REVIEW_SUBMISSION_MODE === "external" && REVIEW_FORM_URL.trim();
+
+  if (useExternal) {
+    return {
+      url: appendUrlParams(REVIEW_FORM_URL, {
+        profileId: profile.id,
+        tutorName: profile.name,
+      }),
+      isExternal: true,
+    };
+  }
+
+  const body = [
+    `Student/parent name: ${review.studentName}`,
+    `Student/parent email: ${review.studentEmail}`,
+    `Tutor/counselor name: ${profile.name}`,
+    `Tutor/counselor profile ID: ${profile.id}`,
+    `Rating: ${review.rating}`,
+    `Session type: ${review.sessionType}`,
+    "",
+    "Review text:",
+    review.comment,
+    "",
+    `Public display permission: ${review.publicPermission ? "Yes" : "No"}`,
+    `Date submitted: ${review.date}`,
+    "",
+    "Note: This review should not be published or added to the tutor's rating until the tutor verifies the session and TutorCat approves the review.",
+  ].join("\n");
+
+  return {
+    url: createMailto(`TutorCat Review Verification Needed — ${profile.name}`, body),
+    isExternal: false,
+  };
+};
+
+const getApplicationSubmissionTarget = (application) => {
+  const useExternal =
+    TUTOR_APPLICATION_MODE === "external" && TUTOR_APPLICATION_FORM_URL.trim();
+
+  if (useExternal) {
+    return {
+      url: appendUrlParams(TUTOR_APPLICATION_FORM_URL, {
+        name: application.fullName,
+        email: application.email,
+        applicantType: application.applicantType,
+      }),
+      isExternal: true,
+    };
+  }
+
+  const body = [
+    `Applicant wants to be listed as: ${application.applicantType}`,
+    "",
+    `Full name: ${application.fullName}`,
+    `Email: ${application.email}`,
+    `Phone or WhatsApp: ${application.phone || "Not provided"}`,
+    `City/country: ${application.location || "Not provided"}`,
+    `Subjects I can teach: ${application.subjects || "Not provided"}`,
+    `Countries I can advise on: ${application.countries || "Not provided"}`,
+    `Languages spoken: ${application.languages || "Not provided"}`,
+    `Education/experience: ${application.experience || "Not provided"}`,
+    `Years of experience: ${application.years || "Not provided"}`,
+    `Session mode: ${application.sessionMode || "Not provided"}`,
+    `Availability: ${application.availability || "Not provided"}`,
+    "",
+    "Short bio:",
+    application.bio || "Not provided",
+    "",
+    `Profile picture URL: ${application.photoUrl || "Not provided"}`,
+    `LinkedIn/portfolio/profile link: ${application.profileLink || "Not provided"}`,
+    `Photo display consent: ${application.photoConsent ? "Yes" : "No"}`,
+    `Submitted date: ${application.submittedDate}`,
+    "",
+    "Note: TutorCat should review this application before adding any public profile.",
+  ].join("\n");
+
+  return {
+    url: createMailto(
+      `TutorCat Tutor/Counselor Application — ${application.fullName}`,
+      body
+    ),
+    isExternal: false,
+  };
+};
+
 const setProfileTab = (tabId) => {
   profilePanel.querySelectorAll(".tab-button").forEach((button) => {
     button.setAttribute("aria-selected", String(button.dataset.tab === tabId));
@@ -1118,6 +1647,187 @@ const setProfileTab = (tabId) => {
   profilePanel.querySelectorAll(".tab-panel").forEach((panel) => {
     panel.hidden = panel.id !== `panel-${tabId}`;
   });
+};
+
+const getOpenDialog = () => {
+  if (activeFormModal && !activeFormModal.hidden) return activeFormModal;
+  if (!profilePanel.hidden) return profilePanel;
+  return null;
+};
+
+const setFormStatus = (element, message, type = "success") => {
+  if (!element) return;
+  element.textContent = message;
+  if (!message) {
+    element.classList.remove("is-error", "is-success");
+    return;
+  }
+  element.classList.toggle("is-error", type === "error");
+  element.classList.toggle("is-success", type !== "error");
+};
+
+const setSubmitButtonState = (button, isBusy, busyLabel) => {
+  if (!button) return;
+  if (!button.dataset.defaultLabel) {
+    button.dataset.defaultLabel = button.textContent.trim();
+  }
+  button.disabled = isBusy;
+  button.textContent = isBusy ? busyLabel : button.dataset.defaultLabel;
+};
+
+const populateReviewProfileOptions = () => {
+  if (!reviewProfileSelect) return;
+
+  reviewProfileSelect.innerHTML = `
+    <option value="">Choose one</option>
+    ${profiles
+      .map(
+        (profile) => `
+          <option value="${escapeHtml(profile.id)}">${escapeHtml(profile.name)}</option>
+        `
+      )
+      .join("")}
+  `;
+};
+
+const openFormModal = (modal) => {
+  if (!modal || !formBackdrop) return;
+
+  lastModalFocusedElement = document.activeElement;
+  activeFormModal = modal;
+  formBackdrop.hidden = false;
+  modal.hidden = false;
+  document.body.classList.add("modal-open");
+
+  const focusableElements = getFocusableElements(modal);
+  (focusableElements[0] || modal).focus();
+};
+
+const closeFormModal = () => {
+  if (!activeFormModal || !formBackdrop) return;
+
+  activeFormModal.hidden = true;
+  formBackdrop.hidden = true;
+  document.body.classList.remove("modal-open");
+
+  if (lastModalFocusedElement && typeof lastModalFocusedElement.focus === "function") {
+    lastModalFocusedElement.focus();
+  }
+
+  activeFormModal = null;
+  lastModalFocusedElement = null;
+};
+
+const openReviewForm = (profileId = "") => {
+  if (!reviewForm || !reviewModal) return;
+  populateReviewProfileOptions();
+  reviewForm.reset();
+  reviewProfileSelect.value = profileId;
+  setFormStatus(reviewFormStatus, "");
+  openFormModal(reviewModal);
+};
+
+const openApplicationForm = () => {
+  if (!applicationForm || !applicationModal) return;
+  applicationForm.reset();
+  setFormStatus(applicationFormStatus, "");
+  openFormModal(applicationModal);
+};
+
+const getTrimmedFormValue = (formData, key) => String(formData.get(key) || "").trim();
+
+const handleReviewSubmit = (event) => {
+  event.preventDefault();
+
+  if (!reviewForm.checkValidity()) {
+    reviewForm.reportValidity();
+    setFormStatus(reviewFormStatus, "Please complete the required review fields.", "error");
+    return;
+  }
+
+  const formData = new FormData(reviewForm);
+  const profileId = getTrimmedFormValue(formData, "profileId");
+  const profile = profiles.find((item) => item.id === profileId);
+
+  if (!profile) {
+    setFormStatus(reviewFormStatus, "Choose a valid tutor or counselor.", "error");
+    return;
+  }
+
+  const review = {
+    studentName: getTrimmedFormValue(formData, "studentName"),
+    studentEmail: getTrimmedFormValue(formData, "studentEmail"),
+    rating: getTrimmedFormValue(formData, "rating"),
+    sessionType: getTrimmedFormValue(formData, "sessionType"),
+    comment: getTrimmedFormValue(formData, "comment"),
+    publicPermission: formData.get("publicPermission") === "on",
+    date: new Date().toISOString(),
+    status: "pending",
+  };
+  const submitButton = reviewForm.querySelector('[type="submit"]');
+  const target = getReviewSubmissionTarget(review, profile);
+
+  setSubmitButtonState(submitButton, true, "Preparing submission...");
+  setFormStatus(
+    reviewFormStatus,
+    "Thank you. Your review has been submitted. It will be sent for tutor verification and TutorCat approval before appearing publicly."
+  );
+  openSubmissionTarget(target.url, target.isExternal);
+  window.setTimeout(() => setSubmitButtonState(submitButton, false), 900);
+};
+
+const handleApplicationSubmit = (event) => {
+  event.preventDefault();
+
+  const subjectsField = applicationForm.querySelector("#applicationSubjects");
+  const countriesField = applicationForm.querySelector("#applicationCountries");
+  subjectsField.setCustomValidity("");
+  countriesField.setCustomValidity("");
+
+  if (!subjectsField.value.trim() && !countriesField.value.trim()) {
+    subjectsField.setCustomValidity("Enter at least one subject or country.");
+  }
+
+  if (!applicationForm.checkValidity()) {
+    applicationForm.reportValidity();
+    setFormStatus(
+      applicationFormStatus,
+      "Please complete the required application fields.",
+      "error"
+    );
+    return;
+  }
+
+  const formData = new FormData(applicationForm);
+  const application = {
+    fullName: getTrimmedFormValue(formData, "fullName"),
+    email: getTrimmedFormValue(formData, "email"),
+    phone: getTrimmedFormValue(formData, "phone"),
+    location: getTrimmedFormValue(formData, "location"),
+    applicantType: getTrimmedFormValue(formData, "applicantType"),
+    subjects: getTrimmedFormValue(formData, "subjects"),
+    countries: getTrimmedFormValue(formData, "countries"),
+    languages: getTrimmedFormValue(formData, "languages"),
+    experience: getTrimmedFormValue(formData, "experience"),
+    years: getTrimmedFormValue(formData, "years"),
+    sessionMode: getTrimmedFormValue(formData, "sessionMode"),
+    availability: getTrimmedFormValue(formData, "availability"),
+    bio: getTrimmedFormValue(formData, "bio"),
+    photoUrl: getTrimmedFormValue(formData, "photoUrl"),
+    profileLink: getTrimmedFormValue(formData, "profileLink"),
+    photoConsent: formData.get("photoConsent") === "on",
+    submittedDate: new Date().toISOString(),
+  };
+  const submitButton = applicationForm.querySelector('[type="submit"]');
+  const target = getApplicationSubmissionTarget(application);
+
+  setSubmitButtonState(submitButton, true, "Preparing application...");
+  setFormStatus(
+    applicationFormStatus,
+    "Thank you for applying. TutorCat will review your information before adding any public profile."
+  );
+  openSubmissionTarget(target.url, target.isExternal);
+  window.setTimeout(() => setSubmitButtonState(submitButton, false), 900);
 };
 
 const optionMatchesProfile = (profile, value) => {
@@ -1459,6 +2169,7 @@ const initializeApp = async () => {
   renderFilterButtons();
   await loadProfiles();
   renderCards();
+  populateReviewProfileOptions();
   renderWizardStep();
 };
 
@@ -1491,6 +2202,7 @@ tutorGrid.addEventListener("click", (event) => {
 profilePanel.addEventListener("click", (event) => {
   const tabButton = event.target.closest(".tab-button");
   const requestButton = event.target.closest("[data-request-profile]");
+  const rateButton = event.target.closest("[data-rate-profile]");
 
   if (tabButton) {
     setProfileTab(tabButton.dataset.tab);
@@ -1499,6 +2211,11 @@ profilePanel.addEventListener("click", (event) => {
 
   if (requestButton) {
     requestProfileIntro(requestButton.dataset.requestProfile);
+    return;
+  }
+
+  if (rateButton) {
+    openReviewForm(rateButton.dataset.rateProfile);
   }
 });
 
@@ -1538,6 +2255,55 @@ closePanel.addEventListener("click", closeProfile);
 profileBackdrop.addEventListener("click", closeProfile);
 contactForm.addEventListener("submit", handleContactSubmit);
 
+if (openApplicationFormButton) {
+  openApplicationFormButton.addEventListener("click", openApplicationForm);
+}
+
+if (reviewForm) {
+  reviewForm.addEventListener("submit", handleReviewSubmit);
+}
+
+if (applicationForm) {
+  applicationForm.addEventListener("submit", handleApplicationSubmit);
+  applicationForm
+    .querySelectorAll("#applicationSubjects, #applicationCountries")
+    .forEach((field) => {
+      field.addEventListener("input", () => {
+        const subjectsField = applicationForm.querySelector("#applicationSubjects");
+        const countriesField = applicationForm.querySelector("#applicationCountries");
+        if (subjectsField.value.trim() || countriesField.value.trim()) {
+          subjectsField.setCustomValidity("");
+          countriesField.setCustomValidity("");
+        }
+      });
+    });
+}
+
+if (formBackdrop) {
+  formBackdrop.addEventListener("click", closeFormModal);
+}
+
+document.querySelectorAll("[data-close-modal]").forEach((button) => {
+  button.addEventListener("click", closeFormModal);
+});
+
+document.addEventListener(
+  "error",
+  (event) => {
+    const image = event.target;
+    if (!(image instanceof HTMLImageElement) || !image.closest(".profile-avatar")) return;
+    const avatar = image.closest(".profile-avatar");
+    avatar.classList.add("is-image-broken");
+    avatar.setAttribute("role", "img");
+    avatar.setAttribute(
+      "aria-label",
+      `${avatar.dataset.avatarName || "TutorCat specialist"} initials avatar`
+    );
+    image.removeAttribute("src");
+  },
+  true
+);
+
 menuToggle.addEventListener("click", () => {
   setMobileNav(!primaryNav.classList.contains("is-open"));
 });
@@ -1550,12 +2316,19 @@ primaryNav.addEventListener("click", (event) => {
 
 document.addEventListener("keydown", (event) => {
   if (event.key === "Escape") {
+    if (activeFormModal && !activeFormModal.hidden) {
+      closeFormModal();
+      return;
+    }
     if (!profilePanel.hidden) closeProfile();
     if (primaryNav.classList.contains("is-open")) setMobileNav(false);
   }
 
-  if (event.key === "Tab" && !profilePanel.hidden) {
-    const focusableElements = getFocusableElements(profilePanel);
+  if (event.key === "Tab") {
+    const openDialog = getOpenDialog();
+    if (!openDialog) return;
+
+    const focusableElements = getFocusableElements(openDialog);
     const firstElement = focusableElements[0];
     const lastElement = focusableElements[focusableElements.length - 1];
 

@@ -1,11 +1,11 @@
 {
-  "lastUpdated": "2026-06-26T19:48:37.337Z",
+  "lastUpdated": "2026-06-27T04:51:13.650Z",
   "sourceSheet": "Sheet1",
   "profiles": [
     {
-      "id": "muhammad-hassan-ansari-tutor-counselor",
-      "name": "Muhammad Hassan Ansari",
-      "initials": "MH",
+      "id": "hassan-ansari-tutor-counselor",
+      "name": "Hassan Ansari",
+      "initials": "HA",
       "profileType": "Tutor + Counselor",
       "role": "Math tutor and United States counselor",
       "subjects": [
@@ -24,7 +24,8 @@
       "languages": [],
       "currentStudents": 2,
       "improvement": "",
-      "experience": "",
+      "experience": "1 yr",
+      "experienceYears": 1,
       "availability": "",
       "rating": null,
       "reviewCount": null,
@@ -33,11 +34,72 @@
       "outcomes": [],
       "tags": [
         "IGCSE",
-        "A-level",
+        "A/AS-level",
         "Calc I",
         "Calc II"
       ],
-      "imageUrl": ""
+      "imageUrl": "",
+      "imageAlt": "",
+      "photoApproved": false,
+      "reviews": [],
+      "email": "",
+      "verificationContactEmail": "",
+      "publicContactMethod": {
+        "type": "",
+        "value": "",
+        "approved": false
+      },
+      "applicationStatus": ""
+    },
+    {
+      "id": "shweta-nundlall-tutor-counselor",
+      "name": "Shweta Nundlall",
+      "initials": "SN",
+      "profileType": "Tutor + Counselor",
+      "role": "Psychology tutor and South Africa counselor",
+      "subjects": [
+        "Psychology",
+        "English Language",
+        "Physical Education"
+      ],
+      "countries": [
+        "South Africa"
+      ],
+      "counselingTopics": [],
+      "educationOrExperience": "Gems Cambridge International School Abu dhabi Banyas; University of Cape Town, South Africa; Bachelor of Social Science in Psychology",
+      "location": "",
+      "sessionModes": [
+        "Online"
+      ],
+      "languages": [],
+      "currentStudents": null,
+      "improvement": "",
+      "experience": "0 yrs",
+      "experienceYears": 0,
+      "availability": "",
+      "rating": null,
+      "reviewCount": null,
+      "shortBio": "",
+      "parentNote": "",
+      "outcomes": [],
+      "tags": [
+        "IGCSE",
+        "A/AS-level",
+        "Oxford AQA",
+        "Cambridge"
+      ],
+      "imageUrl": "",
+      "imageAlt": "",
+      "photoApproved": false,
+      "reviews": [],
+      "email": "",
+      "verificationContactEmail": "",
+      "publicContactMethod": {
+        "type": "",
+        "value": "",
+        "approved": false
+      },
+      "applicationStatus": ""
     }
   ]
 }

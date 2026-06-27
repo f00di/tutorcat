@@ -51,6 +51,7 @@
         <a href="#how-it-works">How It Works</a>
         <a href="#results">Results</a>
         <a href="#faq">FAQ</a>
+        <a href="#join">Join TutorCat</a>
         <a href="#contact">Contact</a>
         <a class="nav-cta" href="#match">Find My Match</a>
       </nav>
@@ -483,6 +484,37 @@
         </div>
       </section>
 
+      <section id="join" class="join-section" aria-labelledby="join-title">
+        <div class="section-shell join-layout">
+          <div class="join-copy">
+            <p class="eyebrow">Join TutorCat</p>
+            <h2 id="join-title">Become a Tutor or Counselor</h2>
+            <p>
+              TutorCat welcomes academic tutors, test prep tutors, university
+              application mentors, country-experienced counselors, and student
+              mentors with experience in the US, Canada, Germany, Netherlands,
+              Czech Republic, UK, Australia, UAE, and other destinations.
+            </p>
+            <p>
+              Applications are reviewed before any public profile is added.
+              Submitting an application does not guarantee listing.
+            </p>
+            <button id="openApplicationForm" class="primary-link" type="button">
+              Apply to Join TutorCat
+            </button>
+          </div>
+          <div class="join-panel" aria-label="TutorCat listing paths">
+            <h3>Who can apply</h3>
+            <ul>
+              <li>Academic tutors for school and university subjects</li>
+              <li>Test prep tutors for SAT, ACT, IELTS, TOEFL, AP, IB, and A-levels</li>
+              <li>University application mentors and writing coaches</li>
+              <li>Country-experienced counselors and student mentors</li>
+            </ul>
+          </div>
+        </div>
+      </section>
+
       <section id="contact" class="contact-section" aria-labelledby="contact-title">
         <div class="section-shell contact-layout">
           <div class="contact-copy">
@@ -610,5 +642,235 @@
       </button>
       <div id="profileContent"></div>
     </aside>
+
+    <div id="formBackdrop" class="modal-backdrop" hidden></div>
+
+    <section
+      id="reviewModal"
+      class="form-modal"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="reviewModalTitle"
+      hidden
+    >
+      <button class="modal-close" type="button" aria-label="Close review form" data-close-modal>
+        <span aria-hidden="true">&times;</span>
+      </button>
+      <div class="modal-heading">
+        <p class="eyebrow">Verified reviews</p>
+        <h2 id="reviewModalTitle">Rate this tutor</h2>
+        <p>
+          All TutorCat reviews are verified by the tutor/counselor and approved
+          by TutorCat before being displayed publicly or included in overall ratings.
+        </p>
+      </div>
+      <form id="reviewForm" class="stacked-form">
+        <div class="form-grid">
+          <label>
+            <span>Student/parent name</span>
+            <input name="studentName" type="text" autocomplete="name" required />
+          </label>
+          <label>
+            <span>Email</span>
+            <input name="studentEmail" type="email" autocomplete="email" required />
+          </label>
+          <label>
+            <span>Tutor/counselor selected</span>
+            <select id="reviewProfile" name="profileId" required>
+              <option value="">Choose one</option>
+            </select>
+          </label>
+          <label>
+            <span>Rating</span>
+            <select name="rating" required>
+              <option value="">Choose one</option>
+              <option value="5">5 - Excellent</option>
+              <option value="4">4 - Very good</option>
+              <option value="3">3 - Good</option>
+              <option value="2">2 - Needs improvement</option>
+              <option value="1">1 - Poor</option>
+            </select>
+          </label>
+          <label>
+            <span>Session type</span>
+            <select name="sessionType" required>
+              <option value="">Choose one</option>
+              <option>Tutoring</option>
+              <option>Counseling</option>
+              <option>Test Prep</option>
+              <option>Other</option>
+            </select>
+          </label>
+        </div>
+        <label>
+          <span>Short review</span>
+          <textarea
+            name="comment"
+            rows="5"
+            maxlength="1200"
+            placeholder="Share what was helpful about the session."
+            required
+          ></textarea>
+        </label>
+        <label class="checkbox-label">
+          <input name="publicPermission" type="checkbox" />
+          <span>
+            I give TutorCat permission to display this review publicly after
+            tutor verification and TutorCat approval.
+          </span>
+        </label>
+        <label class="checkbox-label">
+          <input name="moderationAgreement" type="checkbox" required />
+          <span>
+            I understand reviews are verified by the tutor/counselor and
+            moderated before appearing on the website.
+          </span>
+        </label>
+        <div id="reviewFormStatus" class="form-status" role="status" aria-live="polite"></div>
+        <div class="modal-actions">
+          <button class="secondary-action" type="button" data-close-modal>Cancel</button>
+          <button class="primary-link" type="submit">Submit Review</button>
+        </div>
+      </form>
+    </section>
+
+    <section
+      id="applicationModal"
+      class="form-modal"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="applicationModalTitle"
+      hidden
+    >
+      <button class="modal-close" type="button" aria-label="Close application form" data-close-modal>
+        <span aria-hidden="true">&times;</span>
+      </button>
+      <div class="modal-heading">
+        <p class="eyebrow">Join TutorCat</p>
+        <h2 id="applicationModalTitle">Tutor/counselor application</h2>
+        <p>
+          TutorCat reviews tutor and counselor applications manually before any
+          public profile is added.
+        </p>
+      </div>
+      <form id="applicationForm" class="stacked-form">
+        <div class="form-grid">
+          <label>
+            <span>Full name</span>
+            <input name="fullName" type="text" autocomplete="name" required />
+          </label>
+          <label>
+            <span>Email</span>
+            <input name="email" type="email" autocomplete="email" required />
+          </label>
+          <label>
+            <span>Phone or WhatsApp</span>
+            <input name="phone" type="text" autocomplete="tel" />
+          </label>
+          <label>
+            <span>City/country</span>
+            <input name="location" type="text" autocomplete="address-level2" />
+          </label>
+          <label>
+            <span>I want to join as</span>
+            <select name="applicantType" required>
+              <option value="">Choose one</option>
+              <option>Tutor</option>
+              <option>Counselor</option>
+              <option>Tutor + Counselor</option>
+            </select>
+          </label>
+          <label>
+            <span>Years of experience</span>
+            <input name="years" type="number" min="0" max="60" inputmode="numeric" />
+          </label>
+          <label>
+            <span>Subjects I can teach</span>
+            <input
+              id="applicationSubjects"
+              name="subjects"
+              type="text"
+              placeholder="Math, English, SAT, chemistry..."
+            />
+          </label>
+          <label>
+            <span>Countries I can advise on</span>
+            <input
+              id="applicationCountries"
+              name="countries"
+              type="text"
+              placeholder="US, Canada, Germany..."
+            />
+          </label>
+          <label>
+            <span>Languages spoken</span>
+            <input name="languages" type="text" placeholder="English, Arabic, Hindi..." />
+          </label>
+          <label>
+            <span>Session mode</span>
+            <select name="sessionMode">
+              <option value="">Choose one</option>
+              <option>Online</option>
+              <option>In-person</option>
+              <option>Hybrid</option>
+            </select>
+          </label>
+          <label>
+            <span>Availability</span>
+            <input name="availability" type="text" placeholder="Weekday evenings, Saturdays..." />
+          </label>
+          <label>
+            <span>Profile picture URL, optional</span>
+            <input name="photoUrl" type="url" placeholder="https://..." />
+          </label>
+          <label>
+            <span>LinkedIn/portfolio/profile link, optional</span>
+            <input name="profileLink" type="url" placeholder="https://..." />
+          </label>
+        </div>
+        <label>
+          <span>Education/experience</span>
+          <textarea
+            name="experience"
+            rows="4"
+            placeholder="Degrees, schools, advising experience, tutoring background."
+          ></textarea>
+        </label>
+        <label>
+          <span>Short bio</span>
+          <textarea
+            name="bio"
+            rows="4"
+            placeholder="A concise profile summary TutorCat can review."
+          ></textarea>
+        </label>
+        <label class="checkbox-label">
+          <input name="consent" type="checkbox" required />
+          <span>
+            I confirm that the information I provided is accurate and I give
+            TutorCat permission to contact me about being listed.
+          </span>
+        </label>
+        <label class="checkbox-label">
+          <input name="photoConsent" type="checkbox" />
+          <span>
+            I give TutorCat permission to display my submitted profile picture
+            if I am approved.
+          </span>
+        </label>
+        <label class="checkbox-label">
+          <input name="listingAgreement" type="checkbox" required />
+          <span>
+            I understand that submitting this form does not guarantee that I
+            will be listed.
+          </span>
+        </label>
+        <div id="applicationFormStatus" class="form-status" role="status" aria-live="polite"></div>
+        <div class="modal-actions">
+          <button class="secondary-action" type="button" data-close-modal>Cancel</button>
+          <button class="primary-link" type="submit">Submit Application</button>
+        </div>
+      </form>
+    </section>
   </body>
 </html>

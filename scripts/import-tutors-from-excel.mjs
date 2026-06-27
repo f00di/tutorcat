@@ -22,7 +22,7 @@ const ARRAY_FIELDS = new Set([
   "tags",
 ]);
 
-const NUMBER_FIELDS = new Set(["currentStudents", "rating", "reviewCount"]);
+const NUMBER_FIELDS = new Set(["currentStudents", "rating", "reviewCount", "experienceYears"]);
 
 const PRIVATE_HEADER_PATTERNS = [
   /contact/,
@@ -89,6 +89,7 @@ const HEADER_ALIASES = {
   languages: ["languages", "language"],
   currentStudents: ["current students", "student load", "students"],
   improvement: ["improvement", "student improvement", "results"],
+  experienceYears: ["experience years", "experienceyears", "experience(years)", "years experience"],
   availability: ["availability", "available"],
   rating: ["rating"],
   reviewCount: ["review count", "reviews"],
@@ -96,7 +97,59 @@ const HEADER_ALIASES = {
   parentNote: ["parent note", "notes for parents", "parent/student note"],
   outcomes: ["outcomes", "achievements"],
   tags: ["tags", "keywords", "board", "curriculum", "level", "course", "courses"],
-  imageUrl: ["image url", "photo", "profile image", "image"],
+  imageUrl: [
+    "image url",
+    "photo",
+    "photo url",
+    "profile picture",
+    "profile photo",
+    "profile image",
+    "image",
+  ],
+  imageAlt: ["image alt", "photo alt", "profile picture alt", "profile image alt", "alt text"],
+  tutorFlag: ["tutor", "is tutor", "approved tutor", "tutor approved"],
+  photoApproved: [
+    "photo approved",
+    "image approved",
+    "profile photo approved",
+    "profile picture approved",
+  ],
+  email: ["email", "e-mail", "tutor email", "counselor email", "counsellor email"],
+  verificationContactEmail: [
+    "verification contact email",
+    "review verification email",
+    "tutor verification email",
+    "counselor verification email",
+    "counsellor verification email",
+  ],
+  publicContactType: ["public contact type", "approved public contact type"],
+  publicContactValue: [
+    "public contact value",
+    "public contact link",
+    "public email",
+    "public whatsapp",
+    "public linkedin",
+    "public website",
+  ],
+  publicContactApproved: [
+    "public contact approved",
+    "approved public contact",
+    "public contact permission",
+  ],
+  applicationStatus: ["application status", "profile status", "approval status"],
+  reviewReviewerType: ["reviewer type", "review type"],
+  reviewRating: ["review rating", "student rating", "parent rating"],
+  reviewComment: ["review comment", "review text", "student review", "parent review"],
+  reviewDate: ["review date", "submitted date", "date submitted"],
+  reviewSessionType: ["review session type", "session type"],
+  reviewVerifiedByTutor: ["verified by tutor", "review verified by tutor"],
+  reviewApprovedByAdmin: ["approved by admin", "review approved by admin", "tutorcat approved"],
+  reviewPublicPermission: [
+    "public permission",
+    "review public permission",
+    "permission to display",
+  ],
+  reviewStatus: ["review status"],
 };
 
 const NORMALIZED_HEADER_ALIASES = Object.fromEntries(
@@ -127,6 +180,8 @@ const COUNTRY_ALIASES = new Map([
   ["united kingdom", "United Kingdom"],
   ["england", "United Kingdom"],
   ["australia", "Australia"],
+  ["south africa", "South Africa"],
+  ["sa", "South Africa"],
   ["uae", "UAE"],
   ["u a e", "UAE"],
   ["u.a.e.", "UAE"],
@@ -269,7 +324,7 @@ function toTitleCase(value) {
 }
 
 function normalizeSubject(value) {
-  const text = cleanText(value);
+  const text = cleanText(value).replace(/[.]+$/g, "");
   const key = text.toLowerCase();
   const subjectAliases = new Map([
     ["math", "Math"],
@@ -277,6 +332,8 @@ function normalizeSubject(value) {
     ["computer science", "Computer Science"],
     ["computer sciences", "Computer Science"],
     ["english", "English"],
+    ["english language", "English Language"],
+    ["physical education", "Physical Education"],
     ["science", "Science"],
     ["physics", "Physics"],
     ["chemistry", "Chemistry"],
@@ -377,6 +434,18 @@ function parseNumber(value) {
   return match ? Number(match[0]) : null;
 }
 
+function parseBoolean(value) {
+  const text = cleanText(value).toLowerCase();
+  if (!text) return null;
+  if (["yes", "y", "true", "1", "approved", "verified", "public"].includes(text)) {
+    return true;
+  }
+  if (["no", "n", "false", "0", "rejected", "private", "unapproved"].includes(text)) {
+    return false;
+  }
+  return null;
+}
+
 function parseOutcomes(value) {
   return splitList(value).map((item) => {
     const parts = item.split(/\s*(?:->|→|>)\s*/).map(cleanText).filter(Boolean);
@@ -388,6 +457,11 @@ function parseOutcomes(value) {
 function isPublicImageUrl(value) {
   const url = cleanText(value);
   return /^(https?:\/\/|\.?\/?assets\/)/i.test(url);
+}
+
+function isClearlyPublicImageUrl(value) {
+  const url = cleanText(value);
+  return /^\.?\/?assets\//i.test(url);
 }
 
 function emptyProfile() {
@@ -407,6 +481,7 @@ function emptyProfile() {
     currentStudents: null,
     improvement: "",
     experience: "",
+    experienceYears: null,
     availability: "",
     rating: null,
     reviewCount: null,
@@ -415,6 +490,18 @@ function emptyProfile() {
     outcomes: [],
     tags: [],
     imageUrl: "",
+    imageAlt: "",
+    photoApproved: null,
+    email: "",
+    verificationContactEmail: "",
+    publicContactMethod: {
+      type: "",
+      value: "",
+      approved: false,
+    },
+    applicationStatus: "",
+    reviews: [],
+    tutorFlag: "",
   };
 }
 
@@ -424,14 +511,14 @@ function buildHeaderMap(headerCells) {
     const normalized = normalizeHeader(cleaned);
     if (!normalized) return null;
 
+    const field = NORMALIZED_HEADER_ALIASES[normalized] || "";
+    if (field) return { field, header: cleaned };
+
     if (PRIVATE_HEADER_PATTERNS.some((pattern) => pattern.test(normalized))) {
       return { field: "private", header: cleaned };
     }
 
-    return {
-      field: NORMALIZED_HEADER_ALIASES[normalized] || "",
-      header: cleaned,
-    };
+    return { field: "", header: cleaned };
   });
 }
 
@@ -471,13 +558,102 @@ function selectDataSheet(sheets, sharedStrings) {
   return best;
 }
 
+function normalizeReviewStatus(value) {
+  const status = cleanText(value).toLowerCase() || "pending";
+  return [
+    "pending",
+    "awaiting_tutor_verification",
+    "verified_by_tutor",
+    "approved",
+    "rejected",
+  ].includes(status)
+    ? status
+    : "pending";
+}
+
+function ensureReviewDraft(profile) {
+  if (!profile._reviewDraft) {
+    profile._reviewDraft = {
+      reviewerType: "Student",
+      rating: null,
+      comment: "",
+      date: "",
+      sessionType: "",
+      verifiedByTutor: false,
+      approvedByAdmin: false,
+      publicPermission: false,
+      status: "pending",
+    };
+  }
+
+  return profile._reviewDraft;
+}
+
+function applyReviewValue(profile, field, value) {
+  const review = ensureReviewDraft(profile);
+
+  if (field === "reviewReviewerType") review.reviewerType = cleanText(value);
+  if (field === "reviewRating") review.rating = parseNumber(value);
+  if (field === "reviewComment") review.comment = cleanText(value);
+  if (field === "reviewDate") review.date = cleanText(value);
+  if (field === "reviewSessionType") review.sessionType = cleanText(value);
+  if (field === "reviewVerifiedByTutor") review.verifiedByTutor = parseBoolean(value) === true;
+  if (field === "reviewApprovedByAdmin") review.approvedByAdmin = parseBoolean(value) === true;
+  if (field === "reviewPublicPermission") review.publicPermission = parseBoolean(value) === true;
+  if (field === "reviewStatus") review.status = normalizeReviewStatus(value);
+}
+
+function finalizeReviewDraft(profile, warnings, rowNumber) {
+  const review = profile._reviewDraft;
+  delete profile._reviewDraft;
+
+  if (!review || (review.rating === null && !review.comment)) return;
+
+  const isApprovedPublicReview =
+    review.rating !== null &&
+    review.comment &&
+    review.verifiedByTutor === true &&
+    review.approvedByAdmin === true &&
+    review.publicPermission === true &&
+    review.status === "approved";
+
+  if (!isApprovedPublicReview) {
+    warnings.push(
+      `Row ${rowNumber}: did not import review because it is not tutor-verified, admin-approved, public, and approved.`
+    );
+    return;
+  }
+
+  profile.reviews.push({
+    reviewerType: review.reviewerType || "Student",
+    rating: Math.min(5, Math.max(1, review.rating)),
+    comment: review.comment,
+    date: review.date,
+    sessionType: review.sessionType || "Tutoring",
+    verifiedByTutor: true,
+    approvedByAdmin: true,
+    publicPermission: true,
+    status: "approved",
+  });
+}
+
 function applyValue(profile, field, value, warnings, rowNumber, header) {
   if (!field || !value) return;
 
   if (field === "private") return;
 
+  if (field.startsWith("review")) {
+    applyReviewValue(profile, field, value);
+    return;
+  }
+
   if (field === "profileType") {
     profile.profileType = cleanText(value);
+    return;
+  }
+
+  if (field === "tutorFlag") {
+    if (parseBoolean(value) === true) profile.tutorFlag = "yes";
     return;
   }
 
@@ -487,6 +663,31 @@ function applyValue(profile, field, value, warnings, rowNumber, header) {
     } else {
       warnings.push(`Row ${rowNumber}: ignored non-public image value from "${header}".`);
     }
+    return;
+  }
+
+  if (field === "imageAlt") {
+    profile.imageAlt = cleanText(value);
+    return;
+  }
+
+  if (field === "photoApproved") {
+    profile.photoApproved = parseBoolean(value);
+    return;
+  }
+
+  if (field === "publicContactType") {
+    profile.publicContactMethod.type = cleanText(value).toLowerCase();
+    return;
+  }
+
+  if (field === "publicContactValue") {
+    profile.publicContactMethod.value = cleanText(value);
+    return;
+  }
+
+  if (field === "publicContactApproved") {
+    profile.publicContactMethod.approved = parseBoolean(value) === true;
     return;
   }
 
@@ -554,10 +755,45 @@ function extractRow(row, headerMap, warnings, excludedColumns) {
     applyValue(profile, mapping.field, cellValue, warnings, row.rowNumber, mapping.header);
   });
 
+  finalizeReviewDraft(profile, warnings, row.rowNumber);
+
   return { profile, publicValueCount };
 }
 
-function mergeContinuation(target, addition) {
+function isProfileStart(profile, currentDraft) {
+  if (!currentDraft) return true;
+  if (!profile.name) return false;
+
+  return Boolean(
+    profile.tutorFlag ||
+      profile.currentStudents !== null ||
+      profile.countries.length ||
+      profile.counselingTopics.length ||
+      profile.educationOrExperience ||
+      profile.experienceYears !== null ||
+      profile.profileType
+  );
+}
+
+function appendContinuationName(target, addition) {
+  if (!addition.name) return;
+
+  const currentParts = cleanText(target.name).split(/\s+/).map((part) => part.toLowerCase());
+  const nextParts = cleanText(addition.name)
+    .split(/\s+/)
+    .filter(Boolean)
+    .filter((part) => !currentParts.includes(part.toLowerCase()));
+
+  if (nextParts.length) {
+    target.name = cleanText(`${target.name} ${nextParts.join(" ")}`);
+  }
+}
+
+function mergeContinuation(target, addition, options = {}) {
+  if (options.mergeName) {
+    appendContinuationName(target, addition);
+  }
+
   for (const field of ARRAY_FIELDS) {
     target[field] = unique([...(target[field] || []), ...(addition[field] || [])]);
   }
@@ -572,6 +808,28 @@ function mergeContinuation(target, addition) {
   for (const field of ["location", "imageUrl"]) {
     if (!target[field] && addition[field]) target[field] = addition[field];
   }
+
+  for (const field of ["imageAlt", "email", "verificationContactEmail", "applicationStatus"]) {
+    if (!target[field] && addition[field]) target[field] = addition[field];
+  }
+
+  if (target.photoApproved === null && addition.photoApproved !== null) {
+    target.photoApproved = addition.photoApproved;
+  }
+
+  if (!target.publicContactMethod.type && addition.publicContactMethod.type) {
+    target.publicContactMethod.type = addition.publicContactMethod.type;
+  }
+
+  if (!target.publicContactMethod.value && addition.publicContactMethod.value) {
+    target.publicContactMethod.value = addition.publicContactMethod.value;
+  }
+
+  if (addition.publicContactMethod.approved === true) {
+    target.publicContactMethod.approved = true;
+  }
+
+  target.reviews = [...(target.reviews || []), ...(addition.reviews || [])];
 
   for (const field of NUMBER_FIELDS) {
     if (target[field] === null && addition[field] !== null) target[field] = addition[field];
@@ -615,6 +873,19 @@ function finalizeProfiles(drafts, warnings) {
     }
 
     if (!profile.sessionModes.length) profile.sessionModes = ["Online"];
+    if (!profile.experience && profile.experienceYears !== null) {
+      profile.experience = `${profile.experienceYears} yr${profile.experienceYears === 1 ? "" : "s"}`;
+    }
+
+    if (profile.photoApproved === null) {
+      profile.photoApproved = Boolean(profile.imageUrl && isClearlyPublicImageUrl(profile.imageUrl));
+    }
+
+    profile.publicContactMethod = {
+      type: cleanText(profile.publicContactMethod.type).toLowerCase(),
+      value: cleanText(profile.publicContactMethod.value),
+      approved: profile.publicContactMethod.approved === true,
+    };
 
     return {
       id: profile.id,
@@ -632,6 +903,7 @@ function finalizeProfiles(drafts, warnings) {
       currentStudents: profile.currentStudents,
       improvement: profile.improvement,
       experience: profile.experience,
+      experienceYears: profile.experienceYears,
       availability: profile.availability,
       rating: profile.rating,
       reviewCount: profile.reviewCount,
@@ -640,6 +912,13 @@ function finalizeProfiles(drafts, warnings) {
       outcomes: profile.outcomes,
       tags: profile.tags,
       imageUrl: profile.imageUrl,
+      imageAlt: profile.imageAlt,
+      photoApproved: profile.photoApproved,
+      reviews: profile.reviews,
+      email: profile.email,
+      verificationContactEmail: profile.verificationContactEmail,
+      publicContactMethod: profile.publicContactMethod,
+      applicationStatus: profile.applicationStatus,
     };
   });
 }
@@ -663,8 +942,8 @@ function importProfiles() {
 
     if (publicValueCount === 0) continue;
 
-    if (!profile.name && currentDraft) {
-      mergeContinuation(currentDraft, profile);
+    if (currentDraft && (!profile.name || !isProfileStart(profile, currentDraft))) {
+      mergeContinuation(currentDraft, profile, { mergeName: Boolean(profile.name) });
       warnings.push(`Row ${row.rowNumber}: merged public continuation values into "${currentDraft.name}".`);
       continue;
     }
