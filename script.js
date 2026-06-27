@@ -1059,14 +1059,16 @@ const renderProfileCard = (profile) => {
       </div>
       <span class="type-badge">${escapeHtml(profile.profileType)}</span>
       ${renderRatingSummary(profile, "card")}
-      <div class="chip-list" aria-label="Countries supported">
-        ${renderChips(profile.countries, "country-chip", 4)}
-      </div>
-      <div class="chip-list" aria-label="Subjects and topics">
-        ${renderChips(topics, "subject-chip", 5)}
-      </div>
-      <div class="chip-list" aria-label="Boards and levels">
-        ${renderChips(profile.tags, "tag-chip", 4)}
+      <div class="card-chip-stack">
+        <div class="chip-list" aria-label="Countries supported">
+          ${renderChips(profile.countries, "country-chip", 4)}
+        </div>
+        <div class="chip-list" aria-label="Subjects and topics">
+          ${renderChips(topics, "subject-chip", 5)}
+        </div>
+        <div class="chip-list" aria-label="Boards and levels">
+          ${renderChips(profile.tags, "tag-chip", 4)}
+        </div>
       </div>
       <div class="card-meta">
         <div>
