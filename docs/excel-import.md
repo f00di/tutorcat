@@ -9,7 +9,7 @@ TutorCat is a static GitHub Pages site. The public website does not load the Exc
 3. Confirm `data/tutors.json` updated.
 4. Run `npm test`. It fails if the JSON contains an unexpected field, a private email, a phone number, or a photo/contact without approval.
 5. Commit and push the updated `data/tutors.json`.
-6. The `Deploy to GitHub Pages` workflow re-runs the tests and publishes the site. The homepage figures (profiles, subjects, countries, session format) update automatically from the JSON.
+6. The `Deploy to GitHub Pages` workflow re-runs the tests and publishes the site. The catalog facts line, filter chips and country panels update automatically from the JSON.
 
 ## Privacy
 

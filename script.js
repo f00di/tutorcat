@@ -8,140 +8,6 @@ const TUTOR_APPLICATION_FORM_URL = "";
 
 const DATA_URL = "./data/tutors.json";
 
-const FILTER_OPTIONS = [
-  { label: "All", value: "All" },
-  { label: "Tutors", value: "Tutors" },
-  { label: "Counselors", value: "Counselors" },
-  { label: "Tutor + Counselor", value: "Tutor + Counselor" },
-  { label: "Math", value: "Math" },
-  { label: "Science", value: "Science" },
-  { label: "English", value: "English" },
-  { label: "Test Prep", value: "Test Prep" },
-  { label: "Computer Science", value: "Computer Science" },
-  { label: "US", value: "United States" },
-  { label: "Canada", value: "Canada" },
-  { label: "Germany", value: "Germany" },
-  { label: "Netherlands", value: "Netherlands" },
-  { label: "Czech Republic", value: "Czech Republic" },
-  { label: "UK", value: "United Kingdom" },
-  { label: "South Africa", value: "South Africa" },
-];
-
-const WIZARD_STEPS = [
-  {
-    key: "person",
-    title: "I am a",
-    options: ["Parent", "Student"],
-  },
-  {
-    key: "support",
-    title: "Support needed",
-    options: [
-      "Academic tutoring",
-      "Test prep",
-      "Country counseling",
-      "University pathway planning",
-      "Unsure",
-    ],
-  },
-  {
-    key: "destination",
-    title: "Study destination of interest",
-    options: [
-      { label: "US", value: "United States" },
-      "Canada",
-      "Germany",
-      "Netherlands",
-      "Czech Republic",
-      { label: "UK", value: "United Kingdom" },
-      "Australia",
-      "UAE",
-      "Other",
-    ],
-  },
-  {
-    key: "level",
-    title: "Student level",
-    options: [
-      "Middle school",
-      "High school",
-      "A-levels/IB/AP",
-      "Undergraduate",
-      "Transfer student",
-      "Other",
-    ],
-  },
-  {
-    key: "focus",
-    title: "Subject or counseling focus",
-    options: [
-      "Math",
-      "Science",
-      "English",
-      "Computer Science",
-      "SAT/ACT",
-      "IELTS/TOEFL",
-      "Applications",
-      "Scholarships",
-      "Visa preparation checklist",
-      "Country fit",
-      "Parent guidance",
-    ],
-  },
-  {
-    key: "format",
-    title: "Preferred format",
-    options: ["Online", "In-person", "Hybrid"],
-  },
-  {
-    key: "urgency",
-    title: "Urgency",
-    options: ["This week", "This month", "Planning ahead"],
-  },
-];
-
-let profiles = [];
-let dataLoadNotice = "";
-
-const tutorGrid = document.querySelector("#tutorGrid");
-const emptyState = document.querySelector("#emptyState");
-const searchInput = document.querySelector("#searchInput");
-const sortSelect = document.querySelector("#sortSelect");
-const filterGroup = document.querySelector("#filterGroup");
-const catalogStatus = document.querySelector("#catalogStatus");
-const clearFilters = document.querySelector("#clearFilters");
-const profilePanel = document.querySelector("#profilePanel");
-const profileBackdrop = document.querySelector("#profileBackdrop");
-const profileContent = document.querySelector("#profileContent");
-const closePanel = document.querySelector("#closePanel");
-const menuToggle = document.querySelector("#menuToggle");
-const primaryNav = document.querySelector("#primaryNav");
-const wizardContent = document.querySelector("#wizardContent");
-const wizardStepLabel = document.querySelector("#wizardStepLabel");
-const wizardProgressBar = document.querySelector("#wizardProgressBar");
-const wizardBack = document.querySelector("#wizardBack");
-const wizardReset = document.querySelector("#wizardReset");
-const wizardSummaryList = document.querySelector("#wizardSummaryList");
-const wizardResults = document.querySelector("#wizardResults");
-const contactForm = document.querySelector("#contactForm");
-const formBackdrop = document.querySelector("#formBackdrop");
-const reviewModal = document.querySelector("#reviewModal");
-const reviewForm = document.querySelector("#reviewForm");
-const reviewProfileSelect = document.querySelector("#reviewProfile");
-const reviewFormStatus = document.querySelector("#reviewFormStatus");
-const applicationModal = document.querySelector("#applicationModal");
-const applicationForm = document.querySelector("#applicationForm");
-const applicationFormStatus = document.querySelector("#applicationFormStatus");
-const openApplicationFormButton = document.querySelector("#openApplicationForm");
-
-let activeFilter = "All";
-let wizardStepIndex = 0;
-let wizardAnswers = {};
-let lastFocusedElement = null;
-let lastModalFocusedElement = null;
-let activeFormModal = null;
-const shortlistedProfiles = new Set();
-
 const htmlEscapes = {
   "&": "&amp;",
   "<": "&lt;",
@@ -567,274 +433,6 @@ const renderChips = (items = [], className, limit = items.length) =>
     .map((item) => `<span class="${className}">${escapeHtml(item)}</span>`)
     .join("");
 
-const getFilterLabel = (value) =>
-  FILTER_OPTIONS.find((option) => option.value === value)?.label || value;
-
-const getProfileSearchText = (profile) =>
-  [
-    profile.name,
-    profile.profileType,
-    profile.role,
-    profile.supportTypes.join(" "),
-    profile.subjects.join(" "),
-    profile.countries.join(" "),
-    profile.counselingTopics.join(" "),
-    profile.educationOrExperience,
-    profile.location,
-    profile.sessionModes.join(" "),
-    profile.languages.join(" "),
-    profile.availability,
-    profile.shortBio,
-    profile.parentNote,
-    profile.tags.join(" "),
-  ]
-    .join(" ")
-    .toLowerCase();
-
-const getSearchTokens = (profile) => getProfileSearchText(profile).match(/[a-z0-9]+/g) || [];
-
-const getSearchAliases = (query) => {
-  const aliases = {
-    us: ["united states"],
-    usa: ["united states"],
-    uk: ["united kingdom"],
-    cs: ["computer science"],
-  };
-
-  return aliases[query] || [];
-};
-
-const matchesSearch = (profile, query) => {
-  if (!query) return true;
-
-  const text = getProfileSearchText(profile);
-  const aliases = getSearchAliases(query);
-  if (aliases.some((alias) => text.includes(alias))) return true;
-
-  if (query.length <= 2) {
-    return getSearchTokens(profile).includes(query);
-  }
-
-  return text.includes(query);
-};
-
-const hasAnyValue = (items, value) =>
-  items.some((item) => normalizeText(item) === normalizeText(value));
-
-const matchesFilter = (profile, filterValue) => {
-  if (filterValue === "All") return true;
-  if (filterValue === "Tutors") return profile.profileType.includes("Tutor");
-  if (filterValue === "Counselors") return profile.profileType.includes("Counselor");
-  if (filterValue === "Tutor + Counselor") return profile.profileType === filterValue;
-
-  const profileValues = [
-    ...profile.subjects,
-    ...profile.countries,
-    ...profile.counselingTopics,
-    ...profile.tags,
-  ];
-
-  if (filterValue === "Test Prep") {
-    return profileValues.some((value) =>
-      ["test prep", "sat/act", "ielts/toefl"].includes(normalizeText(value))
-    );
-  }
-
-  return profileValues.some((value) => normalizeText(value).includes(normalizeText(filterValue)));
-};
-
-const getSearchScore = (profile, query) => {
-  if (!query) return 0;
-  const normalizedQuery = normalizeText(query);
-  const name = normalizeText(profile.name);
-  const role = normalizeText(profile.role);
-  const text = getProfileSearchText(profile);
-
-  let score = 0;
-  if (name.includes(normalizedQuery)) score += 35;
-  if (role.includes(normalizedQuery)) score += 20;
-  if (profile.subjects.some((subject) => normalizeText(subject).includes(normalizedQuery))) {
-    score += 18;
-  }
-  if (profile.countries.some((country) => normalizeText(country).includes(normalizedQuery))) {
-    score += 18;
-  }
-  if (
-    profile.counselingTopics.some((topic) => normalizeText(topic).includes(normalizedQuery))
-  ) {
-    score += 16;
-  }
-  if (text.includes(normalizedQuery)) score += 8;
-  return score;
-};
-
-const sortProfiles = (items, query) => {
-  const sortMode = sortSelect.value;
-  const profilesToSort = [...items];
-
-  if (sortMode === "experience") {
-    return profilesToSort.sort((a, b) => (b.experienceYears || 0) - (a.experienceYears || 0));
-  }
-
-  if (sortMode === "rating") {
-    return profilesToSort.sort(
-      (a, b) =>
-        getSortableRating(b) - getSortableRating(a) ||
-        getRatingDisplayInfo(b).reviewCount - getRatingDisplayInfo(a).reviewCount
-    );
-  }
-
-  if (sortMode === "load") {
-    return profilesToSort.sort(
-      (a, b) => (a.currentStudents ?? Number.POSITIVE_INFINITY) - (b.currentStudents ?? Number.POSITIVE_INFINITY)
-    );
-  }
-
-  return profilesToSort.sort((a, b) => {
-    const scoreA =
-      getSearchScore(a, query) +
-      (matchesFilter(a, activeFilter) && activeFilter !== "All" ? 20 : 0) +
-      getSortableRating(a) * 3 +
-      (a.experienceYears || 0) -
-      (a.currentStudents || 0) * 0.5;
-    const scoreB =
-      getSearchScore(b, query) +
-      (matchesFilter(b, activeFilter) && activeFilter !== "All" ? 20 : 0) +
-      getSortableRating(b) * 3 +
-      (b.experienceYears || 0) -
-      (b.currentStudents || 0) * 0.5;
-    return scoreB - scoreA;
-  });
-};
-
-const getVisibleProfiles = () => {
-  const query = normalizeText(searchInput.value);
-  const filtered = profiles.filter(
-    (profile) => matchesFilter(profile, activeFilter) && matchesSearch(profile, query)
-  );
-  return sortProfiles(filtered, query);
-};
-
-const renderFilterButtons = () => {
-  filterGroup.innerHTML = FILTER_OPTIONS.map(
-    (option) => `
-      <button
-        class="filter-button${option.value === activeFilter ? " is-active" : ""}"
-        type="button"
-        data-filter="${escapeHtml(option.value)}"
-      >
-        ${escapeHtml(option.label)}
-      </button>
-    `
-  ).join("");
-};
-
-const renderProfileCard = (profile) => {
-  const topics = [...profile.subjects, ...profile.counselingTopics];
-  const isShortlisted = shortlistedProfiles.has(profile.id);
-
-  return `
-    <article class="tutor-card">
-      <div class="card-topline">
-        ${renderProfileAvatar(profile, "card")}
-        <div class="card-title">
-          <h3>${escapeHtml(profile.name)}</h3>
-          <p>${escapeHtml(profile.role)}</p>
-        </div>
-      </div>
-      <span class="type-badge">${escapeHtml(profile.profileType)}</span>
-      ${renderRatingSummary(profile, "card")}
-      <div class="card-chip-stack">
-        <div class="chip-list" aria-label="Countries supported">
-          ${renderChips(profile.countries, "country-chip", 4)}
-        </div>
-        <div class="chip-list" aria-label="Subjects and topics">
-          ${renderChips(topics, "subject-chip", 5)}
-        </div>
-        <div class="chip-list" aria-label="Boards and levels">
-          ${renderChips(profile.tags, "tag-chip", 4)}
-        </div>
-      </div>
-      <div class="card-meta">
-        <div>
-          <strong>Experience</strong>
-          <span>${escapeHtml(formatExperience(profile))}</span>
-        </div>
-        <div>
-          <strong>Availability</strong>
-          <span>${escapeHtml(formatAvailability(profile))}</span>
-        </div>
-        <div>
-          <strong>Mode</strong>
-          <span>${escapeHtml(formatList(profile.sessionModes))}</span>
-        </div>
-      </div>
-      <div class="card-spacer"></div>
-      <div class="card-actions">
-        <button class="card-action primary-card" type="button" data-profile-id="${escapeHtml(
-          profile.id
-        )}">
-          View Profile
-        </button>
-        <button
-          class="card-action${isShortlisted ? " is-shortlisted" : ""}"
-          type="button"
-          data-shortlist-id="${escapeHtml(profile.id)}"
-          aria-pressed="${isShortlisted ? "true" : "false"}"
-        >
-          ${isShortlisted ? "Shortlisted" : "Shortlist"}
-        </button>
-      </div>
-    </article>
-  `;
-};
-
-const renderCards = () => {
-  const visibleProfiles = getVisibleProfiles();
-  tutorGrid.innerHTML = visibleProfiles.map(renderProfileCard).join("");
-  emptyState.hidden = visibleProfiles.length > 0;
-
-  const loadFailed = Boolean(dataLoadNotice) && !profiles.length;
-  emptyState.querySelector("h3").textContent = loadFailed
-    ? "Specialist profiles could not load."
-    : "No specialists match the current search.";
-  emptyState.querySelector("p").textContent = loadFailed
-    ? "Please refresh the page, or use the contact form below and we will match you directly."
-    : "Try clearing the search, choosing All, or searching for a broader topic such as counseling, math, applications, or online.";
-  clearFilters.style.display = loadFailed ? "none" : "";
-  if (loadFailed) {
-    catalogStatus.textContent = dataLoadNotice;
-    return;
-  }
-
-  const filterLabel = getFilterLabel(activeFilter);
-  const query = searchInput.value.trim();
-  const filterText = activeFilter === "All" ? "all specialists" : filterLabel;
-  const searchText = query ? ` matching "${query}"` : "";
-  const countText = `${visibleProfiles.length} specialist${
-    visibleProfiles.length === 1 ? "" : "s"
-  } shown for ${filterText}${searchText}.`;
-  catalogStatus.textContent = dataLoadNotice ? `${dataLoadNotice} ${countText}` : countText;
-};
-
-const setActiveFilter = (value) => {
-  activeFilter = value;
-  renderFilterButtons();
-  renderCards();
-};
-
-const renderPanelList = (items) =>
-  items
-    .map(
-      ([label, value]) => `
-        <li>
-          <strong>${escapeHtml(label)}</strong>
-          <span>${escapeHtml(value)}</span>
-        </li>
-      `
-    )
-    .join("");
-
 const renderOutcomes = (profile) =>
   profile.outcomes
     .map(
@@ -963,239 +561,9 @@ const renderPublicContact = (profile) => {
   `;
 };
 
-const renderProfilePanel = (profile) => {
-  const ratingInfo = getRatingDisplayInfo(profile);
-  const ratingMetric = ratingInfo.averageRating === null ? "-" : ratingInfo.averageRating.toFixed(1);
-  const ratingMetricLabel =
-    ratingInfo.source === "manual"
-      ? "TutorCat records"
-      : ratingInfo.source === "verified"
-        ? `${ratingInfo.reviewCount} verified`
-        : "rating";
-  const tabs = [
-    {
-      id: "overview",
-      label: "Overview",
-      content: `
-        <p>${escapeHtml(profile.shortBio || "Profile summary will be added soon.")}</p>
-        <ul class="panel-list">
-          ${renderPanelList([
-            ["Profile type", profile.profileType],
-            ["Experience", profile.educationOrExperience || formatExperience(profile)],
-            ["Location", profile.location || "Location not listed"],
-            ["Languages", formatList(profile.languages)],
-          ])}
-        </ul>
-      `,
-    },
-    {
-      id: "subjects",
-      label: "Subjects & countries",
-      content: `
-        <h3>Subjects</h3>
-        <div class="chip-list">${renderChips(profile.subjects, "subject-chip")}</div>
-        <h3>Countries</h3>
-        <div class="chip-list">${renderChips(profile.countries, "country-chip")}</div>
-        <h3>Counseling topics</h3>
-        <div class="chip-list">${renderChips(profile.counselingTopics, "tag-chip")}</div>
-      `,
-    },
-    {
-      id: "outcomes",
-      label: "Outcomes",
-      content: `
-        <p>${escapeHtml(profile.improvement || "Outcome details will be added when available.")}</p>
-        <table class="outcome-table">
-          <thead>
-            <tr>
-              <th>Area</th>
-              <th>Before</th>
-              <th>After</th>
-              <th>Context</th>
-            </tr>
-          </thead>
-          <tbody>${renderOutcomes(profile)}</tbody>
-        </table>
-      `,
-    },
-    {
-      id: "reviews",
-      label: "Reviews",
-      content: `
-        ${renderVerifiedReviews(profile)}
-        <button class="secondary-action profile-secondary-action" type="button" data-rate-profile="${escapeHtml(
-          profile.id
-        )}">
-          Rate this tutor
-        </button>
-      `,
-    },
-    {
-      id: "notes",
-      label: "Parent/student notes",
-      content: `
-        <p>${escapeHtml(profile.parentNote || "Parent/student notes will be added when available.")}</p>
-        <ul class="panel-list">
-          ${renderPanelList([
-            ["Best support types", formatList(profile.supportTypes)],
-            ["Student levels", formatList(profile.studentLevels)],
-            ["Tags", formatList(profile.tags)],
-          ])}
-        </ul>
-      `,
-    },
-    {
-      id: "availability",
-      label: "Availability",
-      content: `
-        <ul class="panel-list">
-          ${renderPanelList([
-            ["Availability", formatAvailability(profile)],
-            ["Session modes", formatList(profile.sessionModes)],
-            ["Current student load", formatStudentLoad(profile)],
-            ["Rating", formatRating(profile)],
-          ])}
-        </ul>
-      `,
-    },
-    {
-      id: "request",
-      label: "Request intro",
-      content: `
-        <p>Open a prefilled email with this profile, support areas, countries, topics, and a suggested next step.</p>
-        <button class="profile-action" type="button" data-request-profile="${escapeHtml(
-          profile.id
-        )}">
-          Request intro
-        </button>
-        ${renderPublicContact(profile)}
-      `,
-    },
-  ];
-
-  profileContent.innerHTML = `
-    <div class="profile-topline">
-      ${renderProfileAvatar(profile, "panel")}
-      <div class="profile-heading">
-        <h2 id="panelName">${escapeHtml(profile.name)}</h2>
-        <p>${escapeHtml(profile.role)}</p>
-        ${renderRatingSummary(profile, "panel")}
-      </div>
-    </div>
-
-    <div class="profile-quick-actions" aria-label="${escapeHtml(profile.name)} actions">
-      <button class="profile-action" type="button" data-request-profile="${escapeHtml(profile.id)}">
-        Request intro
-      </button>
-      <button class="secondary-action profile-secondary-action" type="button" data-rate-profile="${escapeHtml(
-        profile.id
-      )}">
-        Rate this tutor
-      </button>
-    </div>
-
-    <div class="panel-metrics" aria-label="${escapeHtml(profile.name)} profile metrics">
-      <div class="panel-metric">
-        <strong>${escapeHtml(profile.currentStudents ?? "-")}</strong>
-        <span>current students</span>
-      </div>
-      <div class="panel-metric">
-        <strong>${escapeHtml(ratingMetric)}</strong>
-        <span>${escapeHtml(ratingMetricLabel)}</span>
-      </div>
-      <div class="panel-metric">
-        <strong>${escapeHtml(formatExperience(profile))}</strong>
-        <span>experience</span>
-      </div>
-    </div>
-
-    <div class="tab-list" role="tablist" aria-label="${escapeHtml(profile.name)} profile sections">
-      ${tabs
-        .map(
-          (tab, index) => `
-            <button
-              class="tab-button"
-              id="tab-${escapeHtml(tab.id)}"
-              type="button"
-              role="tab"
-              aria-selected="${index === 0 ? "true" : "false"}"
-              aria-controls="panel-${escapeHtml(tab.id)}"
-              data-tab="${escapeHtml(tab.id)}"
-            >
-              ${escapeHtml(tab.label)}
-            </button>
-          `
-        )
-        .join("")}
-    </div>
-
-    ${tabs
-      .map(
-        (tab, index) => `
-          <section
-            class="tab-panel"
-            id="panel-${escapeHtml(tab.id)}"
-            role="tabpanel"
-            aria-labelledby="tab-${escapeHtml(tab.id)}"
-            ${index === 0 ? "" : "hidden"}
-          >
-            ${tab.content}
-          </section>
-        `
-      )
-      .join("")}
-  `;
-};
-
 const getFocusableElements = (container) =>
   [...container.querySelectorAll('a[href], button, input, select, textarea, [tabindex]:not([tabindex="-1"])')]
     .filter((element) => !element.disabled && !element.hidden && element.offsetParent !== null);
-
-const openProfile = (id) => {
-  const profile = profiles.find((item) => item.id === id);
-  if (!profile) return;
-
-  lastFocusedElement = document.activeElement;
-  renderProfilePanel(profile);
-  profileBackdrop.hidden = false;
-  profilePanel.hidden = false;
-  document.body.classList.add("panel-open");
-  closePanel.focus();
-};
-
-const closeProfile = () => {
-  profileBackdrop.hidden = true;
-  profilePanel.hidden = true;
-  document.body.classList.remove("panel-open");
-
-  if (lastFocusedElement && typeof lastFocusedElement.focus === "function") {
-    lastFocusedElement.focus();
-  }
-};
-
-const buildProfileRequestBody = (profile) => {
-  const topics = [...new Set([...profile.subjects, ...profile.counselingTopics])];
-  return [
-    `Selected profile: ${profile.name}`,
-    `Role: ${profile.role}`,
-    `Support type: ${formatList(profile.supportTypes)}`,
-    `Countries: ${formatList(profile.countries)}`,
-    `Subjects/topics: ${formatList(topics)}`,
-    `Session modes: ${formatList(profile.sessionModes)}`,
-    "",
-    "Suggested next step:",
-    `Please confirm whether ${profile.name} is available for an introductory TutorCat session and recommend the best first-session focus.`,
-  ].join("\n");
-};
-
-const requestProfileIntro = (profileId) => {
-  const profile = profiles.find((item) => item.id === profileId);
-  if (!profile) return;
-  window.location.href = createMailto(
-    `TutorCat intro request: ${profile.name}`,
-    buildProfileRequestBody(profile)
-  );
-};
 
 function createTutorVerificationEmail(review, profile) {
   const studentName = review.studentName || review.reviewerName || "Student/parent name not listed";
@@ -1337,22 +705,6 @@ const getApplicationSubmissionTarget = (application) => {
     ),
     isExternal: false,
   };
-};
-
-const setProfileTab = (tabId) => {
-  profilePanel.querySelectorAll(".tab-button").forEach((button) => {
-    button.setAttribute("aria-selected", String(button.dataset.tab === tabId));
-  });
-
-  profilePanel.querySelectorAll(".tab-panel").forEach((panel) => {
-    panel.hidden = panel.id !== `panel-${tabId}`;
-  });
-};
-
-const getOpenDialog = () => {
-  if (activeFormModal && !activeFormModal.hidden) return activeFormModal;
-  if (!profilePanel.hidden) return profilePanel;
-  return null;
 };
 
 const setFormStatus = (element, message, type = "success") => {
@@ -1530,478 +882,576 @@ const handleApplicationSubmit = (event) => {
   window.setTimeout(() => setSubmitButtonState(submitButton, false), 900);
 };
 
-const optionMatchesProfile = (profile, value) => {
-  if (!profile || !value) return false;
-
-  const normalizedValue = normalizeText(value);
-  const profileValues = [
-    ...profile.supportTypes,
-    ...profile.subjects,
-    ...profile.countries,
-    ...profile.counselingTopics,
-    ...profile.sessionModes,
-    ...profile.studentLevels,
-    ...profile.tags,
-  ];
-
-  return profileValues.some((item) => normalizeText(item).includes(normalizedValue));
-};
-
-const scoreProfileForAnswers = (profile, answers) => {
-  if (!profile) {
-    return { profile: null, score: 0, reasons: [] };
-  }
-
-  let score = 20;
-  const reasons = [];
-
-  if (answers.support === "Unsure") {
-    score += 8;
-    reasons.push("flexible planning");
-  } else if (optionMatchesProfile(profile, answers.support)) {
-    score += 20;
-    reasons.push(answers.support.toLowerCase());
-  } else if (
-    answers.support === "Academic tutoring" &&
-    profile.profileType.includes("Tutor")
-  ) {
-    score += 14;
-    reasons.push("academic tutoring");
-  } else if (
-    answers.support?.includes("counseling") &&
-    profile.profileType.includes("Counselor")
-  ) {
-    score += 14;
-    reasons.push("counseling");
-  }
-
-  if (answers.destination && answers.destination !== "Other") {
-    if (hasAnyValue(profile.countries, answers.destination)) {
-      score += 24;
-      reasons.push(`${answers.destination} guidance`);
-    } else if (profile.profileType.includes("Counselor")) {
-      score += 6;
-    }
-  }
-
-  if (answers.level && optionMatchesProfile(profile, answers.level)) {
-    score += 12;
-    reasons.push(`${answers.level} students`);
-  }
-
-  if (answers.focus) {
-    if (optionMatchesProfile(profile, answers.focus)) {
-      score += 20;
-      reasons.push(`${answers.focus} support`);
-    } else if (
-      ["Math", "Science", "Computer Science"].includes(answers.focus) &&
-      profile.tags.some((tag) => normalizeText(tag).includes("stem"))
-    ) {
-      score += 12;
-      reasons.push("STEM tutoring");
-    }
-  }
-
-  if (answers.format && hasAnyValue(profile.sessionModes, answers.format)) {
-    score += 12;
-    reasons.push(`${answers.format.toLowerCase()} sessions`);
-  } else if (answers.format === "In-person" && hasAnyValue(profile.sessionModes, "Hybrid")) {
-    score += 7;
-    reasons.push("hybrid sessions");
-  }
-
-  if (answers.urgency === "This week" && profile.availability.toLowerCase().includes("this-week")) {
-    score += 6;
-    reasons.push("same-week availability");
-  } else if (
-    answers.urgency === "This month" &&
-    profile.availability.toLowerCase().includes("this-month")
-  ) {
-    score += 6;
-    reasons.push("this-month availability");
-  } else if (answers.urgency === "Planning ahead") {
-    score += 4;
-    reasons.push("planning ahead");
-  }
-
-  return {
-    profile,
-    score: Math.min(score, 98),
-    reasons: [...new Set(reasons)].slice(0, 4),
-  };
-};
-
-const getWizardRecommendations = () =>
-  profiles
-    .map((profile) => scoreProfileForAnswers(profile, wizardAnswers))
-    .sort((a, b) => b.score - a.score)
-    .slice(0, 3);
-
-const getWizardAnswerRows = () =>
-  WIZARD_STEPS.map((step) => ({
-    label: step.title,
-    value: wizardAnswers[step.key] || "Not selected",
-  }));
-
-const renderWizardSummary = () => {
-  wizardSummaryList.innerHTML = getWizardAnswerRows()
-    .map(
-      (row) => `
-        <div>
-          <dt>${escapeHtml(row.label)}</dt>
-          <dd>${escapeHtml(row.value)}</dd>
-        </div>
-      `
-    )
-    .join("");
-};
-
-const renderWizardStep = () => {
-  const step = WIZARD_STEPS[wizardStepIndex];
-  const progress = ((wizardStepIndex + 1) / WIZARD_STEPS.length) * 100;
-
-  wizardStepLabel.textContent = `Step ${wizardStepIndex + 1} of ${WIZARD_STEPS.length}`;
-  wizardProgressBar.style.width = `${progress}%`;
-  wizardBack.disabled = wizardStepIndex === 0;
-
-  wizardContent.innerHTML = `
-    <h3>${escapeHtml(step.title)}</h3>
-    <p>Select the option that best describes this request.</p>
-    <div class="option-grid">
-      ${step.options
-        .map(toOption)
-        .map(
-          (option) => `
-            <button
-              class="option-button${
-                wizardAnswers[step.key] === option.value ? " is-selected" : ""
-              }"
-              type="button"
-              data-wizard-key="${escapeHtml(step.key)}"
-              data-wizard-value="${escapeHtml(option.value)}"
-            >
-              ${escapeHtml(option.label)}
-            </button>
-          `
-        )
-        .join("")}
-    </div>
-  `;
-
-  renderWizardSummary();
-};
-
-const buildWizardRequestBody = (recommendation) => {
-  const rows = getWizardAnswerRows()
-    .map((row) => `${row.label}: ${row.value}`)
-    .join("\n");
-
-  return [
-    `Requested match: ${recommendation.profile.name}`,
-    `Match score: ${recommendation.score}%`,
-    `Recommended because: ${recommendation.reasons.join(" + ") || "general profile fit"}`,
-    "",
-    "Matching summary:",
-    rows,
-    "",
-    "Suggested next step:",
-    "Please confirm the best tutor or counselor introduction and recommend a first-session focus.",
-  ].join("\n");
-};
-
-const renderWizardResults = () => {
-  const recommendations = getWizardRecommendations();
-
-  wizardResults.innerHTML = `
-    <h3>Recommended matches</h3>
-    <div class="match-grid">
-      ${recommendations
-        .map((recommendation) => {
-          const label = recommendation.score >= 76 ? "Strong match" : "Good match";
-          const reasons = recommendation.reasons.length
-            ? recommendation.reasons.join(" + ")
-            : "overall profile fit";
-          return `
-            <article class="match-card">
-              <span class="match-score">${escapeHtml(label)} - ${escapeHtml(
-            recommendation.score
-          )}%</span>
-              <h3>${escapeHtml(recommendation.profile.name)}</h3>
-              <p>${escapeHtml(recommendation.profile.role)}</p>
-              <p>Recommended because they support ${escapeHtml(reasons)}.</p>
-              <button
-                class="profile-action"
-                type="button"
-                data-request-match="${escapeHtml(recommendation.profile.id)}"
-              >
-                Request this match
-              </button>
-            </article>
-          `;
-        })
-        .join("")}
-    </div>
-  `;
-};
-
-const resetWizard = () => {
-  wizardStepIndex = 0;
-  wizardAnswers = {};
-  wizardResults.innerHTML = "";
-  renderWizardStep();
-};
-
-const handleWizardOption = (button) => {
-  const { wizardKey, wizardValue } = button.dataset;
-  wizardAnswers[wizardKey] = wizardValue;
-
-  if (wizardStepIndex < WIZARD_STEPS.length - 1) {
-    wizardStepIndex += 1;
-    renderWizardStep();
-    return;
-  }
-
-  renderWizardStep();
-  renderWizardResults();
-};
-
-const requestWizardMatch = (profileId) => {
-  const profile = profiles.find((item) => item.id === profileId);
-  if (!profile) return;
-
-  const recommendation = scoreProfileForAnswers(profile, wizardAnswers);
-
-  window.location.href = createMailto(
-    `TutorCat match request: ${recommendation.profile.name}`,
-    buildWizardRequestBody(recommendation)
-  );
-};
-
-const setMobileNav = (isOpen) => {
-  primaryNav.classList.toggle("is-open", isOpen);
-  document.body.classList.toggle("nav-open", isOpen);
-  menuToggle.setAttribute("aria-expanded", String(isOpen));
-  menuToggle.setAttribute("aria-label", isOpen ? "Close navigation" : "Open navigation");
-};
-
-const scrollToCatalog = () => {
-  document.querySelector("#catalog").scrollIntoView({
-    behavior: window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth",
-    block: "start",
-  });
-};
-
-const handleCountryAction = (country) => {
-  searchInput.value = "";
-  setActiveFilter(country);
-  scrollToCatalog();
-};
-
-const handleContactSubmit = (event) => {
-  event.preventDefault();
-
-  if (!contactForm.checkValidity()) {
-    contactForm.reportValidity();
-    return;
-  }
-
-  const formData = new FormData(contactForm);
-  const name = formData.get("name");
-  const level = formData.get("level");
-  const support = formData.get("support");
-  const country = formData.get("country") || "Not specified";
-  const topic = formData.get("topic");
-  const email = formData.get("email");
-  const message = formData.get("message");
-
-  const body = [
-    `Parent/student name: ${name}`,
-    `Email: ${email}`,
-    `Student level: ${level}`,
-    `Support type: ${support}`,
-    `Country of interest: ${country}`,
-    `Subject/topic: ${topic}`,
-    "",
-    "Message:",
-    message,
-  ].join("\n");
-
-  window.location.href = createMailto(
-    `TutorCat request: ${support} for ${level}`,
-    body
-  );
-};
-
 const extractProfilesFromPayload = (payload) => {
   if (Array.isArray(payload)) return payload;
   if (payload && Array.isArray(payload.profiles)) return payload.profiles;
   return [];
 };
 
-const loadProfiles = async () => {
-  catalogStatus.textContent = "Loading specialists...";
-  tutorGrid.innerHTML = "";
-  emptyState.hidden = true;
-  wizardResults.innerHTML = "";
-  wizardContent.innerHTML = "<p>Loading specialists...</p>";
 
-  try {
-    const response = await fetch(DATA_URL, { cache: "no-store" });
-    if (!response.ok) {
-      throw new Error(`HTTP ${response.status}`);
-    }
+// ---------------------------------------------------------------------------
+// Page state and elements
+// ---------------------------------------------------------------------------
 
-    const payload = await response.json();
-    const loadedProfiles = normalizeLoadedProfiles(extractProfilesFromPayload(payload));
-    if (!loadedProfiles.length) {
-      throw new Error("No public profiles found in data/tutors.json");
-    }
+let profiles = [];
+let dataLoadFailed = false;
+let filter = { type: "all", value: "" };
+let need = "tutoring";
+let lastFocusedElement = null;
+let lastModalFocusedElement = null;
+let activeFormModal = null;
+let drawerCloseTimer = null;
+const shortlist = new Set();
 
-    profiles = loadedProfiles;
-    dataLoadNotice = "";
-  } catch (error) {
-    profiles = [];
-    dataLoadNotice = "Specialist profiles could not load.";
+const $ = (selector, root = document) => root.querySelector(selector);
+const prefersReducedMotion = () => window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+const scrollToSection = (selector) =>
+  $(selector).scrollIntoView({ behavior: prefersReducedMotion() ? "auto" : "smooth", block: "start" });
+
+const cardGrid = $("#cardGrid");
+const emptyState = $("#emptyState");
+const catalogStatus = $("#catalogStatus");
+const factsLine = $("#factsLine");
+const chipGroup = $("#chipGroup");
+const needGroup = $("#needGroup");
+const matchTopic = $("#matchTopic");
+const drawerRoot = $("#drawerRoot");
+const drawer = $("#drawer");
+const shortlistButton = $("#shortlistButton");
+const shortlistCount = $("#shortlistCount");
+const menuButton = $("#menuButton");
+const menuPanel = $("#menuPanel");
+const contactForm = $("#contactForm");
+const contactStatus = $("#contactStatus");
+const contactSpecialist = $("#contactSpecialist");
+const formBackdrop = $("#formBackdrop");
+const reviewModal = $("#reviewModal");
+const reviewForm = $("#reviewForm");
+const reviewProfileSelect = $("#reviewProfile");
+const reviewFormStatus = $("#reviewFormStatus");
+const applicationModal = $("#applicationModal");
+const applicationForm = $("#applicationForm");
+const applicationFormStatus = $("#applicationFormStatus");
+
+const allSubjects = () => uniqueList(profiles.flatMap((profile) => profile.subjects));
+const allCountries = () => uniqueList(profiles.flatMap((profile) => profile.countries));
+const isTutor = (profile) => profile.profileType.includes("Tutor");
+const isCounselor = (profile) => profile.profileType.includes("Counselor") || profile.countries.length > 0;
+
+const bookmarkIcon =
+  '<svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 4h12v16l-6-4-6 4z"/></svg>';
+const closeIcon =
+  '<svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>';
+
+// ---------------------------------------------------------------------------
+// Facts line (computed from the data so it never overstates)
+// ---------------------------------------------------------------------------
+
+const joinWords = (items) =>
+  items.length <= 1 ? items.join("") : `${items.slice(0, -1).join(", ")} and ${items[items.length - 1]}`;
+
+const renderFacts = () => {
+  if (!profiles.length) {
+    factsLine.hidden = true;
+    return;
+  }
+  const subjects = allSubjects();
+  const countries = allCountries();
+  const modes = uniqueList(profiles.flatMap((profile) => profile.sessionModes));
+  const parts = [
+    `${profiles.length} specialist${profiles.length === 1 ? "" : "s"} today`,
+    subjects.length ? `teaching ${subjects.length} subject${subjects.length === 1 ? "" : "s"}` : "",
+    countries.length ? `with counseling for ${joinWords(countries)}` : "",
+  ].filter(Boolean);
+  const format = modes.length === 1 ? ` All sessions are ${modes[0].toLowerCase()}.` : "";
+  factsLine.textContent = `${parts.join(", ")}.${format}`;
+  factsLine.hidden = false;
+};
+
+// ---------------------------------------------------------------------------
+// Hero match box
+// ---------------------------------------------------------------------------
+
+const fillMatchTopics = () => {
+  const options =
+    need === "tutoring" ? allSubjects() : need === "counseling" ? allCountries() : [...allSubjects(), ...allCountries()];
+  $("#matchTopicLabel").textContent =
+    need === "tutoring" ? "Subject" : need === "counseling" ? "Destination" : "Subject or destination";
+  matchTopic.innerHTML =
+    '<option value="">Any</option>' +
+    options.map((option) => `<option>${escapeHtml(option)}</option>`).join("");
+};
+
+const setNeed = (button) => {
+  const buttons = [...needGroup.querySelectorAll("[data-need]")];
+  buttons.forEach((item) => {
+    const selected = item === button;
+    item.setAttribute("aria-checked", String(selected));
+    item.tabIndex = selected ? 0 : -1;
+  });
+  $(".seg-indicator", needGroup).style.transform = `translateX(${buttons.indexOf(button) * 100}%)`;
+  need = button.dataset.need;
+  fillMatchTopics();
+};
+
+// ---------------------------------------------------------------------------
+// Specialist catalog
+// ---------------------------------------------------------------------------
+
+const matchesFilter = (profile) => {
+  switch (filter.type) {
+    case "tutoring":
+      return isTutor(profile);
+    case "counseling":
+      return isCounselor(profile);
+    case "subject":
+      return profile.subjects.includes(filter.value);
+    case "country":
+      return profile.countries.includes(filter.value);
+    case "saved":
+      return shortlist.has(profile.id);
+    default:
+      return true;
   }
 };
 
-const renderMetrics = () => {
-  const values = {
-    profiles: profiles.length,
-    subjects: new Set(profiles.flatMap((profile) => profile.subjects)).size,
-    countries: new Set(profiles.flatMap((profile) => profile.countries)).size,
-    modes: [...new Set(profiles.flatMap((profile) => profile.sessionModes))].join(" / "),
-  };
+const getChipOptions = () => [
+  { type: "all", value: "", label: "All" },
+  { type: "tutoring", value: "", label: "Tutoring" },
+  { type: "counseling", value: "", label: "Counseling" },
+  ...allSubjects().map((value) => ({ type: "subject", value, label: value })),
+  ...allCountries().map((value) => ({ type: "country", value, label: value })),
+  ...(shortlist.size ? [{ type: "saved", value: "", label: `Saved (${shortlist.size})` }] : []),
+];
 
-  document.querySelectorAll("[data-metric]").forEach((element) => {
-    const value = values[element.dataset.metric];
-    element.textContent = value === "" || value === 0 ? "–" : String(value);
+const renderChipFilters = () => {
+  if (!profiles.length) {
+    chipGroup.innerHTML = "";
+    return;
+  }
+  chipGroup.innerHTML = getChipOptions()
+    .map(
+      (chip) => `
+        <button class="chip" type="button" data-type="${chip.type}" data-value="${escapeHtml(chip.value)}"
+          aria-pressed="${filter.type === chip.type && filter.value === chip.value}">${escapeHtml(chip.label)}</button>`
+    )
+    .join("");
+};
+
+const renderProfileCard = (profile, index, animate) => {
+  const hasReviews = getVerifiedReviewStats(profile).verifiedReviews.length > 0;
+  const details = [profile.tags.slice(0, 2).join(", "), formatList(profile.sessionModes, ""), `${formatExperience(profile)} experience`]
+    .filter(Boolean)
+    .join(". ");
+  return `
+    <article class="card${animate ? " enter" : ""}" style="--i:${index}">
+      <div class="card-top">
+        ${renderProfileAvatar(profile, "card")}
+        <div class="card-heading">
+          <h3>${escapeHtml(profile.name)}</h3>
+          <p class="role">${escapeHtml(profile.role)}</p>
+        </div>
+      </div>
+      ${profile.subjects.length ? `<div class="tags">${renderChips(profile.subjects, "tag")}</div>` : ""}
+      ${hasReviews ? renderRatingSummary(profile, "card") : ""}
+      <p class="card-meta">${escapeHtml(details)}.</p>
+      <div class="card-actions">
+        <button class="btn btn-quiet" type="button" data-open="${escapeHtml(profile.id)}">View profile</button>
+        <button class="btn btn-quiet save-btn" type="button" data-save="${escapeHtml(profile.id)}"
+          aria-pressed="${shortlist.has(profile.id)}" aria-label="Save ${escapeHtml(profile.name)} to shortlist">${bookmarkIcon}</button>
+      </div>
+    </article>`;
+};
+
+const renderCards = (animate = false) => {
+  const visible = profiles.filter(matchesFilter);
+  cardGrid.innerHTML = visible.map((profile, index) => renderProfileCard(profile, index, animate && !prefersReducedMotion())).join("");
+  emptyState.hidden = visible.length > 0;
+
+  $("h3", emptyState).textContent = dataLoadFailed
+    ? "Specialist profiles could not load."
+    : "No specialist matches this yet.";
+  $("p", emptyState).textContent = dataLoadFailed
+    ? "Please refresh the page, or use the contact form below and we will match you directly."
+    : "Tell us what you need and we will look for the right person.";
+  $("#showAll").hidden = dataLoadFailed;
+
+  catalogStatus.textContent = dataLoadFailed
+    ? "Specialist profiles could not load."
+    : `${visible.length} specialist${visible.length === 1 ? "" : "s"} shown.`;
+};
+
+const setFilter = (type, value = "") => {
+  filter = { type, value };
+  renderChipFilters();
+  renderCards(true);
+};
+
+// ---------------------------------------------------------------------------
+// Shortlist
+// ---------------------------------------------------------------------------
+
+const updateShortlistCount = () => {
+  shortlistCount.textContent = shortlist.size;
+  shortlistButton.setAttribute("aria-label", `Shortlist, ${shortlist.size} saved`);
+  if (!prefersReducedMotion()) {
+    shortlistCount.animate(
+      [
+        { filter: "blur(3px)", opacity: 0.4, transform: "translateY(4px)" },
+        { filter: "none", opacity: 1, transform: "none" },
+      ],
+      { duration: 220, easing: "cubic-bezier(0.23, 1, 0.32, 1)" }
+    );
+  }
+};
+
+const toggleShortlist = (id) => {
+  if (shortlist.has(id)) shortlist.delete(id);
+  else shortlist.add(id);
+  document.querySelectorAll(`[data-save="${CSS.escape(id)}"]`).forEach((button) => {
+    button.setAttribute("aria-pressed", String(shortlist.has(id)));
   });
+  updateShortlistCount();
+  if (filter.type === "saved" && !shortlist.size) setFilter("all");
+  else renderChipFilters();
+};
+
+// ---------------------------------------------------------------------------
+// Counseling countries
+// ---------------------------------------------------------------------------
+
+const getUniversity = (profile) =>
+  profile.educationOrExperience
+    .split(";")
+    .map((part) => part.trim().replace(/\.$/, ""))
+    .find((part) => /universit|college|institut/i.test(part)) || "";
+
+const renderCountries = () => {
+  const countries = allCountries();
+  $("#counseling").hidden = countries.length === 0;
+  $("#countryGrid").innerHTML = countries
+    .map((country) => {
+      const counselors = profiles
+        .filter((profile) => profile.countries.includes(country))
+        .map((profile) => {
+          const university = getUniversity(profile);
+          return university ? `${profile.name}, who studied at ${university}` : profile.name;
+        });
+      return `
+        <div class="country">
+          <h3 class="country-name">${escapeHtml(country)}</h3>
+          <p>Counselor${counselors.length === 1 ? "" : "s"}: ${escapeHtml(counselors.join("; "))}.</p>
+          <button class="btn btn-quiet" type="button" data-country="${escapeHtml(country)}">See ${escapeHtml(country)} counseling</button>
+        </div>`;
+    })
+    .join("");
+};
+
+// ---------------------------------------------------------------------------
+// Profile drawer
+// ---------------------------------------------------------------------------
+
+const renderDetailRows = (rows) =>
+  rows
+    .filter(([, value]) => value)
+    .map(([label, value]) => `<div><dt>${escapeHtml(label)}</dt><dd>${value}</dd></div>`)
+    .join("");
+
+const renderDrawer = (profile) => {
+  const education = profile.educationOrExperience
+    .split(";")
+    .map((part) => part.trim())
+    .filter(Boolean)
+    .map(escapeHtml)
+    .join("<br />");
+  const listOrEmpty = (items) => (items.length ? escapeHtml(items.join(", ")) : "");
+  const hasReviews = getVerifiedReviewStats(profile).verifiedReviews.length > 0;
+  const hasContact = Boolean(getPublicContactHref(getApprovedPublicContact(profile)));
+
+  drawer.innerHTML = `
+    <div class="drawer-head">
+      ${renderProfileAvatar(profile, "panel")}
+      <button class="btn btn-quiet icon-btn" type="button" data-close-drawer aria-label="Close profile">${closeIcon}</button>
+    </div>
+    <div>
+      <h2 id="drawerName">${escapeHtml(profile.name)}</h2>
+      <p class="role">${escapeHtml(profile.role)}</p>
+    </div>
+    ${profile.shortBio ? `<p>${escapeHtml(profile.shortBio)}</p>` : ""}
+    <dl class="detail-list">
+      ${renderDetailRows([
+        ["Education and experience", education],
+        ["Subjects", listOrEmpty(profile.subjects)],
+        ["Curricula and levels", listOrEmpty(profile.tags)],
+        ["Counseling for", listOrEmpty(profile.countries)],
+        ["Counseling topics", listOrEmpty(profile.counselingTopics)],
+        ["Languages", listOrEmpty(profile.languages)],
+        ["Location", profile.location ? escapeHtml(profile.location) : ""],
+        ["Format and experience", escapeHtml(`${formatList(profile.sessionModes, "Online")}. ${formatExperience(profile)}.`)],
+        ["Availability", profile.availability ? escapeHtml(profile.availability) : ""],
+        ["Parent note", profile.parentNote ? escapeHtml(profile.parentNote) : ""],
+      ])}
+    </dl>
+    ${
+      profile.outcomes.length
+        ? `<div class="outcomes"><h3>Outcomes</h3><table class="outcome-table"><thead><tr><th>Area</th><th>Before</th><th>After</th><th>Context</th></tr></thead><tbody>${renderOutcomes(profile)}</tbody></table></div>`
+        : ""
+    }
+    ${hasReviews ? `<div class="drawer-reviews">${renderRatingSummary(profile, "panel")}${renderVerifiedReviews(profile)}</div>` : ""}
+    ${hasContact ? renderPublicContact(profile) : ""}
+    ${hasApprovedProfileImage(profile) ? "" : '<p class="photo-note">Photo will be added once the specialist approves one.</p>'}
+    <div class="drawer-actions">
+      <button class="btn btn-primary" type="button" data-request="${escapeHtml(profile.id)}">Request an introduction</button>
+      <button class="btn btn-quiet save-btn" type="button" data-save="${escapeHtml(profile.id)}"
+        aria-pressed="${shortlist.has(profile.id)}" aria-label="Save ${escapeHtml(profile.name)} to shortlist">${bookmarkIcon}</button>
+    </div>
+    <button class="text-btn" type="button" data-rate="${escapeHtml(profile.id)}">Leave a review for ${escapeHtml(profile.name)}</button>`;
+};
+
+const openDrawer = (id) => {
+  const profile = profiles.find((item) => item.id === id);
+  if (!profile) return;
+  lastFocusedElement = document.activeElement;
+  renderDrawer(profile);
+  window.clearTimeout(drawerCloseTimer);
+  drawerRoot.hidden = false;
+  $("main").inert = true;
+  document.body.classList.add("is-locked");
+  requestAnimationFrame(() => requestAnimationFrame(() => drawerRoot.classList.add("is-open")));
+  $("[data-close-drawer]", drawer).focus({ preventScroll: true });
+};
+
+const closeDrawer = ({ restoreFocus = true } = {}) => {
+  if (drawerRoot.hidden) return;
+  drawerRoot.classList.remove("is-open");
+  $("main").inert = false;
+  document.body.classList.remove("is-locked");
+  drawerCloseTimer = window.setTimeout(() => {
+    drawerRoot.hidden = true;
+  }, prefersReducedMotion() ? 0 : 240);
+  if (restoreFocus && lastFocusedElement) lastFocusedElement.focus({ preventScroll: true });
+};
+
+const getOpenDialog = () => {
+  if (activeFormModal && !activeFormModal.hidden) return activeFormModal;
+  if (!drawerRoot.hidden) return drawer;
+  return null;
+};
+
+// ---------------------------------------------------------------------------
+// Contact form (opens a prefilled email)
+// ---------------------------------------------------------------------------
+
+const fillContactSpecialists = () => {
+  contactSpecialist.innerHTML =
+    '<option value="">No preference</option>' +
+    profiles.map((profile) => `<option value="${escapeHtml(profile.id)}">${escapeHtml(profile.name)}</option>`).join("");
+};
+
+const requestIntroduction = (profileId) => {
+  contactSpecialist.value = profileId;
+  closeDrawer({ restoreFocus: false });
+  scrollToSection("#contact");
+  $("#contactName").focus({ preventScroll: true });
+};
+
+const handleContactSubmit = (event) => {
+  event.preventDefault();
+  const emailField = $("#contactEmail");
+  const emailInvalid = !emailField.validity.valid || !emailField.value.trim();
+  $("#contactEmailError").hidden = !emailInvalid;
+  emailField.setAttribute("aria-invalid", String(emailInvalid));
+
+  if (!contactForm.checkValidity() || emailInvalid) {
+    const firstInvalid = contactForm.querySelector(":invalid");
+    (emailInvalid ? emailField : firstInvalid)?.focus();
+    setFormStatus(contactStatus, "Please complete the highlighted fields.", "error");
+    return;
+  }
+
+  const formData = new FormData(contactForm);
+  const profile = profiles.find((item) => item.id === formData.get("specialist"));
+  const level = getTrimmedFormValue(formData, "level");
+  const support = getTrimmedFormValue(formData, "support");
+  const body = [
+    `Parent/student name: ${getTrimmedFormValue(formData, "name")}`,
+    `Email: ${getTrimmedFormValue(formData, "email")}`,
+    `Student level: ${level}`,
+    `Support type: ${support}`,
+    `Specialist: ${profile ? profile.name : "No preference"}`,
+    "",
+    "Message:",
+    getTrimmedFormValue(formData, "message") || "Not provided",
+  ].join("\n");
+
+  setFormStatus(contactStatus, "Your email app should open with this request ready to send.");
+  window.location.href = createMailto(
+    profile ? `TutorCat intro request: ${profile.name}` : `TutorCat request: ${support} for ${level}`,
+    body
+  );
+};
+
+// ---------------------------------------------------------------------------
+// Menu, FAQ
+// ---------------------------------------------------------------------------
+
+const setMenu = (open) => {
+  menuPanel.dataset.state = open ? "open" : "closed";
+  menuButton.setAttribute("aria-expanded", String(open));
+  menuButton.setAttribute("aria-label", open ? "Close menu" : "Open menu");
+};
+
+const toggleFaq = (button) => {
+  const item = button.closest(".faq-item");
+  const open = !item.classList.contains("is-open");
+  item.classList.toggle("is-open", open);
+  button.setAttribute("aria-expanded", String(open));
+};
+
+// ---------------------------------------------------------------------------
+// Data loading
+// ---------------------------------------------------------------------------
+
+const loadProfiles = async () => {
+  try {
+    const response = await fetch(DATA_URL, { cache: "no-store" });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const loaded = normalizeLoadedProfiles(extractProfilesFromPayload(await response.json()));
+    if (!loaded.length) throw new Error("No public profiles found in data/tutors.json");
+    profiles = loaded;
+    dataLoadFailed = false;
+  } catch (error) {
+    profiles = [];
+    dataLoadFailed = true;
+  }
 };
 
 const initializeApp = async () => {
-  renderFilterButtons();
   await loadProfiles();
-  renderMetrics();
+  renderFacts();
+  fillMatchTopics();
+  renderChipFilters();
   renderCards();
+  renderCountries();
+  fillContactSpecialists();
   populateReviewProfileOptions();
-  renderWizardStep();
 };
 
-filterGroup.addEventListener("click", (event) => {
-  const button = event.target.closest(".filter-button");
+// ---------------------------------------------------------------------------
+// Events
+// ---------------------------------------------------------------------------
+
+needGroup.addEventListener("click", (event) => {
+  const button = event.target.closest("[data-need]");
+  if (button) setNeed(button);
+});
+
+needGroup.addEventListener("keydown", (event) => {
+  if (!["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown"].includes(event.key)) return;
+  event.preventDefault();
+  const buttons = [...needGroup.querySelectorAll("[data-need]")];
+  const current = buttons.findIndex((button) => button.getAttribute("aria-checked") === "true");
+  const step = event.key === "ArrowRight" || event.key === "ArrowDown" ? 1 : -1;
+  const next = buttons[(current + step + buttons.length) % buttons.length];
+  setNeed(next);
+  next.focus();
+});
+
+$("#matchForm").addEventListener("submit", (event) => {
+  event.preventDefault();
+  const topic = matchTopic.value;
+  if (topic) setFilter(allCountries().includes(topic) ? "country" : "subject", topic);
+  else setFilter(need === "both" ? "all" : need);
+  scrollToSection("#catalog");
+});
+
+chipGroup.addEventListener("click", (event) => {
+  const chip = event.target.closest(".chip");
+  if (chip) setFilter(chip.dataset.type, chip.dataset.value);
+});
+
+cardGrid.addEventListener("click", (event) => {
+  const openButton = event.target.closest("[data-open]");
+  const saveButton = event.target.closest("[data-save]");
+  if (openButton) openDrawer(openButton.dataset.open);
+  if (saveButton) toggleShortlist(saveButton.dataset.save);
+});
+
+$("#showAll").addEventListener("click", () => setFilter("all"));
+
+$("#countryGrid").addEventListener("click", (event) => {
+  const button = event.target.closest("[data-country]");
   if (!button) return;
-  setActiveFilter(button.dataset.filter);
+  setFilter("country", button.dataset.country);
+  scrollToSection("#catalog");
 });
 
-tutorGrid.addEventListener("click", (event) => {
-  const profileButton = event.target.closest("[data-profile-id]");
-  const shortlistButton = event.target.closest("[data-shortlist-id]");
-
-  if (profileButton) {
-    openProfile(profileButton.dataset.profileId);
-    return;
-  }
-
-  if (shortlistButton) {
-    const profileId = shortlistButton.dataset.shortlistId;
-    if (shortlistedProfiles.has(profileId)) {
-      shortlistedProfiles.delete(profileId);
-    } else {
-      shortlistedProfiles.add(profileId);
-    }
-    renderCards();
-  }
+shortlistButton.addEventListener("click", () => {
+  if (shortlist.size) setFilter("saved");
+  scrollToSection("#catalog");
 });
 
-profilePanel.addEventListener("click", (event) => {
-  const tabButton = event.target.closest(".tab-button");
-  const requestButton = event.target.closest("[data-request-profile]");
-  const rateButton = event.target.closest("[data-rate-profile]");
-
-  if (tabButton) {
-    setProfileTab(tabButton.dataset.tab);
+drawerRoot.addEventListener("click", (event) => {
+  if (event.target.closest("[data-close-drawer]")) {
+    closeDrawer();
     return;
   }
-
-  if (requestButton) {
-    requestProfileIntro(requestButton.dataset.requestProfile);
-    return;
-  }
-
+  const saveButton = event.target.closest("[data-save]");
+  const requestButton = event.target.closest("[data-request]");
+  const rateButton = event.target.closest("[data-rate]");
+  if (saveButton) toggleShortlist(saveButton.dataset.save);
+  if (requestButton) requestIntroduction(requestButton.dataset.request);
   if (rateButton) {
-    openReviewForm(rateButton.dataset.rateProfile);
+    closeDrawer({ restoreFocus: false });
+    openReviewForm(rateButton.dataset.rate);
   }
 });
 
-wizardContent.addEventListener("click", (event) => {
-  const optionButton = event.target.closest(".option-button");
-  if (!optionButton) return;
-  handleWizardOption(optionButton);
+$("#faqList").addEventListener("click", (event) => {
+  const button = event.target.closest(".faq-q");
+  if (button) toggleFaq(button);
 });
 
-wizardResults.addEventListener("click", (event) => {
-  const matchButton = event.target.closest("[data-request-match]");
-  if (!matchButton) return;
-  requestWizardMatch(matchButton.dataset.requestMatch);
+menuButton.addEventListener("click", () => setMenu(menuPanel.dataset.state !== "open"));
+menuPanel.addEventListener("click", (event) => {
+  if (event.target.closest("a")) setMenu(false);
+});
+document.addEventListener("click", (event) => {
+  if (menuPanel.dataset.state === "open" && !event.target.closest("#menuPanel, #menuButton")) setMenu(false);
 });
 
-document.querySelectorAll(".country-action").forEach((button) => {
-  button.addEventListener("click", () => handleCountryAction(button.dataset.country));
-});
-
-searchInput.addEventListener("input", renderCards);
-sortSelect.addEventListener("change", renderCards);
-clearFilters.addEventListener("click", () => {
-  searchInput.value = "";
-  sortSelect.value = "best";
-  setActiveFilter("All");
-});
-
-wizardBack.addEventListener("click", () => {
-  if (wizardStepIndex === 0) return;
-  wizardStepIndex -= 1;
-  wizardResults.innerHTML = "";
-  renderWizardStep();
-});
-
-wizardReset.addEventListener("click", resetWizard);
-closePanel.addEventListener("click", closeProfile);
-profileBackdrop.addEventListener("click", closeProfile);
 contactForm.addEventListener("submit", handleContactSubmit);
+$("#contactEmail").addEventListener("input", () => {
+  $("#contactEmailError").hidden = true;
+  $("#contactEmail").removeAttribute("aria-invalid");
+});
 
-if (openApplicationFormButton) {
-  openApplicationFormButton.addEventListener("click", openApplicationForm);
-}
+document.querySelectorAll("[data-open-application]").forEach((button) => {
+  button.addEventListener("click", openApplicationForm);
+});
 
-if (reviewForm) {
-  reviewForm.addEventListener("submit", handleReviewSubmit);
-}
+if (reviewForm) reviewForm.addEventListener("submit", handleReviewSubmit);
 
 if (applicationForm) {
   applicationForm.addEventListener("submit", handleApplicationSubmit);
-  applicationForm
-    .querySelectorAll("#applicationSubjects, #applicationCountries")
-    .forEach((field) => {
-      field.addEventListener("input", () => {
-        const subjectsField = applicationForm.querySelector("#applicationSubjects");
-        const countriesField = applicationForm.querySelector("#applicationCountries");
-        if (subjectsField.value.trim() || countriesField.value.trim()) {
-          subjectsField.setCustomValidity("");
-          countriesField.setCustomValidity("");
-        }
-      });
+  applicationForm.querySelectorAll("#applicationSubjects, #applicationCountries").forEach((field) => {
+    field.addEventListener("input", () => {
+      const subjectsField = applicationForm.querySelector("#applicationSubjects");
+      const countriesField = applicationForm.querySelector("#applicationCountries");
+      if (subjectsField.value.trim() || countriesField.value.trim()) {
+        subjectsField.setCustomValidity("");
+        countriesField.setCustomValidity("");
+      }
     });
+  });
 }
 
-if (formBackdrop) {
-  formBackdrop.addEventListener("click", closeFormModal);
-}
-
+if (formBackdrop) formBackdrop.addEventListener("click", closeFormModal);
 document.querySelectorAll("[data-close-modal]").forEach((button) => {
   button.addEventListener("click", closeFormModal);
 });
 
+// Fall back to initials if an approved photo fails to load.
 document.addEventListener(
   "error",
   (event) => {
@@ -2010,52 +1460,36 @@ document.addEventListener(
     const avatar = image.closest(".profile-avatar");
     avatar.classList.add("is-image-broken");
     avatar.setAttribute("role", "img");
-    avatar.setAttribute(
-      "aria-label",
-      `${avatar.dataset.avatarName || "TutorCat specialist"} initials avatar`
-    );
+    avatar.setAttribute("aria-label", `${avatar.dataset.avatarName || "TutorCat specialist"} initials avatar`);
     image.removeAttribute("src");
   },
   true
 );
 
-menuToggle.addEventListener("click", () => {
-  setMobileNav(!primaryNav.classList.contains("is-open"));
-});
-
-primaryNav.addEventListener("click", (event) => {
-  if (event.target.closest("a")) {
-    setMobileNav(false);
-  }
-});
-
 document.addEventListener("keydown", (event) => {
   if (event.key === "Escape") {
-    if (activeFormModal && !activeFormModal.hidden) {
-      closeFormModal();
-      return;
+    if (activeFormModal && !activeFormModal.hidden) closeFormModal();
+    else if (!drawerRoot.hidden) closeDrawer();
+    else if (menuPanel.dataset.state === "open") {
+      setMenu(false);
+      menuButton.focus();
     }
-    if (!profilePanel.hidden) closeProfile();
-    if (primaryNav.classList.contains("is-open")) setMobileNav(false);
+    return;
   }
 
-  if (event.key === "Tab") {
-    const openDialog = getOpenDialog();
-    if (!openDialog) return;
-
-    const focusableElements = getFocusableElements(openDialog);
-    const firstElement = focusableElements[0];
-    const lastElement = focusableElements[focusableElements.length - 1];
-
-    if (!firstElement || !lastElement) return;
-
-    if (event.shiftKey && document.activeElement === firstElement) {
-      event.preventDefault();
-      lastElement.focus();
-    } else if (!event.shiftKey && document.activeElement === lastElement) {
-      event.preventDefault();
-      firstElement.focus();
-    }
+  if (event.key !== "Tab") return;
+  const openDialog = getOpenDialog();
+  if (!openDialog) return;
+  const focusable = getFocusableElements(openDialog);
+  const first = focusable[0];
+  const last = focusable[focusable.length - 1];
+  if (!first || !last) return;
+  if (event.shiftKey && document.activeElement === first) {
+    event.preventDefault();
+    last.focus();
+  } else if (!event.shiftKey && document.activeElement === last) {
+    event.preventDefault();
+    first.focus();
   }
 });
 
