@@ -100,325 +100,6 @@ const WIZARD_STEPS = [
   },
 ];
 
-const FALLBACK_PROFILES = [
-  {
-    id: "maya-patel",
-    name: "Maya Patel",
-    initials: "MP",
-    profileType: "Tutor",
-    role: "Math and SAT/ACT test-prep tutor",
-    supportTypes: ["Academic tutoring", "Test prep"],
-    subjects: ["Math", "Statistics", "Test Prep", "SAT/ACT"],
-    countries: ["United States"],
-    counselingTopics: ["Parent guidance", "Study planning"],
-    educationOrExperience:
-      "M.S. Applied Mathematics; former learning lab instructor for algebra, calculus, and statistics.",
-    location: "Oakland and online",
-    sessionModes: ["Online", "Hybrid"],
-    languages: ["English", "Gujarati"],
-    currentStudents: 5,
-    improvement: "Sample outcomes include Algebra II C+ to B+ and SAT Math +110.",
-    experience: "7 yrs",
-    experienceYears: 7,
-    availability: "Mon, Wed, Sat; limited same-week openings",
-    rating: 4.9,
-    reviewCount: 34,
-    shortBio:
-      "Maya builds short diagnostic plans for students who need precision in algebra, functions, limits, statistics, and test timing.",
-    parentNote:
-      "Good fit for families who want clear weekly practice plans and visible error-log review.",
-    outcomes: [
-      ["AP Calculus AB", "B-", "A-", "Spring sample"],
-      ["Algebra II", "C+", "B+", "Winter sample"],
-      ["SAT Math", "610", "720", "Sample score record"],
-    ],
-    tags: ["Math", "STEM", "Test Prep", "Online sessions", "High school"],
-    studentLevels: ["Middle school", "High school", "A-levels/IB/AP"],
-  },
-  {
-    id: "daniel-kim",
-    name: "Daniel Kim",
-    initials: "DK",
-    profileType: "Tutor",
-    role: "Physics, chemistry, and lab-skills tutor",
-    supportTypes: ["Academic tutoring", "Test prep"],
-    subjects: ["Science", "Physics", "Chemistry", "Test Prep"],
-    countries: ["United States", "Canada"],
-    counselingTopics: ["STEM pathway planning", "Parent guidance"],
-    educationOrExperience:
-      "Materials science Ph.D. candidate with experience mentoring high school lab and AP science students.",
-    location: "Palo Alto and online",
-    sessionModes: ["Online", "In-person", "Hybrid"],
-    languages: ["English", "Korean"],
-    currentStudents: 4,
-    improvement: "Sample outcomes include Physics C to B+ and lab reports 78% to 91%.",
-    experience: "5 yrs",
-    experienceYears: 5,
-    availability: "Tue, Thu, Sun; this-month openings",
-    rating: 4.8,
-    reviewCount: 27,
-    shortBio:
-      "Daniel connects formulas to lab intuition, then uses structured problem sets to make unit conversions, force diagrams, and reaction steps repeatable.",
-    parentNote:
-      "Helpful for students who understand class lectures but lose points on multi-step problems and lab writeups.",
-    outcomes: [
-      ["AP Physics 1", "C", "B+", "Spring sample"],
-      ["Honors Chemistry", "B", "A-", "Spring sample"],
-      ["Lab reports", "78%", "91%", "Winter sample"],
-    ],
-    tags: ["Science", "STEM", "AP", "Canada", "Online sessions"],
-    studentLevels: ["High school", "A-levels/IB/AP", "Undergraduate"],
-  },
-  {
-    id: "lena-brooks",
-    name: "Lena Brooks",
-    initials: "LB",
-    profileType: "Tutor + Counselor",
-    role: "English, essays, and US/UK application mentor",
-    supportTypes: [
-      "Academic tutoring",
-      "Country counseling",
-      "University pathway planning",
-    ],
-    subjects: ["English", "History", "College Essays", "Test Prep"],
-    countries: ["United States", "United Kingdom"],
-    counselingTopics: ["Applications", "Scholarships", "Country fit", "Parent guidance"],
-    educationOrExperience:
-      "Writing center fellow with experience supporting essays, humanities coursework, and application storytelling.",
-    location: "Los Angeles and online",
-    sessionModes: ["Online", "Hybrid"],
-    languages: ["English"],
-    currentStudents: 4,
-    improvement: "Sample outcomes include research essay 82% to 94% and stronger timed writing rubrics.",
-    experience: "6 yrs",
-    experienceYears: 6,
-    availability: "Mon, Thu, Sat; planning-ahead preferred",
-    rating: 4.9,
-    reviewCount: 31,
-    shortBio:
-      "Lena focuses on argument structure, close reading, revision routines, and application essays that sound specific rather than generic.",
-    parentNote:
-      "Strong fit when a family needs both writing improvement and a calm application timeline.",
-    outcomes: [
-      ["AP Literature", "B", "A-", "Spring sample"],
-      ["Research essay", "82%", "94%", "Winter sample"],
-      ["Personal statement", "Draft unclear", "Focused final draft", "Sample application cycle"],
-    ],
-    tags: ["English", "Applications", "Scholarships", "US", "UK"],
-    studentLevels: ["High school", "A-levels/IB/AP", "Transfer student"],
-  },
-  {
-    id: "nora-chen",
-    name: "Nora Chen",
-    initials: "NC",
-    profileType: "Tutor",
-    role: "Computer science and robotics mentor",
-    supportTypes: ["Academic tutoring", "Test prep"],
-    subjects: ["Computer Science", "Math", "Robotics", "Python"],
-    countries: ["United States", "Canada", "Australia"],
-    counselingTopics: ["STEM pathway planning", "Portfolio projects"],
-    educationOrExperience:
-      "Software engineer and student club mentor with project-based CS teaching experience.",
-    location: "Seattle and online",
-    sessionModes: ["Online"],
-    languages: ["English", "Mandarin"],
-    currentStudents: 3,
-    improvement:
-      "Sample outcomes include AP CSP B to A and Python project completion from incomplete to 92%.",
-    experience: "6 yrs",
-    experienceYears: 6,
-    availability: "Tue, Thu, Sat; this-week openings",
-    rating: 4.8,
-    reviewCount: 24,
-    shortBio:
-      "Nora keeps coding lessons project-based while maintaining clear rubrics for debugging, documentation, and math prerequisites.",
-    parentNote:
-      "Useful for students who want structured CS practice without turning every session into open-ended project time.",
-    outcomes: [
-      ["AP Computer Science Principles", "B", "A", "Spring sample"],
-      ["Python project", "Incomplete", "92%", "May sample"],
-      ["Geometry proofs", "C+", "B+", "Winter sample"],
-    ],
-    tags: ["Computer Science", "Math", "STEM", "Online sessions", "Portfolio"],
-    studentLevels: ["Middle school", "High school", "A-levels/IB/AP", "Undergraduate"],
-  },
-  {
-    id: "sarah-morgan",
-    name: "Sarah Morgan",
-    initials: "SM",
-    profileType: "Counselor",
-    role: "US higher education pathway counselor",
-    supportTypes: ["Country counseling", "University pathway planning"],
-    subjects: ["College Essays", "Test Prep"],
-    countries: ["United States"],
-    counselingTopics: [
-      "Applications",
-      "Scholarships",
-      "Country fit",
-      "Parent guidance",
-      "SAT/ACT",
-    ],
-    educationOrExperience:
-      "Former university advising office staff member with experience helping families compare US college pathways.",
-    location: "Boston and online",
-    sessionModes: ["Online"],
-    languages: ["English"],
-    currentStudents: 6,
-    improvement:
-      "Sample planning outcomes include balanced college lists and family application calendars.",
-    experience: "9 yrs",
-    experienceYears: 9,
-    availability: "Wed, Fri; planning-ahead preferred",
-    rating: 4.9,
-    reviewCount: 42,
-    shortBio:
-      "Sarah helps families compare US college options, testing decisions, essay timelines, scholarships, and parent responsibilities.",
-    parentNote:
-      "Best for families who want decision structure before they spend time and money on applications.",
-    outcomes: [
-      ["College list", "Unsorted", "Balanced reach/fit/safety list", "Sample planning session"],
-      ["Testing plan", "Unclear", "SAT/ACT decision calendar", "Sample junior-year plan"],
-      ["Scholarship search", "Ad hoc", "Priority tracker", "Sample family checklist"],
-    ],
-    tags: ["United States", "Applications", "Scholarships", "Parent guidance", "Online sessions"],
-    studentLevels: ["High school", "A-levels/IB/AP", "Transfer student"],
-  },
-  {
-    id: "aisha-rahman",
-    name: "Aisha Rahman",
-    initials: "AR",
-    profileType: "Counselor",
-    role: "Canada pathway and co-op program counselor",
-    supportTypes: ["Country counseling", "University pathway planning"],
-    subjects: ["IELTS/TOEFL", "English"],
-    countries: ["Canada"],
-    counselingTopics: [
-      "Applications",
-      "Scholarships",
-      "Country fit",
-      "IELTS/TOEFL",
-      "Parent guidance",
-    ],
-    educationOrExperience:
-      "Advises families comparing Canadian provinces, co-op programs, entry requirements, and English-language planning.",
-    location: "Toronto and online",
-    sessionModes: ["Online"],
-    languages: ["English", "Urdu", "Hindi"],
-    currentStudents: 5,
-    improvement:
-      "Sample planning outcomes include province comparison and language-test preparation checklists.",
-    experience: "8 yrs",
-    experienceYears: 8,
-    availability: "Mon, Wed; this-month openings",
-    rating: 4.8,
-    reviewCount: 29,
-    shortBio:
-      "Aisha guides families through Canadian program selection, application documents, co-op considerations, and language-test timelines.",
-    parentNote:
-      "Strong fit for parents who need a practical comparison across provinces and public university options.",
-    outcomes: [
-      ["Program shortlist", "15 options", "6 priority programs", "Sample counseling session"],
-      ["IELTS plan", "No timeline", "8-week practice calendar", "Sample pathway plan"],
-      ["Parent questions", "Scattered", "Decision checklist", "Sample family session"],
-    ],
-    tags: ["Canada", "IELTS/TOEFL", "Applications", "Scholarships", "Online sessions"],
-    studentLevels: ["High school", "A-levels/IB/AP", "Undergraduate", "Transfer student"],
-  },
-  {
-    id: "lukas-weber",
-    name: "Lukas Weber",
-    initials: "LW",
-    profileType: "Tutor + Counselor",
-    role: "Germany and Netherlands STEM pathway mentor",
-    supportTypes: [
-      "Academic tutoring",
-      "Country counseling",
-      "University pathway planning",
-    ],
-    subjects: ["Math", "Science", "Computer Science", "IELTS/TOEFL"],
-    countries: ["Germany", "Netherlands"],
-    counselingTopics: [
-      "Applications",
-      "Visa preparation checklist",
-      "Country fit",
-      "STEM pathway planning",
-      "Parent guidance",
-    ],
-    educationOrExperience:
-      "Studied engineering in Germany and has advised students comparing English-taught programs in Germany and the Netherlands.",
-    location: "Berlin and online",
-    sessionModes: ["Online", "Hybrid"],
-    languages: ["English", "German"],
-    currentStudents: 4,
-    improvement:
-      "Sample outcomes include STEM readiness plans and Germany/Netherlands application checklists.",
-    experience: "7 yrs",
-    experienceYears: 7,
-    availability: "Tue, Fri; this-week openings",
-    rating: 4.9,
-    reviewCount: 33,
-    shortBio:
-      "Lukas combines STEM tutoring with destination-specific planning for German and Dutch university pathways.",
-    parentNote:
-      "Good fit when the student needs math or science support and the family is comparing European study routes.",
-    outcomes: [
-      ["Germany eligibility", "Unknown", "Document checklist", "Sample pathway session"],
-      ["Netherlands programs", "Broad search", "Program comparison table", "Sample planning session"],
-      ["Math readiness", "Gaps in functions", "Targeted practice plan", "Sample tutoring plan"],
-    ],
-    tags: [
-      "Germany",
-      "Netherlands",
-      "Math",
-      "Science",
-      "Computer Science",
-      "Visa checklist",
-    ],
-    studentLevels: ["High school", "A-levels/IB/AP", "Undergraduate", "Transfer student"],
-  },
-  {
-    id: "petra-novak",
-    name: "Petra Novak",
-    initials: "PN",
-    profileType: "Counselor",
-    role: "Czech Republic and Europe education counselor",
-    supportTypes: ["Country counseling", "University pathway planning"],
-    subjects: ["Science", "English", "IELTS/TOEFL"],
-    countries: ["Czech Republic", "Germany", "Netherlands", "UAE"],
-    counselingTopics: [
-      "Applications",
-      "Scholarships",
-      "Visa preparation checklist",
-      "Country fit",
-      "Parent guidance",
-    ],
-    educationOrExperience:
-      "Supports families comparing European English-taught programs, entrance exams, documentation, and transition planning.",
-    location: "Prague and online",
-    sessionModes: ["Online"],
-    languages: ["English", "Czech"],
-    currentStudents: 2,
-    improvement:
-      "Sample planning outcomes include entrance-exam calendars and family document checklists.",
-    experience: "10 yrs",
-    experienceYears: 10,
-    availability: "Thu, Sat; this-month openings",
-    rating: 4.7,
-    reviewCount: 22,
-    shortBio:
-      "Petra helps families understand Czech Republic and broader Europe options, especially for medicine, technical fields, and English-taught programs.",
-    parentNote:
-      "Best for families who want a clear checklist before contacting institutions or preparing entrance exams.",
-    outcomes: [
-      ["Czech programs", "Unclear", "Shortlist by field and cost", "Sample counseling session"],
-      ["Entrance exams", "No plan", "Preparation calendar", "Sample family checklist"],
-      ["Documents", "Unverified list", "Official-site verification plan", "Sample pathway session"],
-    ],
-    tags: ["Czech Republic", "Europe", "Applications", "Visa checklist", "Parent guidance"],
-    studentLevels: ["High school", "A-levels/IB/AP", "Undergraduate", "Transfer student"],
-  },
-];
-
 let profiles = [];
 let dataLoadNotice = "";
 
@@ -831,7 +512,11 @@ const formatStudentLoad = (profile) =>
     ? "Student load not listed"
     : `${profile.currentStudents} active students`;
 
-const formatExperience = (profile) => profile.experience || "Experience not listed";
+const formatExperience = (profile) =>
+  // A recorded "0 yrs" reads as no experience; unknown values still say "not listed".
+  profile.experience && profile.experienceYears === 0
+    ? "Under 1 yr"
+    : profile.experience || "Experience not listed";
 
 const formatAvailability = (profile) => profile.availability || "Availability on request";
 
@@ -1108,6 +793,19 @@ const renderCards = () => {
   const visibleProfiles = getVisibleProfiles();
   tutorGrid.innerHTML = visibleProfiles.map(renderProfileCard).join("");
   emptyState.hidden = visibleProfiles.length > 0;
+
+  const loadFailed = Boolean(dataLoadNotice) && !profiles.length;
+  emptyState.querySelector("h3").textContent = loadFailed
+    ? "Specialist profiles could not load."
+    : "No specialists match the current search.";
+  emptyState.querySelector("p").textContent = loadFailed
+    ? "Please refresh the page, or use the contact form below and we will match you directly."
+    : "Try clearing the search, choosing All, or searching for a broader topic such as counseling, math, applications, or online.";
+  clearFilters.style.display = loadFailed ? "none" : "";
+  if (loadFailed) {
+    catalogStatus.textContent = dataLoadNotice;
+    return;
+  }
 
   const filterLabel = getFilterLabel(activeFilter);
   const query = searchInput.value.trim();
@@ -2162,14 +1860,29 @@ const loadProfiles = async () => {
     profiles = loadedProfiles;
     dataLoadNotice = "";
   } catch (error) {
-    profiles = normalizeLoadedProfiles(FALLBACK_PROFILES);
-    dataLoadNotice = "Could not load data/tutors.json. Showing fallback sample profiles.";
+    profiles = [];
+    dataLoadNotice = "Specialist profiles could not load.";
   }
+};
+
+const renderMetrics = () => {
+  const values = {
+    profiles: profiles.length,
+    subjects: new Set(profiles.flatMap((profile) => profile.subjects)).size,
+    countries: new Set(profiles.flatMap((profile) => profile.countries)).size,
+    modes: [...new Set(profiles.flatMap((profile) => profile.sessionModes))].join(" / "),
+  };
+
+  document.querySelectorAll("[data-metric]").forEach((element) => {
+    const value = values[element.dataset.metric];
+    element.textContent = value === "" || value === 0 ? "–" : String(value);
+  });
 };
 
 const initializeApp = async () => {
   renderFilterButtons();
   await loadProfiles();
+  renderMetrics();
   renderCards();
   populateReviewProfileOptions();
   renderWizardStep();

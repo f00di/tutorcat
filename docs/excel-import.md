@@ -7,8 +7,9 @@ TutorCat is a static GitHub Pages site. The public website does not load the Exc
 1. Put the latest Excel file at `source/tutors.xlsx`.
 2. Run `npm run import:tutors`.
 3. Confirm `data/tutors.json` updated.
-4. Commit and push the updated `data/tutors.json`.
-5. GitHub Pages will display the updated tutor/counselor profiles.
+4. Run `npm test`. It fails if the JSON contains an unexpected field, a private email, a phone number, or a photo/contact without approval.
+5. Commit and push the updated `data/tutors.json`.
+6. The `Deploy to GitHub Pages` workflow re-runs the tests and publishes the site. The homepage figures (profiles, subjects, countries, session format) update automatically from the JSON.
 
 ## Privacy
 
