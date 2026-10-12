@@ -4,12 +4,23 @@ TutorCat is a static GitHub Pages site. The public website does not load the Exc
 
 ## Update Tutor Profiles
 
-1. Put the latest Excel file at `source/tutors.xlsx`.
-2. Run `npm run import:tutors`.
-3. Confirm `data/tutors.json` updated.
-4. Run `npm test`. It fails if the JSON contains an unexpected field, a private email, a phone number, or a photo/contact without approval.
-5. Commit and push the updated `data/tutors.json`.
-6. The `Deploy to GitHub Pages` workflow re-runs the tests and publishes the site. The catalog facts line, filter chips and country panels update automatically from the JSON.
+1. Edit `source/tutors.xlsx` (one row per person; see "Workbook layout").
+2. Run `npm run tutors:update`. It rebuilds `data/tutors.json`, prints exactly which profiles were added, removed or changed (and which fields), then runs the privacy tests.
+3. Commit and push `data/tutors.json`. The `Deploy to GitHub Pages` workflow re-runs the tests and publishes the site.
+
+`npm run tutors:check` compares the workbook with the published JSON without writing anything. Use it to see whether the live site is behind your spreadsheet.
+
+If nothing changed, the importer leaves `data/tutors.json` untouched, so there is nothing to commit.
+
+## Workbook layout
+
+Run `npm run tutors:template` to create `source/tutors-template.xlsx`: one row per tutor/counselor, prefilled from your current workbook, with dropdowns for Status, Profile Type and approvals, and a Guide sheet explaining every column. Check it, copy any private contacts across, then save it as `source/tutors.xlsx`. (`-- --blank` makes an empty one; `-- --force` overwrites an existing template.)
+
+- **Status**: `Published` shows the profile. `Draft`, `Hidden`, `Pending`, `Paused` or `Inactive` keep the row in the workbook but off the site, so you never need to delete rows.
+- Lists (subjects, curriculum, countries, languages) are comma separated.
+- Columns with `private`, `internal`, `email`, `phone`, `contact`, `address` or `payment` in the header are never published.
+
+The older compact layout (one person across several rows) still imports, but it relies on guessing where each person starts, so prefer one row per person.
 
 ## Privacy
 
@@ -95,16 +106,8 @@ For a static GitHub Pages site, new review submissions and tutor applications sh
 
 ## Replacing The Excel File
 
-When tutor information changes, replace the local file at:
-
-`source/tutors.xlsx`
-
-Then run:
-
-```bash
-npm run import:tutors
-```
+When tutor information changes, replace the local file at `source/tutors.xlsx` and run `npm run tutors:update`.
 
 The website reads `data/tutors.json`, not the Excel file. Replacing the Excel file alone will not update GitHub Pages until the JSON is regenerated, committed, and pushed.
 
-For fully automatic updates later, use GitHub Actions, Power Automate, or a secure backend that converts private workbook data into sanitized public JSON.
+The workbook can't be built in GitHub Actions because it is private and the repository is public. Fully automatic updates need a private data store (see the recommendation in the project handoff: Supabase).

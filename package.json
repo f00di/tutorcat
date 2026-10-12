@@ -1,5 +1,8 @@
 {
   "scripts": {
+    "tutors:update": "node scripts/import-tutors-from-excel.mjs && node --test \"tests/*.test.mjs\"",
+    "tutors:check": "node scripts/import-tutors-from-excel.mjs --check",
+    "tutors:template": "node scripts/make-tutor-template.mjs",
     "import:tutors": "node scripts/import-tutors-from-excel.mjs",
     "test": "node --test \"tests/*.test.mjs\""
   }

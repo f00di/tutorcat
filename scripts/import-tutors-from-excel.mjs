@@ -1,14 +1,28 @@
 #!/usr/bin/env node
 
 import { execFileSync } from "node:child_process";
-import { existsSync, mkdirSync, writeFileSync } from "node:fs";
-import { dirname, join } from "node:path";
-import { fileURLToPath } from "node:url";
+import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
+import { dirname, join, relative } from "node:path";
+import { fileURLToPath, pathToFileURL } from "node:url";
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT_DIR = join(__dirname, "..");
-const SOURCE_FILE = join(ROOT_DIR, "source", "tutors.xlsx");
-const OUTPUT_FILE = join(ROOT_DIR, "data", "tutors.json");
+export const SOURCE_FILE = join(ROOT_DIR, "source", "tutors.xlsx");
+export const OUTPUT_FILE = join(ROOT_DIR, "data", "tutors.json");
+
+// A profile whose Status / Application Status is one of these stays in the workbook but is not published.
+const UNPUBLISHED_STATUSES = new Set([
+  "draft",
+  "hidden",
+  "hide",
+  "pending",
+  "paused",
+  "inactive",
+  "rejected",
+  "archived",
+  "unpublished",
+  "no",
+]);
 
 const PROFILE_TYPES = new Set(["Tutor", "Counselor", "Tutor + Counselor"]);
 
@@ -136,7 +150,14 @@ const HEADER_ALIASES = {
     "approved public contact",
     "public contact permission",
   ],
-  applicationStatus: ["application status", "profile status", "approval status"],
+  applicationStatus: [
+    "status",
+    "publish status",
+    "visibility",
+    "application status",
+    "profile status",
+    "approval status",
+  ],
   reviewReviewerType: ["reviewer type", "review type"],
   reviewRating: ["review rating", "student rating", "parent rating"],
   reviewComment: ["review comment", "review text", "student review", "parent review"],
@@ -214,20 +235,20 @@ function getAttribute(tag, name) {
   return match ? decodeXml(match[1]) : "";
 }
 
-function readZipEntry(entryName, required = true) {
+function readZipEntry(file, entryName, required = true) {
   try {
-    return execFileSync("unzip", ["-p", SOURCE_FILE, entryName], {
+    return execFileSync("unzip", ["-p", file, entryName], {
       encoding: "utf8",
       maxBuffer: 20 * 1024 * 1024,
+      stdio: ["ignore", "pipe", "ignore"],
     });
   } catch (error) {
     if (!required) return "";
-    throw new Error(`Could not read ${entryName} from source/tutors.xlsx`);
+    throw new Error(`Could not read ${entryName} from ${relative(process.cwd(), file) || file}`);
   }
 }
 
-function parseSharedStrings() {
-  const xml = readZipEntry("xl/sharedStrings.xml", false);
+function parseSharedStrings(xml) {
   if (!xml) return [];
 
   return [...xml.matchAll(/<si\b[^>]*>([\s\S]*?)<\/si>/g)].map((match) => {
@@ -263,8 +284,7 @@ function parseCellValue(cellXml, sharedStrings) {
   return decodeXml(value);
 }
 
-function parseWorksheetRows(entryName, sharedStrings) {
-  const xml = readZipEntry(entryName);
+function parseWorksheetRows(xml, sharedStrings) {
   return [...xml.matchAll(/<row\b[^>]*>([\s\S]*?)<\/row>/g)].map((rowMatch) => {
     const rowTag = rowMatch[0].match(/<row\b[^>]*>/)?.[0] || "";
     const rowNumber = Number(getAttribute(rowTag, "r")) || null;
@@ -282,9 +302,7 @@ function parseWorksheetRows(entryName, sharedStrings) {
   });
 }
 
-function parseSheets() {
-  const workbookXml = readZipEntry("xl/workbook.xml");
-  const relsXml = readZipEntry("xl/_rels/workbook.xml.rels");
+function parseSheets(workbookXml, relsXml) {
   const rels = new Map(
     [...relsXml.matchAll(/<Relationship\b[^>]*\/>/g)].map((match) => {
       const id = getAttribute(match[0], "Id");
@@ -301,6 +319,15 @@ function parseSheets() {
       return entryName ? { name, entryName } : null;
     })
     .filter(Boolean);
+}
+
+// Every worksheet in an .xlsx as { name, rows: [{ rowNumber, cells }] }.
+export function readWorkbook(file) {
+  const read = (entryName, required) => readZipEntry(file, entryName, required);
+  const sharedStrings = parseSharedStrings(read("xl/sharedStrings.xml", false));
+  return parseSheets(read("xl/workbook.xml"), read("xl/_rels/workbook.xml.rels")).map(
+    ({ name, entryName }) => ({ name, rows: parseWorksheetRows(read(entryName), sharedStrings) })
+  );
 }
 
 function cleanText(value) {
@@ -532,11 +559,11 @@ function scoreHeaderRow(cells) {
   }, 0);
 }
 
-function selectDataSheet(sheets, sharedStrings) {
+function selectDataSheet(sheets) {
   let best = null;
 
   for (const sheet of sheets) {
-    const rows = parseWorksheetRows(sheet.entryName, sharedStrings);
+    const { rows } = sheet;
     const headerCandidate = rows.slice(0, 20).reduce(
       (currentBest, row, index) => {
         const score = scoreHeaderRow(row.cells);
@@ -547,7 +574,7 @@ function selectDataSheet(sheets, sharedStrings) {
     );
 
     if (!best || headerCandidate.score > best.score) {
-      best = { ...sheet, rows, ...headerCandidate };
+      best = { ...sheet, ...headerCandidate };
     }
   }
 
@@ -771,7 +798,9 @@ function isProfileStart(profile, currentDraft) {
       profile.counselingTopics.length ||
       profile.educationOrExperience ||
       profile.experienceYears !== null ||
-      profile.profileType
+      profile.profileType ||
+      profile.role ||
+      profile.applicationStatus
   );
 }
 
@@ -923,19 +952,20 @@ function finalizeProfiles(drafts, warnings) {
   });
 }
 
-function importProfiles() {
-  if (!existsSync(SOURCE_FILE)) {
-    throw new Error("Missing source/tutors.xlsx. Put the latest Excel file there and rerun npm run import:tutors.");
-  }
+export function isPublishedStatus(status) {
+  return !UNPUBLISHED_STATUSES.has(cleanText(status).toLowerCase());
+}
 
-  const sharedStrings = parseSharedStrings();
-  const selected = selectDataSheet(parseSheets(), sharedStrings);
+// Pure step: worksheets in, public profiles out. No file access, so tests can call it directly.
+export function profilesFromSheets(sheets) {
+  const selected = selectDataSheet(sheets);
   const headerMap = buildHeaderMap(selected.row.cells);
   const warnings = [];
   const skipped = [];
   const excludedColumns = new Set();
   const drafts = [];
   let currentDraft = null;
+  let mergedRows = 0;
 
   for (const row of selected.rows.slice(selected.index + 1)) {
     const { profile, publicValueCount } = extractRow(row, headerMap, warnings, excludedColumns);
@@ -944,7 +974,7 @@ function importProfiles() {
 
     if (currentDraft && (!profile.name || !isProfileStart(profile, currentDraft))) {
       mergeContinuation(currentDraft, profile, { mergeName: Boolean(profile.name) });
-      warnings.push(`Row ${row.rowNumber}: merged public continuation values into "${currentDraft.name}".`);
+      mergedRows += 1;
       continue;
     }
 
@@ -957,36 +987,121 @@ function importProfiles() {
     currentDraft = profile;
   }
 
-  const profiles = finalizeProfiles(drafts, warnings);
+  if (mergedRows) {
+    warnings.unshift(`Merged ${mergedRows} continuation row${mergedRows === 1 ? "" : "s"} into the profile above them (compact layout).`);
+  }
+
+  const all = finalizeProfiles(drafts, warnings);
+
+  return {
+    sheetName: selected.name,
+    all,
+    profiles: all.filter((profile) => isPublishedStatus(profile.applicationStatus)),
+    unpublished: all.filter((profile) => !isPublishedStatus(profile.applicationStatus)),
+    warnings,
+    skipped,
+    excludedColumns: [...excludedColumns],
+  };
+}
+
+// Which profiles were added, removed or changed (and which fields), keyed by id.
+export function diffProfiles(previous, next) {
+  const before = new Map(previous.map((profile) => [profile.id, profile]));
+  const after = new Map(next.map((profile) => [profile.id, profile]));
+  const changed = [];
+
+  for (const [id, profile] of after) {
+    const old = before.get(id);
+    if (!old) continue;
+    const fields = Object.keys({ ...old, ...profile }).filter(
+      (key) => JSON.stringify(old[key]) !== JSON.stringify(profile[key])
+    );
+    if (fields.length) changed.push({ id, name: profile.name, fields });
+  }
+
+  return {
+    added: next.filter((profile) => !before.has(profile.id)),
+    removed: previous.filter((profile) => !after.has(profile.id)),
+    changed,
+  };
+}
+
+function readPublished(file) {
+  if (!existsSync(file)) return { lastUpdated: null, profiles: [] };
+  try {
+    const data = JSON.parse(readFileSync(file, "utf8"));
+    return { lastUpdated: data.lastUpdated ?? null, profiles: data.profiles ?? [] };
+  } catch {
+    return { lastUpdated: null, profiles: [] };
+  }
+}
+
+function printChanges({ added, removed, changed }) {
+  for (const profile of added) console.log(`  + added    ${profile.name}`);
+  for (const profile of removed) console.log(`  - removed  ${profile.name}`);
+  for (const item of changed) console.log(`  ~ changed  ${item.name}: ${item.fields.join(", ")}`);
+}
+
+function main(args) {
+  const check = args.includes("--check");
+  const sourceArg = args[args.indexOf("--source") + 1];
+  const sourceFile = args.includes("--source") && sourceArg ? sourceArg : SOURCE_FILE;
+
+  if (!existsSync(sourceFile)) {
+    throw new Error(
+      "Missing source/tutors.xlsx. Put the latest Excel file there (or run npm run tutors:template for a clean one) and rerun."
+    );
+  }
+
+  const result = profilesFromSheets(readWorkbook(sourceFile));
+  const published = readPublished(OUTPUT_FILE);
+  const changes = diffProfiles(published.profiles, result.profiles);
+  const hasChanges = Boolean(changes.added.length || changes.removed.length || changes.changed.length);
+
+  console.log(
+    `Read ${result.all.length} profile${result.all.length === 1 ? "" : "s"} from "${result.sheetName}": ` +
+      `${result.profiles.length} published, ${result.unpublished.length} not published.`
+  );
+  for (const profile of result.unpublished) {
+    console.log(`  · not published (status "${profile.applicationStatus}"): ${profile.name}`);
+  }
+  if (result.excludedColumns.length) {
+    console.log(`Private columns left out: ${result.excludedColumns.join(", ")}.`);
+  }
+  for (const warning of result.warnings) console.warn(`Warning: ${warning}`);
+  for (const row of result.skipped) console.warn(`Skipped: ${row}`);
+
+  if (!hasChanges) {
+    console.log("data/tutors.json is already up to date. Nothing to publish.");
+    return 0;
+  }
+
+  console.log(check ? "data/tutors.json is OUT OF DATE. Changes waiting to publish:" : "Changes:");
+  printChanges(changes);
+
+  if (check) {
+    console.log("Run npm run tutors:update to apply them.");
+    return 1;
+  }
 
   mkdirSync(dirname(OUTPUT_FILE), { recursive: true });
   writeFileSync(
     OUTPUT_FILE,
     `${JSON.stringify(
-      {
-        lastUpdated: new Date().toISOString(),
-        sourceSheet: selected.name,
-        profiles,
-      },
+      { lastUpdated: new Date().toISOString(), sourceSheet: result.sheetName, profiles: result.profiles },
       null,
       2
     )}\n`
   );
-
-  console.log(`Imported ${profiles.length} profile${profiles.length === 1 ? "" : "s"} from ${selected.name}.`);
   console.log("Wrote data/tutors.json.");
-
-  if (excludedColumns.size) {
-    console.warn(`Excluded private columns from public JSON: ${[...excludedColumns].join(", ")}.`);
-  }
-
-  for (const warning of warnings) console.warn(`Warning: ${warning}`);
-  for (const row of skipped) console.warn(`Skipped: ${row}`);
+  return 0;
 }
 
-try {
-  importProfiles();
-} catch (error) {
-  console.error(error.message);
-  process.exit(1);
+if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
+  try {
+    process.exitCode = main(process.argv.slice(2));
+  } catch (error) {
+    console.error(error.message);
+    process.exit(1);
+  }
 }
