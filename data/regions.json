@@ -9,6 +9,7 @@
       "aliases": ["uae", "u a e", "emirates", "the emirates", "الإمارات", "الامارات"],
       "permitBadge": true,
       "permitName": "MoHRE Private Teacher Work Permit",
+      "permitNameAr": "تصريح عمل المعلم الخصوصي من وزارة الموارد البشرية والتوطين",
       "nationalCurricula": [],
       "cities": [
         { "name": "Abu Dhabi", "ar": "أبوظبي", "aliases": ["abudhabi", "أبو ظبي"] },

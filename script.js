@@ -9,6 +9,9 @@ const TUTOR_APPLICATION_FORM_URL = "";
 const DATA_URL = "./data/tutors.json";
 const REGIONS_URL = "./data/regions.json";
 
+// Translations (i18n.js). Data values stay in English; label() only changes what is shown.
+const { t, label, formatNumber, formatRating, formatList: joinWords, formatDate } = window.TutorCatI18n;
+
 const htmlEscapes = {
   "&": "&amp;",
   "<": "&lt;",
@@ -255,7 +258,6 @@ const normalizeLoadedProfile = (rawProfile, index) => {
 
   profile.profileType = normalizeProfileType(profile.profileType, profile);
   profile.initials = profile.initials || makeInitials(profile.name);
-  profile.role = profile.role || `${profile.subjects[0] || "Education"} specialist`;
   profile.id = profile.id || slugify(`${profile.name} ${profile.profileType}`) || `profile-${index + 1}`;
   profile.sessionModes = profile.sessionModes.length ? profile.sessionModes : ["Online"];
   profile.supportTypes = deriveSupportTypes(profile);
@@ -265,13 +267,25 @@ const normalizeLoadedProfile = (rawProfile, index) => {
 };
 
 const normalizeLoadedProfiles = (loadedProfiles) =>
-  loadedProfiles.map(normalizeLoadedProfile).filter((profile) => profile.name && profile.role);
+  loadedProfiles.map(normalizeLoadedProfile).filter((profile) => profile.name);
 
 const toOption = (option) =>
   typeof option === "string" ? { label: option, value: option } : option;
 
-const formatList = (items, fallback = "Not specified") =>
-  items && items.length ? items.join(", ") : fallback;
+const formatList = (items, fallback = "") =>
+  items && items.length ? items.join(t("list.separator")) : fallback;
+
+const labels = (kind, items) => items.map((item) => label(kind, item));
+
+// Roles typed in the workbook are shown as written; missing ones are built here so they translate.
+const displayRole = (profile) => {
+  if (profile.role) return profile.role;
+  const subject = profile.subjects[0] && label("subject", profile.subjects[0]);
+  const country = profile.countries[0] && label("destination", profile.countries[0]);
+  if (profile.profileType === "Tutor + Counselor" && subject && country) return t("role.both", { subject, country });
+  if (profile.profileType !== "Tutor" && country) return t("role.counselor", { country });
+  return subject ? t("role.tutor", { subject }) : t("role.generic");
+};
 
 const isVerifiedPublicReview = (review) =>
   review.rating !== null &&
@@ -331,17 +345,6 @@ const getRatingDisplayInfo = (profile) => {
 
 const getSortableRating = (profile) => getRatingDisplayInfo(profile).averageRating || 0;
 
-const pluralizeReviews = (count) => `${count} verified review${count === 1 ? "" : "s"}`;
-
-const formatRating = (profile) => {
-  const ratingInfo = getRatingDisplayInfo(profile);
-  if (ratingInfo.averageRating === null) return "No verified public reviews yet.";
-  if (ratingInfo.source === "manual") return "Rating shown from TutorCat records";
-  return `${ratingInfo.averageRating.toFixed(1)} out of 5 based on ${pluralizeReviews(
-    ratingInfo.reviewCount
-  )}`;
-};
-
 const getStarText = (rating) => {
   if (rating === null) return "☆☆☆☆☆";
   const filledStars = Math.max(0, Math.min(5, Math.round(rating)));
@@ -354,45 +357,31 @@ const renderRatingSummary = (profile, variant = "card") => {
   if (ratingInfo.averageRating === null) {
     return `
       <div class="rating-summary rating-summary-${variant}">
-        <span class="rating-empty">No verified public reviews yet.</span>
+        <span class="rating-empty">${escapeHtml(t("rating.none"))}</span>
       </div>
     `;
   }
 
-  const ratingText =
-    ratingInfo.source === "manual"
-      ? `Rated ${ratingInfo.averageRating.toFixed(1)} out of 5 based on ${
-          ratingInfo.reviewCount
-        } TutorCat record${ratingInfo.reviewCount === 1 ? "" : "s"}`
-      : `Rated ${ratingInfo.averageRating.toFixed(1)} out of 5 based on ${
-          ratingInfo.reviewCount
-        } verified review${ratingInfo.reviewCount === 1 ? "" : "s"}`;
+  const params = { rating: formatRating(ratingInfo.averageRating), count: ratingInfo.reviewCount };
+  const ratingText = t(ratingInfo.source === "manual" ? "rating.labelRecords" : "rating.labelVerified", params);
   const note =
-    ratingInfo.source === "manual"
-      ? "Rating shown from TutorCat records"
-      : `${ratingInfo.reviewCount} verified review${ratingInfo.reviewCount === 1 ? "" : "s"}`;
+    ratingInfo.source === "manual" ? t("rating.records") : t("rating.verifiedCount", { count: ratingInfo.reviewCount });
 
   return `
     <div class="rating-summary rating-summary-${variant}" aria-label="${escapeHtml(ratingText)}">
       <span class="rating-stars" aria-hidden="true">${getStarText(ratingInfo.averageRating)}</span>
-      <span class="rating-value">${escapeHtml(ratingInfo.averageRating.toFixed(1))}</span>
+      <span class="rating-value">${escapeHtml(formatRating(ratingInfo.averageRating))}</span>
       <span class="rating-note">${escapeHtml(note)}</span>
     </div>
   `;
 };
 
-const formatStudentLoad = (profile) =>
-  profile.currentStudents === null
-    ? "Student load not listed"
-    : `${profile.currentStudents} active students`;
-
-const formatExperience = (profile) =>
-  // A recorded "0 yrs" reads as no experience; unknown values still say "not listed".
-  profile.experience && profile.experienceYears === 0
-    ? "Under 1 yr"
-    : profile.experience || "Experience not listed";
-
-const formatAvailability = (profile) => profile.availability || "Availability on request";
+const formatExperience = (profile) => {
+  // A recorded "0 yrs" reads as under a year; unknown values still say "not listed".
+  if (!profile.experience) return t("experience.notListed");
+  if (profile.experienceYears === 0) return t("experience.underOne");
+  return t("experience.years", { count: profile.experienceYears });
+};
 
 const sanitizeMailRecipient = (recipient) =>
   String(recipient || CONTACT_EMAIL)
@@ -411,13 +400,13 @@ const hasApprovedProfileImage = (profile) =>
   profile.photoApproved === true && isSafeImageUrl(profile.imageUrl);
 
 const getProfileImageAlt = (profile) =>
-  profile.imageAlt || `Profile photo of ${profile.name}`;
+  profile.imageAlt || t("avatar.photoOf", { name: profile.name });
 
 const renderProfileAvatar = (profile, variant = "card") => {
   const hasPhoto = hasApprovedProfileImage(profile);
   const ariaAttributes = hasPhoto
     ? ""
-    : `role="img" aria-label="${escapeHtml(`${profile.name} initials avatar`)}"`;
+    : `role="img" aria-label="${escapeHtml(t("avatar.initials", { name: profile.name }))}"`;
 
   return `
     <span class="profile-avatar profile-avatar-${variant} ${profileTypeClass(profile)}${
@@ -438,7 +427,7 @@ const renderProfileAvatar = (profile, variant = "card") => {
 const renderChips = (items = [], className, limit = items.length) =>
   items
     .slice(0, limit)
-    .map((item) => `<span class="${className}">${escapeHtml(item)}</span>`)
+    .map((item) => `<span class="${className}" dir="auto">${escapeHtml(item)}</span>`)
     .join("");
 
 const renderOutcomes = (profile) =>
@@ -455,14 +444,11 @@ const renderOutcomes = (profile) =>
     )
     .join("");
 
-const REVIEW_POLICY_TEXT =
-  "All TutorCat reviews are verified by the tutor/counselor and approved by TutorCat before being displayed publicly or included in overall ratings.";
-
 const renderVerifiedReviews = (profile) => {
   const { verifiedReviews } = getVerifiedReviewStats(profile);
 
   return `
-    <p class="review-policy">${escapeHtml(REVIEW_POLICY_TEXT)}</p>
+    <p class="review-policy">${escapeHtml(t("review.policy"))}</p>
     ${
       verifiedReviews.length
         ? `
@@ -472,20 +458,20 @@ const renderVerifiedReviews = (profile) => {
                 (review) => `
                   <article class="review-card">
                     <div class="review-card-topline">
-                      <strong>${escapeHtml(review.reviewerType || "Student")}</strong>
-                      <span>${escapeHtml(review.date || "Date not listed")}</span>
+                      <strong>${escapeHtml(label("reviewerType", review.reviewerType || "Student"))}</strong>
+                      <span>${escapeHtml(review.date ? formatDate(review.date) : t("review.dateNotListed"))}</span>
                     </div>
                     <div class="review-rating" aria-label="${escapeHtml(
-                      `Rated ${review.rating.toFixed(1)} out of 5`
+                      t("review.rated", { rating: formatRating(review.rating) })
                     )}">
                       <span class="rating-stars" aria-hidden="true">${getStarText(
                         review.rating
                       )}</span>
-                      <span>${escapeHtml(review.rating.toFixed(1))}</span>
+                      <span>${escapeHtml(formatRating(review.rating))}</span>
                     </div>
                     <p>${escapeHtml(review.comment)}</p>
                     <span class="review-session">${escapeHtml(
-                      review.sessionType || "Session type not listed"
+                      review.sessionType ? label("reviewSessionType", review.sessionType) : t("review.sessionNotListed")
                     )}</span>
                   </article>
                 `
@@ -493,7 +479,7 @@ const renderVerifiedReviews = (profile) => {
               .join("")}
           </div>
         `
-        : `<p class="empty-reviews">No verified public reviews yet.</p>`
+        : `<p class="empty-reviews">${escapeHtml(t("rating.none"))}</p>`
     }
   `;
 };
@@ -535,15 +521,8 @@ const getPublicContactHref = (contact) => {
   return normalizeExternalUrl(contact.value);
 };
 
-const formatPublicContactLabel = (type) => {
-  const labels = {
-    email: "Public email",
-    whatsapp: "WhatsApp",
-    linkedin: "LinkedIn",
-    website: "Website",
-  };
-  return labels[type] || "Public contact";
-};
+const formatPublicContactLabel = (type) =>
+  ["email", "whatsapp", "linkedin", "website"].includes(type) ? t(`publicContact.${type}`) : t("publicContact.other");
 
 const renderPublicContact = (profile) => {
   const contact = getApprovedPublicContact(profile);
@@ -551,15 +530,13 @@ const renderPublicContact = (profile) => {
 
   if (!contact || !href) {
     return `
-      <p class="contact-fallback">
-        No approved public contact is listed for this profile. Use Request intro and TutorCat will route the message.
-      </p>
+      <p class="contact-fallback">${escapeHtml(t("publicContact.none"))}</p>
     `;
   }
 
   return `
     <div class="public-contact">
-      <span>Approved public contact</span>
+      <span>${escapeHtml(t("publicContact.title"))}</span>
       <a href="${escapeHtml(href)}" ${
     contact.type === "email" ? "" : 'target="_blank" rel="noopener noreferrer"'
   }>
@@ -655,6 +632,7 @@ const getReviewSubmissionTarget = (review, profile) => {
     "",
     `Public display permission: ${review.publicPermission ? "Yes" : "No"}`,
     `Date submitted: ${review.date}`,
+    `Site language: ${TutorCatI18n.getLangName()}`,
     "",
     "Note: This review should not be published or added to the tutor's rating until the tutor verifies the session and TutorCat approves the review.",
   ].join("\n");
@@ -704,6 +682,7 @@ const getApplicationSubmissionTarget = (application) => {
     `LinkedIn/portfolio/profile link: ${application.profileLink || "Not provided"}`,
     `Photo display consent: ${application.photoConsent ? "Yes" : "No"}`,
     `Submitted date: ${application.submittedDate}`,
+    `Site language: ${TutorCatI18n.getLangName()}`,
     "",
     "Note: TutorCat should review this application before adding any public profile.",
   ].join("\n");
@@ -728,20 +707,18 @@ const setFormStatus = (element, message, type = "success") => {
   element.classList.toggle("is-success", type !== "error");
 };
 
-const setSubmitButtonState = (button, isBusy, busyLabel) => {
+// The idle label comes from the button's data-i18n key, so it follows the current language.
+const setSubmitButtonState = (button, isBusy, busyLabel = "") => {
   if (!button) return;
-  if (!button.dataset.defaultLabel) {
-    button.dataset.defaultLabel = button.textContent.trim();
-  }
   button.disabled = isBusy;
-  button.textContent = isBusy ? busyLabel : button.dataset.defaultLabel;
+  button.textContent = isBusy ? busyLabel : t(button.dataset.i18n);
 };
 
 const populateReviewProfileOptions = () => {
   if (!reviewProfileSelect) return;
 
   reviewProfileSelect.innerHTML = `
-    <option value="">Choose one</option>
+    <option value="">${escapeHtml(t("form.chooseOne"))}</option>
     ${profiles
       .map(
         (profile) => `
@@ -791,9 +768,9 @@ const openReviewForm = (profileId = "") => {
 
 const fillApplicationCountries = () => {
   applicationCountry.innerHTML = optionsHtml([
-    ["", "Choose one"],
-    ...regions.countries.map((country) => [country.name, country.name]),
-    ["Other", "Other"],
+    ["", t("form.chooseOne")],
+    ...regions.countries.map((country) => [country.name, label("country", country.name)]),
+    ["Other", t("form.other")],
   ]);
 };
 
@@ -805,9 +782,9 @@ const updateApplicationPlace = () => {
 const updateApplicationLocation = () => {
   const region = findRegion(applicationCountry.value);
   applicationCity.innerHTML = optionsHtml([
-    ["", "Choose one"],
-    ...(region?.cities ?? []).map((city) => [city.name, city.name]),
-    ["Other", "Other / not listed"],
+    ["", t("form.chooseOne")],
+    ...(region?.cities ?? []).map((city) => [city.name, label("city", city.name)]),
+    ["Other", t("form.otherNotListed")],
   ]);
   applicationCityField.hidden = !region;
   updateApplicationPlace();
@@ -828,7 +805,7 @@ const handleReviewSubmit = (event) => {
 
   if (!reviewForm.checkValidity()) {
     reviewForm.reportValidity();
-    setFormStatus(reviewFormStatus, "Please complete the required review fields.", "error");
+    setFormStatus(reviewFormStatus, t("reviewForm.status.invalid"), "error");
     return;
   }
 
@@ -837,7 +814,7 @@ const handleReviewSubmit = (event) => {
   const profile = profiles.find((item) => item.id === profileId);
 
   if (!profile) {
-    setFormStatus(reviewFormStatus, "Choose a valid tutor or counselor.", "error");
+    setFormStatus(reviewFormStatus, t("reviewForm.status.badProfile"), "error");
     return;
   }
 
@@ -854,11 +831,8 @@ const handleReviewSubmit = (event) => {
   const submitButton = reviewForm.querySelector('[type="submit"]');
   const target = getReviewSubmissionTarget(review, profile);
 
-  setSubmitButtonState(submitButton, true, "Preparing submission...");
-  setFormStatus(
-    reviewFormStatus,
-    "Thank you. Your review has been submitted. It will be sent for tutor verification and TutorCat approval before appearing publicly."
-  );
+  setSubmitButtonState(submitButton, true, t("reviewForm.busy"));
+  setFormStatus(reviewFormStatus, t("reviewForm.status.sent"));
   openSubmissionTarget(target.url, target.isExternal);
   window.setTimeout(() => setSubmitButtonState(submitButton, false), 900);
 };
@@ -872,16 +846,12 @@ const handleApplicationSubmit = (event) => {
   countriesField.setCustomValidity("");
 
   if (!subjectsField.value.trim() && !countriesField.value.trim()) {
-    subjectsField.setCustomValidity("Enter at least one subject or country.");
+    subjectsField.setCustomValidity(t("applyForm.status.needSubjectOrCountry"));
   }
 
   if (!applicationForm.checkValidity()) {
     applicationForm.reportValidity();
-    setFormStatus(
-      applicationFormStatus,
-      "Please complete the required application fields.",
-      "error"
-    );
+    setFormStatus(applicationFormStatus, t("applyForm.status.invalid"), "error");
     return;
   }
 
@@ -910,11 +880,8 @@ const handleApplicationSubmit = (event) => {
   const submitButton = applicationForm.querySelector('[type="submit"]');
   const target = getApplicationSubmissionTarget(application);
 
-  setSubmitButtonState(submitButton, true, "Preparing application...");
-  setFormStatus(
-    applicationFormStatus,
-    "Thank you for applying. TutorCat will review your information before adding any public profile."
-  );
+  setSubmitButtonState(submitButton, true, t("applyForm.busy"));
+  setFormStatus(applicationFormStatus, t("applyForm.status.sent"));
   openSubmissionTarget(target.url, target.isExternal);
   window.setTimeout(() => setSubmitButtonState(submitButton, false), 900);
 };
@@ -941,6 +908,7 @@ let lastFocusedElement = null;
 let lastModalFocusedElement = null;
 let activeFormModal = null;
 let drawerCloseTimer = null;
+let openProfileId = null;
 const shortlist = new Set();
 
 const $ = (selector, root = document) => root.querySelector(selector);
@@ -995,7 +963,6 @@ const isCounselor = (profile) => profile.profileType.includes("Counselor") || pr
 // Not to be confused with `countries`, the study-abroad destinations counselors advise on.
 const ONLINE_ANYWHERE = "online";
 const findRegion = (name) => regions.countries.find((country) => country.name === name);
-const shortCountry = (name) => findRegion(name)?.short || name;
 const offersOnline = (profile) => profile.sessionModes.some((mode) => /online|hybrid/i.test(mode));
 const offersInPerson = (profile) => profile.sessionModes.some((mode) => /in.?person|hybrid|home|face/i.test(mode));
 // Online tutors teach their base country plus any Serves Countries.
@@ -1020,9 +987,6 @@ const checkIcon =
 // Facts line (computed from the data so it never overstates)
 // ---------------------------------------------------------------------------
 
-const joinWords = (items) =>
-  items.length <= 1 ? items.join("") : `${items.slice(0, -1).join(", ")} and ${items[items.length - 1]}`;
-
 const renderFacts = () => {
   if (!profiles.length) {
     factsLine.hidden = true;
@@ -1033,13 +997,15 @@ const renderFacts = () => {
   const modes = uniqueList(profiles.flatMap((profile) => profile.sessionModes));
   const gulf = uniqueList(profiles.flatMap(servedCountries)).filter(findRegion);
   const parts = [
-    `${profiles.length} specialist${profiles.length === 1 ? "" : "s"} today`,
-    subjects.length ? `teaching ${subjects.length} subject${subjects.length === 1 ? "" : "s"}` : "",
-    gulf.length ? `across ${gulf.length} Gulf countr${gulf.length === 1 ? "y" : "ies"}` : "",
-    countries.length ? `with counseling for ${joinWords(countries)}` : "",
+    t("facts.specialists", { count: profiles.length }),
+    subjects.length ? t("facts.subjects", { count: subjects.length }) : "",
+    gulf.length ? t("facts.gulf", { count: gulf.length }) : "",
+    countries.length ? t("facts.destinations", { list: joinWords(labels("destination", countries)) }) : "",
   ].filter(Boolean);
-  const format = modes.length === 1 ? ` All sessions are ${modes[0].toLowerCase()}.` : "";
-  factsLine.textContent = `${parts.join(", ")}.${format}`;
+  const mode = modes.length === 1 ? label("sessionMode", modes[0]).toLocaleLowerCase(document.documentElement.lang) : "";
+  factsLine.textContent = [t("facts.sentence", { clauses: parts.join(t("list.separator")) }), mode && t("facts.allSessions", { mode })]
+    .filter(Boolean)
+    .join(" ");
   factsLine.hidden = false;
 };
 
@@ -1050,11 +1016,14 @@ const renderFacts = () => {
 const fillMatchTopics = () => {
   const options =
     need === "tutoring" ? allSubjects() : need === "counseling" ? allCountries() : [...allSubjects(), ...allCountries()];
-  $("#matchTopicLabel").textContent =
-    need === "tutoring" ? "Subject" : need === "counseling" ? "Destination" : "Subject or destination";
-  matchTopic.innerHTML =
-    '<option value="">Any</option>' +
-    options.map((option) => `<option>${escapeHtml(option)}</option>`).join("");
+  $("#matchTopicLabel").textContent = t(
+    need === "tutoring" ? "hero.topic.subject" : need === "counseling" ? "hero.topic.destination" : "hero.topic.both"
+  );
+  const subjects = new Set(allSubjects());
+  matchTopic.innerHTML = optionsHtml([
+    ["", t("filter.any")],
+    ...options.map((option) => [option, label(subjects.has(option) ? "subject" : "destination", option)]),
+  ]);
 };
 
 const setNeed = (button) => {
@@ -1064,7 +1033,7 @@ const setNeed = (button) => {
     item.setAttribute("aria-checked", String(selected));
     item.tabIndex = selected ? 0 : -1;
   });
-  $(".seg-indicator", needGroup).style.transform = `translateX(${buttons.indexOf(button) * 100}%)`;
+  $(".seg-indicator", needGroup).style.setProperty("--seg-index", buttons.indexOf(button));
   need = button.dataset.need;
   fillMatchTopics();
 };
@@ -1106,12 +1075,12 @@ const matchesFilter = (profile) =>
   (!filter.curriculum || profile.curricula.includes(filter.curriculum));
 
 const getChipOptions = () => [
-  { type: "all", value: "", label: "All" },
-  { type: "tutoring", value: "", label: "Tutoring" },
-  { type: "counseling", value: "", label: "Counseling" },
-  ...allSubjects().map((value) => ({ type: "subject", value, label: value })),
-  ...allCountries().map((value) => ({ type: "country", value, label: value })),
-  ...(shortlist.size ? [{ type: "saved", value: "", label: `Saved (${shortlist.size})` }] : []),
+  { type: "all", value: "", label: t("chip.all") },
+  { type: "tutoring", value: "", label: t("chip.tutoring") },
+  { type: "counseling", value: "", label: t("chip.counseling") },
+  ...allSubjects().map((value) => ({ type: "subject", value, label: label("subject", value) })),
+  ...allCountries().map((value) => ({ type: "country", value, label: label("destination", value) })),
+  ...(shortlist.size ? [{ type: "saved", value: "", label: t("chip.saved", { count: shortlist.size }) }] : []),
 ];
 
 const renderChipFilters = () => {
@@ -1130,42 +1099,43 @@ const renderChipFilters = () => {
 
 // "Dubai, UAE" for in-person tutors, "Online in UAE and Oman" for online-only ones.
 const describeLocation = (profile) => {
-  const base = [profile.city, profile.baseCountry && shortCountry(profile.baseCountry)].filter(Boolean).join(", ");
-  const online = offersOnline(profile) ? servedCountries(profile).map(shortCountry) : [];
+  const base = [label("city", profile.city), label("countryShort", profile.baseCountry)].filter(Boolean).join(t("list.separator"));
+  const online = offersOnline(profile) ? labels("countryShort", servedCountries(profile)) : [];
   if (base && offersInPerson(profile)) return base;
-  return online.length ? `Online in ${joinWords(online)}` : base;
+  return online.length ? t("card.onlineIn", { list: joinWords(online) }) : base;
 };
 
 const renderPermitBadge = (profile) =>
-  hasVerifiedPermit(profile) ? `<p class="permit-badge">${checkIcon}Permit verified</p>` : "";
+  hasVerifiedPermit(profile) ? `<p class="permit-badge">${checkIcon}${escapeHtml(t("card.permitVerified"))}</p>` : "";
 
 const renderProfileCard = (profile, index, animate) => {
   const hasReviews = getVerifiedReviewStats(profile).verifiedReviews.length > 0;
+  const tags = profile.tags.slice(0, 2).join(", ");
   const details = [
-    describeLocation(profile),
-    profile.tags.slice(0, 2).join(", "),
-    formatList(profile.sessionModes, ""),
-    `${formatExperience(profile)} experience`,
+    escapeHtml(describeLocation(profile)),
+    tags && `<bdi>${escapeHtml(tags)}</bdi>`,
+    escapeHtml(formatList(labels("sessionMode", profile.sessionModes))),
+    escapeHtml(formatExperience(profile)),
   ]
     .filter(Boolean)
-    .join(". ");
+    .join(escapeHtml(t("sentence.separator")));
   return `
     <article class="card${animate ? " enter" : ""}" style="--i:${index}">
       <div class="card-top">
         ${renderProfileAvatar(profile, "card")}
         <div class="card-heading">
-          <h3>${escapeHtml(profile.name)}</h3>
-          <p class="role">${escapeHtml(profile.role)}</p>
+          <h3 dir="auto">${escapeHtml(profile.name)}</h3>
+          <p class="role" dir="auto">${escapeHtml(displayRole(profile))}</p>
           ${renderPermitBadge(profile)}
         </div>
       </div>
-      ${profile.subjects.length ? `<div class="tags">${renderChips(profile.subjects, "tag")}</div>` : ""}
+      ${profile.subjects.length ? `<div class="tags">${renderChips(labels("subject", profile.subjects), "tag")}</div>` : ""}
       ${hasReviews ? renderRatingSummary(profile, "card") : ""}
-      <p class="card-meta">${escapeHtml(details)}.</p>
+      <p class="card-meta">${details}${escapeHtml(t("sentence.end"))}</p>
       <div class="card-actions">
-        <button class="btn btn-quiet" type="button" data-open="${escapeHtml(profile.id)}">View profile</button>
+        <button class="btn btn-quiet" type="button" data-open="${escapeHtml(profile.id)}">${escapeHtml(t("card.viewProfile"))}</button>
         <button class="btn btn-quiet save-btn" type="button" data-save="${escapeHtml(profile.id)}"
-          aria-pressed="${shortlist.has(profile.id)}" aria-label="Save ${escapeHtml(profile.name)} to shortlist">${bookmarkIcon}</button>
+          aria-pressed="${shortlist.has(profile.id)}" aria-label="${escapeHtml(t("card.save", { name: profile.name }))}">${bookmarkIcon}</button>
       </div>
     </article>`;
 };
@@ -1175,17 +1145,11 @@ const renderCards = (animate = false) => {
   cardGrid.innerHTML = visible.map((profile, index) => renderProfileCard(profile, index, animate && !prefersReducedMotion())).join("");
   emptyState.hidden = visible.length > 0;
 
-  $("h3", emptyState).textContent = dataLoadFailed
-    ? "Specialist profiles could not load."
-    : "No specialist matches this yet.";
-  $("p", emptyState).textContent = dataLoadFailed
-    ? "Please refresh the page, or use the contact form below and we will match you directly."
-    : "Tell us what you need and we will look for the right person.";
+  $("h3", emptyState).textContent = t(dataLoadFailed ? "catalog.failed.title" : "catalog.empty.title");
+  $("p", emptyState).textContent = t(dataLoadFailed ? "catalog.failed.body" : "catalog.empty.body");
   $("#showAll").hidden = dataLoadFailed;
 
-  catalogStatus.textContent = dataLoadFailed
-    ? "Specialist profiles could not load."
-    : `${visible.length} specialist${visible.length === 1 ? "" : "s"} shown.`;
+  catalogStatus.textContent = dataLoadFailed ? t("catalog.failed.title") : t("catalog.shown", { count: visible.length });
 };
 
 const setFilter = (type, value = "") => {
@@ -1210,15 +1174,15 @@ const optionsHtml = (items) =>
 
 const whereOptionsHtml = () =>
   optionsHtml([
-    ["", "Anywhere"],
-    ...(regions.countries.length ? [[ONLINE_ANYWHERE, "Online, anywhere in the Gulf"]] : []),
-    ...regions.countries.map((country) => [country.name, country.name]),
+    ["", t("filter.anywhere")],
+    ...(regions.countries.length ? [[ONLINE_ANYWHERE, t("filter.onlineAnywhere")]] : []),
+    ...regions.countries.map((country) => [country.name, label("country", country.name)]),
   ]);
 
 // The City select only appears once a Gulf country with cities is chosen.
 const fillCitySelect = (select, field, where, value = "") => {
   const cities = findRegion(where)?.cities ?? [];
-  select.innerHTML = optionsHtml([["", "Any city"], ...cities.map((city) => [city.name, city.name])]);
+  select.innerHTML = optionsHtml([["", t("filter.anyCity")], ...cities.map((city) => [city.name, label("city", city.name)])]);
   select.value = cities.some((city) => city.name === value) ? value : "";
   field.hidden = !cities.length;
 };
@@ -1237,7 +1201,10 @@ const renderLocationFilters = () => {
   matchWhere.innerHTML = whereOptionsHtml();
   $(".match-where").hidden = !hasRegions;
   fillCitySelect(matchCity, matchCityField, "");
-  curriculumFilter.innerHTML = optionsHtml([["", "Any curriculum"], ...curricula.map((name) => [name, name])]);
+  curriculumFilter.innerHTML = optionsHtml([
+    ["", t("filter.anyCurriculum")],
+    ...curricula.map((name) => [name, label("curriculum", name)]),
+  ]);
   curriculumFilterField.hidden = !curricula.length;
   filterRow.hidden = !profiles.length || (!hasRegions && !curricula.length);
   syncFilterControls();
@@ -1258,9 +1225,13 @@ const setCurriculum = (curriculum) => {
 // Shortlist
 // ---------------------------------------------------------------------------
 
+const renderShortlistCount = () => {
+  shortlistCount.textContent = formatNumber(shortlist.size);
+  shortlistButton.setAttribute("aria-label", t("nav.shortlistLabel", { count: shortlist.size }));
+};
+
 const updateShortlistCount = () => {
-  shortlistCount.textContent = shortlist.size;
-  shortlistButton.setAttribute("aria-label", `Shortlist, ${shortlist.size} saved`);
+  renderShortlistCount();
   if (!prefersReducedMotion()) {
     shortlistCount.animate(
       [
@@ -1302,13 +1273,15 @@ const renderCountries = () => {
         .filter((profile) => profile.countries.includes(country))
         .map((profile) => {
           const university = getUniversity(profile);
-          return university ? `${profile.name}, who studied at ${university}` : profile.name;
+          return university ? t("countries.studiedAt", { name: profile.name, university }) : profile.name;
         });
       return `
         <div class="country">
-          <h3 class="country-name">${escapeHtml(country)}</h3>
-          <p>Counselor${counselors.length === 1 ? "" : "s"}: ${escapeHtml(counselors.join("; "))}.</p>
-          <button class="btn btn-quiet" type="button" data-country="${escapeHtml(country)}">See ${escapeHtml(country)} counseling</button>
+          <h3 class="country-name">${escapeHtml(label("destination", country))}</h3>
+          <p>${escapeHtml(t("countries.counselors", { count: counselors.length, list: counselors.join(t("list.semicolon")) }))}</p>
+          <button class="btn btn-quiet" type="button" data-country="${escapeHtml(country)}">${escapeHtml(
+            t("countries.see", { country: label("destination", country) })
+          )}</button>
         </div>`;
     })
     .join("");
@@ -1331,58 +1304,70 @@ const renderDrawer = (profile) => {
     .filter(Boolean)
     .map(escapeHtml)
     .join("<br />");
-  const listOrEmpty = (items) => (items.length ? escapeHtml(items.join(", ")) : "");
+  const listOrEmpty = (items) => (items.length ? escapeHtml(items.join(t("list.separator"))) : "");
+  // Tutors' own words are never machine-translated: Arabic mode shows their Arabic bio if they wrote one.
+  const useArabicBio = TutorCatI18n.getLang() === "ar" && profile.shortBioAr;
+  const bio = useArabicBio ? profile.shortBioAr : profile.shortBio;
+  const bioLang = useArabicBio ? "ar" : "en";
   const hasReviews = getVerifiedReviewStats(profile).verifiedReviews.length > 0;
   const hasContact = Boolean(getPublicContactHref(getApprovedPublicContact(profile)));
 
   drawer.innerHTML = `
     <div class="drawer-head">
       ${renderProfileAvatar(profile, "panel")}
-      <button class="btn btn-quiet icon-btn" type="button" data-close-drawer aria-label="Close profile">${closeIcon}</button>
+      <button class="btn btn-quiet icon-btn" type="button" data-close-drawer aria-label="${escapeHtml(t("drawer.close"))}">${closeIcon}</button>
     </div>
     <div>
-      <h2 id="drawerName">${escapeHtml(profile.name)}</h2>
-      <p class="role">${escapeHtml(profile.role)}</p>
+      <h2 id="drawerName" dir="auto">${escapeHtml(profile.name)}</h2>
+      <p class="role" dir="auto">${escapeHtml(displayRole(profile))}</p>
       ${renderPermitBadge(profile)}
     </div>
-    ${profile.shortBio ? `<p>${escapeHtml(profile.shortBio)}</p>` : ""}
+    ${bio ? `<p lang="${bioLang}" dir="auto">${escapeHtml(bio)}</p>` : ""}
     <dl class="detail-list">
       ${renderDetailRows([
-        ["Education and experience", education],
-        ["Subjects", listOrEmpty(profile.subjects)],
-        ["Curricula and levels", listOrEmpty(profile.tags)],
-        ["Counseling for", listOrEmpty(profile.countries)],
-        ["Counseling topics", listOrEmpty(profile.counselingTopics)],
-        ["Languages", listOrEmpty(profile.languages)],
-        ["Based in", escapeHtml([profile.city, profile.baseCountry].filter(Boolean).join(", "))],
-        ["Teaches online in", offersOnline(profile) ? escapeHtml(joinWords(servedCountries(profile))) : ""],
-        ["Location", !profile.baseCountry && profile.location ? escapeHtml(profile.location) : ""],
-        ["Permit", hasVerifiedPermit(profile) ? escapeHtml(`${findRegion(profile.permitCountry).permitName}, checked by the TutorCat team`) : ""],
-        ["Format and experience", escapeHtml(`${formatList(profile.sessionModes, "Online")}. ${formatExperience(profile)}.`)],
-        ["Availability", profile.availability ? escapeHtml(profile.availability) : ""],
-        ["Parent note", profile.parentNote ? escapeHtml(profile.parentNote) : ""],
+        [t("drawer.education"), education],
+        [t("drawer.subjects"), listOrEmpty(labels("subject", profile.subjects))],
+        [t("drawer.curricula"), profile.tags.length ? `<bdi>${escapeHtml(profile.tags.join(", "))}</bdi>` : ""],
+        [t("drawer.destinations"), listOrEmpty(labels("destination", profile.countries))],
+        [t("drawer.topics"), listOrEmpty(profile.counselingTopics)],
+        [t("drawer.languages"), listOrEmpty(labels("language", profile.languages))],
+        [t("drawer.basedIn"), listOrEmpty([label("city", profile.city), label("country", profile.baseCountry)].filter(Boolean))],
+        [t("drawer.onlineIn"), offersOnline(profile) ? escapeHtml(joinWords(labels("country", servedCountries(profile)))) : ""],
+        [t("drawer.location"), !profile.baseCountry && profile.location ? escapeHtml(profile.location) : ""],
+        [t("drawer.permit"), hasVerifiedPermit(profile) ? escapeHtml(t("drawer.permitDetail", { permit: label("permit", profile.permitCountry) })) : ""],
+        [
+          t("drawer.format"),
+          escapeHtml(
+            [formatList(labels("sessionMode", profile.sessionModes), label("sessionMode", "Online")), formatExperience(profile)].join(
+              t("sentence.separator")
+            ) + t("sentence.end")
+          ),
+        ],
+        [t("drawer.availability"), profile.availability ? escapeHtml(profile.availability) : ""],
+        [t("drawer.parentNote"), profile.parentNote ? escapeHtml(profile.parentNote) : ""],
       ])}
     </dl>
     ${
       profile.outcomes.length
-        ? `<div class="outcomes"><h3>Outcomes</h3><table class="outcome-table"><thead><tr><th>Area</th><th>Before</th><th>After</th><th>Context</th></tr></thead><tbody>${renderOutcomes(profile)}</tbody></table></div>`
+        ? `<div class="outcomes"><h3>${escapeHtml(t("drawer.outcomes"))}</h3><table class="outcome-table"><thead><tr><th>${escapeHtml(t("drawer.outcomeArea"))}</th><th>${escapeHtml(t("drawer.outcomeBefore"))}</th><th>${escapeHtml(t("drawer.outcomeAfter"))}</th><th>${escapeHtml(t("drawer.outcomeContext"))}</th></tr></thead><tbody>${renderOutcomes(profile)}</tbody></table></div>`
         : ""
     }
     ${hasReviews ? `<div class="drawer-reviews">${renderRatingSummary(profile, "panel")}${renderVerifiedReviews(profile)}</div>` : ""}
     ${hasContact ? renderPublicContact(profile) : ""}
-    ${hasApprovedProfileImage(profile) ? "" : '<p class="photo-note">Photo will be added once the specialist approves one.</p>'}
+    ${hasApprovedProfileImage(profile) ? "" : `<p class="photo-note">${escapeHtml(t("drawer.photoNote"))}</p>`}
     <div class="drawer-actions">
-      <button class="btn btn-primary" type="button" data-request="${escapeHtml(profile.id)}">Request an introduction</button>
+      <button class="btn btn-primary" type="button" data-request="${escapeHtml(profile.id)}">${escapeHtml(t("drawer.request"))}</button>
       <button class="btn btn-quiet save-btn" type="button" data-save="${escapeHtml(profile.id)}"
-        aria-pressed="${shortlist.has(profile.id)}" aria-label="Save ${escapeHtml(profile.name)} to shortlist">${bookmarkIcon}</button>
+        aria-pressed="${shortlist.has(profile.id)}" aria-label="${escapeHtml(t("card.save", { name: profile.name }))}">${bookmarkIcon}</button>
     </div>
-    <button class="text-btn" type="button" data-rate="${escapeHtml(profile.id)}">Leave a review for ${escapeHtml(profile.name)}</button>`;
+    <button class="text-btn" type="button" data-rate="${escapeHtml(profile.id)}">${escapeHtml(t("drawer.review", { name: profile.name }))}</button>`;
 };
 
 const openDrawer = (id) => {
   const profile = profiles.find((item) => item.id === id);
   if (!profile) return;
   lastFocusedElement = document.activeElement;
+  openProfileId = id;
   renderDrawer(profile);
   window.clearTimeout(drawerCloseTimer);
   drawerRoot.hidden = false;
@@ -1415,7 +1400,7 @@ const getOpenDialog = () => {
 
 const fillContactSpecialists = () => {
   contactSpecialist.innerHTML =
-    '<option value="">No preference</option>' +
+    `<option value="">${escapeHtml(t("contact.noPreference"))}</option>` +
     profiles.map((profile) => `<option value="${escapeHtml(profile.id)}">${escapeHtml(profile.name)}</option>`).join("");
 };
 
@@ -1436,7 +1421,7 @@ const handleContactSubmit = (event) => {
   if (!contactForm.checkValidity() || emailInvalid) {
     const firstInvalid = contactForm.querySelector(":invalid");
     (emailInvalid ? emailField : firstInvalid)?.focus();
-    setFormStatus(contactStatus, "Please complete the highlighted fields.", "error");
+    setFormStatus(contactStatus, t("contact.status.invalid"), "error");
     return;
   }
 
@@ -1450,12 +1435,13 @@ const handleContactSubmit = (event) => {
     `Student level: ${level}`,
     `Support type: ${support}`,
     `Specialist: ${profile ? profile.name : "No preference"}`,
+    `Site language: ${TutorCatI18n.getLangName()}`,
     "",
     "Message:",
     getTrimmedFormValue(formData, "message") || "Not provided",
   ].join("\n");
 
-  setFormStatus(contactStatus, "Your email app should open with this request ready to send.");
+  setFormStatus(contactStatus, t("contact.status.sent"));
   window.location.href = createMailto(
     profile ? `TutorCat intro request: ${profile.name}` : `TutorCat request: ${support} for ${level}`,
     body
@@ -1469,7 +1455,7 @@ const handleContactSubmit = (event) => {
 const setMenu = (open) => {
   menuPanel.dataset.state = open ? "open" : "closed";
   menuButton.setAttribute("aria-expanded", String(open));
-  menuButton.setAttribute("aria-label", open ? "Close menu" : "Open menu");
+  menuButton.setAttribute("aria-label", t(open ? "nav.closeMenu" : "nav.openMenu"));
 };
 
 const toggleFaq = (button) => {
@@ -1512,8 +1498,8 @@ const loadRegions = async () => {
   }
 };
 
-const initializeApp = async () => {
-  await Promise.all([loadProfiles(), loadRegions()]);
+// Everything built from the data or from translations.
+const renderAll = () => {
   renderFacts();
   fillMatchTopics();
   renderLocationFilters();
@@ -1523,6 +1509,35 @@ const initializeApp = async () => {
   renderCountries();
   fillContactSpecialists();
   populateReviewProfileOptions();
+  renderShortlistCount();
+  setMenu(menuPanel.dataset.state === "open");
+};
+
+// A language switch rebuilds the text but keeps every choice the visitor already made.
+const renderLanguage = () => {
+  const saved = [matchTopic, matchWhere, matchCity, contactSpecialist, reviewProfileSelect, applicationCountry, applicationCity].map(
+    (select) => select.value
+  );
+  const [topic, where, city, specialist, reviewProfile, country, appCity] = saved;
+  renderAll();
+  matchTopic.value = topic;
+  matchWhere.value = where;
+  fillCitySelect(matchCity, matchCityField, where, city);
+  contactSpecialist.value = specialist;
+  reviewProfileSelect.value = reviewProfile;
+  applicationCountry.value = country;
+  updateApplicationLocation();
+  applicationCity.value = appCity;
+  updateApplicationPlace();
+  const openProfile = !drawerRoot.hidden && profiles.find((profile) => profile.id === openProfileId);
+  if (openProfile) renderDrawer(openProfile);
+};
+
+const initializeApp = async () => {
+  await Promise.all([loadProfiles(), loadRegions(), TutorCatI18n.ready]);
+  TutorCatI18n.setRegions(regions);
+  renderAll();
+  TutorCatI18n.onChange(renderLanguage);
 };
 
 // ---------------------------------------------------------------------------
@@ -1539,7 +1554,9 @@ needGroup.addEventListener("keydown", (event) => {
   event.preventDefault();
   const buttons = [...needGroup.querySelectorAll("[data-need]")];
   const current = buttons.findIndex((button) => button.getAttribute("aria-checked") === "true");
-  const step = event.key === "ArrowRight" || event.key === "ArrowDown" ? 1 : -1;
+  // "Next" is to the left in right-to-left pages.
+  const forward = document.documentElement.dir === "rtl" ? "ArrowLeft" : "ArrowRight";
+  const step = event.key === forward || event.key === "ArrowDown" ? 1 : -1;
   const next = buttons[(current + step + buttons.length) % buttons.length];
   setNeed(next);
   next.focus();
@@ -1568,6 +1585,17 @@ cardGrid.addEventListener("click", (event) => {
 });
 
 $("#showAll").addEventListener("click", resetFilters);
+
+// Header and mobile-menu toggle; each button's lang attribute is the language it switches to.
+document.querySelectorAll("[data-lang-toggle]").forEach((button) => {
+  button.addEventListener("click", () => {
+    if (menuPanel.contains(button)) {
+      setMenu(false);
+      menuButton.focus();
+    }
+    TutorCatI18n.setLocale(button.getAttribute("lang"), { remember: true });
+  });
+});
 
 matchWhere.addEventListener("change", () => fillCitySelect(matchCity, matchCityField, matchWhere.value));
 whereFilter.addEventListener("change", () => setWhere(whereFilter.value));
@@ -1657,7 +1685,7 @@ document.addEventListener(
     const avatar = image.closest(".profile-avatar");
     avatar.classList.add("is-image-broken");
     avatar.setAttribute("role", "img");
-    avatar.setAttribute("aria-label", `${avatar.dataset.avatarName || "TutorCat specialist"} initials avatar`);
+    avatar.setAttribute("aria-label", t("avatar.initials", { name: avatar.dataset.avatarName || t("avatar.fallbackName") }));
     image.removeAttribute("src");
   },
   true

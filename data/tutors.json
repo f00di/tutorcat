@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-10-12T08:29:35.187Z",
+  "lastUpdated": "2026-10-12T08:49:47.995Z",
   "sourceSheet": "Sheet1",
   "profiles": [
     {
@@ -7,7 +7,7 @@
       "name": "Hassan Ansari",
       "initials": "HA",
       "profileType": "Tutor + Counselor",
-      "role": "Math tutor and United States counselor",
+      "role": "",
       "subjects": [
         "Math",
         "Computer Science"
@@ -65,7 +65,7 @@
       "name": "Shweta Nundlall",
       "initials": "SN",
       "profileType": "Tutor + Counselor",
-      "role": "Psychology tutor and South Africa counselor",
+      "role": "",
       "subjects": [
         "Psychology",
         "English Language",
@@ -124,7 +124,7 @@
       "name": "Shady Bolos",
       "initials": "SB",
       "profileType": "Tutor + Counselor",
-      "role": "Math tutor and Czech Republic counselor",
+      "role": "",
       "subjects": [
         "Math",
         "Biology",

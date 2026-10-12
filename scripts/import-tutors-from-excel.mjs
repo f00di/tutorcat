@@ -1062,9 +1062,9 @@ function finalizeProfiles(drafts, warnings, regions) {
       profile.profileType = "Tutor";
     }
 
+    // Left blank, the site builds the role from subjects and destinations so it can be translated.
     if (!profile.role) {
-      profile.role = generateRole(profile);
-      warnings.push(`Row for "${profile.name}": role missing, generated "${profile.role}".`);
+      warnings.push(`Row for "${profile.name}": role missing, the site will show "${generateRole(profile)}".`);
     }
 
     if (!profile.initials) {

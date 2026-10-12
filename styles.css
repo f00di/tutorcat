@@ -22,6 +22,8 @@
 
   --font-display: "Schibsted Grotesk", "Helvetica Neue", Arial, sans-serif;
   --font-body: "Figtree", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-arabic: "IBM Plex Sans Arabic", "Geeza Pro", "Segoe UI", Tahoma, sans-serif;
+  --dir: 1;
 
   --ease-out: cubic-bezier(0.23, 1, 0.32, 1);
   --ease-drawer: cubic-bezier(0.32, 0.72, 0, 1);
@@ -151,7 +153,7 @@ section {
 
 .skip-link {
   position: absolute;
-  left: 16px;
+  inset-inline-start: 16px;
   top: -60px;
   z-index: 60;
   padding: 10px 16px;
@@ -230,7 +232,7 @@ section {
   background: none;
   color: var(--teal-text);
   font: 600 0.98rem var(--font-body);
-  text-align: left;
+  text-align: start;
   text-decoration: underline;
   text-underline-offset: 3px;
   cursor: pointer;
@@ -289,7 +291,7 @@ section {
 .nav {
   display: flex;
   gap: 4px;
-  margin-left: auto;
+  margin-inline-start: auto;
 }
 
 .nav a {
@@ -415,8 +417,10 @@ section {
   position: absolute;
   top: 4px;
   bottom: 4px;
-  left: 4px;
+  inset-inline-start: 4px;
   width: calc((100% - 8px) / 3);
+  /* --seg-index is set by script.js; --dir flips the slide in right-to-left pages. */
+  transform: translateX(calc(var(--seg-index, 0) * 100% * var(--dir)));
   border-radius: 999px;
   background: var(--surface);
   box-shadow: 0 1px 3px rgba(11, 60, 52, 0.16);
@@ -926,8 +930,7 @@ textarea {
   content: "";
   position: absolute;
   top: 18px;
-  left: 18px;
-  right: 18px;
+  inset-inline: 18px;
   height: 1px;
   background: var(--line);
 }
@@ -989,7 +992,7 @@ textarea {
   background: none;
   color: var(--ink);
   font: 600 1.08rem var(--font-body);
-  text-align: left;
+  text-align: start;
   cursor: pointer;
 }
 
@@ -1128,7 +1131,7 @@ textarea {
 .drawer {
   position: absolute;
   top: 0;
-  right: 0;
+  inset-inline-end: 0;
   bottom: 0;
   display: grid;
   align-content: start;
@@ -1136,9 +1139,9 @@ textarea {
   width: min(460px, 100%);
   padding: 24px clamp(20px, 4vw, 32px) calc(32px + env(safe-area-inset-bottom, 0px));
   overflow-y: auto;
-  border-left: 1px solid var(--line);
+  border-inline-start: 1px solid var(--line);
   background: var(--surface);
-  transform: translateX(100%);
+  transform: translateX(calc(100% * var(--dir)));
   transition: transform 220ms var(--ease-out);
 }
 
@@ -1199,9 +1202,10 @@ textarea {
 
 .outcome-table th,
 .outcome-table td {
-  padding: 8px 10px 8px 0;
+  padding-block: 8px;
+  padding-inline: 0 10px;
   border-bottom: 1px solid var(--line);
-  text-align: left;
+  text-align: start;
 }
 
 .drawer-reviews {
@@ -1265,14 +1269,14 @@ textarea {
 .modal-close {
   position: absolute;
   top: 16px;
-  right: 16px;
+  inset-inline-end: 16px;
 }
 
 .modal-heading {
   display: grid;
   gap: 10px;
   margin-bottom: 24px;
-  padding-right: 52px;
+  padding-inline-end: 52px;
 }
 
 .modal-heading h2 {
@@ -1332,7 +1336,7 @@ textarea {
   }
 
   .header-actions {
-    margin-left: auto;
+    margin-inline-start: auto;
   }
 
   .menu-btn {
@@ -1342,7 +1346,7 @@ textarea {
   .menu-panel {
     position: absolute;
     top: 60px;
-    right: var(--gutter);
+    inset-inline-end: var(--gutter);
     display: grid;
     width: min(260px, calc(100vw - 32px));
     padding: 8px;
@@ -1439,11 +1443,11 @@ textarea {
 
   .drawer {
     top: auto;
-    left: 0;
+    inset-inline-start: 0;
     width: 100%;
     max-height: 88dvh;
     border-top: 1px solid var(--line);
-    border-left: 0;
+    border-inline-start: 0;
     border-radius: 20px 20px 0 0;
     transform: translateY(100%);
   }
@@ -1477,4 +1481,98 @@ textarea {
   .drawer-root.is-open .drawer {
     opacity: 1;
   }
+}
+
+/* Language toggle (header + mobile menu) */
+.lang-toggle {
+  min-height: 44px;
+  padding: 0 14px;
+}
+
+.lang-toggle:lang(ar) {
+  font-family: var(--font-arabic);
+}
+
+.menu-panel .lang-toggle {
+  min-height: 0;
+  padding: 12px 14px;
+  border: 0;
+  border-radius: 10px;
+  background: none;
+  color: var(--teal-text);
+  font-weight: 600;
+  font-size: 1rem;
+  text-align: start;
+  cursor: pointer;
+}
+
+/* Arabic and right-to-left. Latin text (TutorCat, course codes, digits) keeps the brand fonts;
+   Arabic letters fall back to IBM Plex Sans Arabic. Arabic is never letter-spaced. */
+[dir="rtl"] {
+  --dir: -1;
+}
+
+:root:lang(ar) {
+  --font-display: "Schibsted Grotesk", var(--font-arabic);
+  --font-body: "Figtree", var(--font-arabic);
+}
+
+:root:lang(ar) body {
+  line-height: 1.8;
+}
+
+:root:lang(ar) * {
+  letter-spacing: 0;
+}
+
+:root:lang(ar) :is(h1, h2, h3) {
+  line-height: 1.35;
+}
+
+:root:lang(ar) .btn {
+  line-height: 1.4;
+}
+
+[dir="rtl"] .icon-forward {
+  transform: scaleX(-1);
+}
+
+[dir="rtl"] .country {
+  box-shadow: 1px 0 0 var(--line), 0 -1px 0 var(--line);
+}
+
+[dir="rtl"] .menu-panel {
+  transform-origin: top left;
+}
+
+/* Small phones: brand, language toggle, shortlist and menu share one row. */
+@media (max-width: 700px) {
+  .header-row {
+    gap: 10px;
+  }
+
+  .header-actions {
+    gap: 4px;
+  }
+
+  .shortlist-btn,
+  .header-actions .lang-toggle {
+    padding-inline: 8px;
+  }
+}
+
+@media (max-width: 350px) {
+  .site-header .brand > span:not(.brand-mark) {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+}
+
+/* Arabic links stay hidden for a moment until the Arabic text is in (inline script in index.html). */
+.i18n-pending body {
+  visibility: hidden;
 }

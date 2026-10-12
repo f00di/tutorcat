@@ -66,3 +66,24 @@ test("index.html only references files that exist", () => {
   assert.ok(refs.length > 0);
   for (const ref of refs) assert.ok(existsSync(new URL(ref, root)), `missing ${ref}`);
 });
+
+test("files script.js fetches exist", () => {
+  const paths = [...read("script.js").matchAll(/"\.\/([^"]+\.json)"/g)].map((match) => match[1]);
+  assert.ok(paths.length >= 2);
+  for (const path of paths) assert.ok(existsSync(new URL(path, root)), `missing ${path}`);
+});
+
+test("the deploy workflow publishes every file the page needs", () => {
+  const stage = read(".github/workflows/deploy-pages.yml").match(/- name: Stage site[\s\S]*?(?=\n\s*- name:)/)[0];
+  const published = new Set(
+    [...stage.matchAll(/^\s*cp (?:-R )?(.+?) _site\/$/gm)].flatMap((match) => match[1].split(/\s+/))
+  );
+  const html = read("index.html");
+  const needed = [
+    ...[...html.matchAll(/(?:src|href)="([^"#]+)"/g)].map((match) => match[1]).filter((ref) => !/^(https?:|mailto:|data:)/.test(ref)),
+    ...[...read("script.js").matchAll(/"\.\/([^"]+\.json)"/g)].map((match) => match[1]),
+    "i18n/en.json",
+    "i18n/ar.json",
+  ];
+  for (const path of needed) assert.ok(published.has(path.split("/")[0]), `${path} is not copied to _site in the deploy workflow`);
+});

@@ -3,17 +3,34 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>TutorCat | Tutors and Study-Destination Counselors across the Gulf</title>
+    <script>
+      // Arabic links (?lang=ar or a remembered choice) get right-to-left layout before first paint.
+      // i18n.js removes i18n-pending once the Arabic text is in; the timeout is a safety net.
+      (function () {
+        var lang = new URLSearchParams(location.search).get("lang");
+        try { lang = lang || localStorage.getItem("tutorcat.lang"); } catch (error) {}
+        if (lang !== "ar") return;
+        var root = document.documentElement;
+        root.lang = "ar";
+        root.dir = "rtl";
+        root.classList.add("i18n-pending");
+        setTimeout(function () { root.classList.remove("i18n-pending"); }, 1500);
+      })();
+    </script>
+    <title data-i18n="meta.title">TutorCat | Tutors and Study-Destination Counselors across the Gulf</title>
     <meta
       name="description"
+      data-i18n-attr="content:meta.description"
       content="IGCSE and A-level tutoring for families in the UAE, Saudi Arabia, Qatar, Kuwait, Bahrain and Oman, plus counselors who studied in the country your family is considering. Compare TutorCat specialists and request an introduction."
     />
     <meta
       property="og:title"
+      data-i18n-attr="content:meta.title"
       content="TutorCat | Tutors and Study-Destination Counselors across the Gulf"
     />
     <meta
       property="og:description"
+      data-i18n-attr="content:meta.ogDescription"
       content="IGCSE and A-level tutoring across the Gulf, plus counselors who studied in the country your family is considering."
     />
     <meta property="og:type" content="website" />
@@ -21,7 +38,7 @@
     <meta property="og:image" content="https://f00di.github.io/tutorcat/assets/social-card.jpg" />
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
-    <meta property="og:image:alt" content="A tutor and three students working together at a study table" />
+    <meta property="og:image:alt" data-i18n-attr="content:meta.imageAlt" content="A tutor and three students working together at a study table" />
     <meta name="twitter:card" content="summary_large_image" />
     <meta name="theme-color" content="#0b6b5d" />
     <link rel="canonical" href="https://f00di.github.io/tutorcat/" />
@@ -33,31 +50,34 @@
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
       rel="stylesheet"
-      href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=Schibsted+Grotesk:wght@600;700;800&display=swap"
+      href="https://fonts.googleapis.com/css2?family=Figtree:wght@400;500;600;700&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Schibsted+Grotesk:wght@600;700;800&display=swap"
     />
     <link rel="stylesheet" href="styles.css" />
+    <script src="i18n.js" defer></script>
     <script src="script.js" defer></script>
   </head>
   <body>
-    <a class="skip-link" href="#main">Skip to content</a>
+    <a class="skip-link" href="#main" data-i18n="nav.skip">Skip to content</a>
 
     <header class="site-header">
       <div class="wrap header-row">
-        <a class="brand" href="#top" aria-label="TutorCat home">
+        <a class="brand" href="#top" aria-label="TutorCat home" data-i18n-attr="aria-label:nav.home">
           <span class="brand-mark" aria-hidden="true">TC</span>
-          <span>TutorCat</span>
+          <span lang="en">TutorCat</span>
         </a>
-        <nav class="nav" aria-label="Primary">
-          <a href="#catalog">Specialists</a>
-          <a href="#counseling">Counseling</a>
-          <a href="#how-it-works">How it works</a>
-          <a href="#faq">FAQ</a>
-          <a href="#contact">Contact</a>
+        <nav class="nav" aria-label="Primary" data-i18n-attr="aria-label:nav.primary">
+          <a href="#catalog" data-i18n="nav.specialists">Specialists</a>
+          <a href="#counseling" data-i18n="nav.counseling">Counseling</a>
+          <a href="#how-it-works" data-i18n="nav.howItWorks">How it works</a>
+          <a href="#faq" data-i18n="nav.faq">FAQ</a>
+          <a href="#contact" data-i18n="nav.contact">Contact</a>
         </nav>
         <div class="header-actions">
+          <button class="btn btn-quiet lang-toggle" type="button" lang="ar" data-lang-toggle
+            data-i18n="lang.switchTo" data-i18n-attr="lang:lang.switchToCode">عربي</button>
           <button class="btn btn-quiet shortlist-btn" id="shortlistButton" type="button" aria-label="Shortlist, 0 saved">
             <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 4h12v16l-6-4-6 4z" /></svg>
-            <span class="shortlist-label">Shortlist</span>
+            <span class="shortlist-label" data-i18n="nav.shortlist">Shortlist</span>
             <span class="count" id="shortlistCount">0</span>
           </button>
           <button
@@ -65,18 +85,21 @@
             id="menuButton"
             type="button"
             aria-label="Open menu"
+            data-i18n-attr="aria-label:nav.openMenu"
             aria-expanded="false"
             aria-controls="menuPanel"
           >
             <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16" /></svg>
           </button>
         </div>
-        <nav class="menu-panel" id="menuPanel" data-state="closed" aria-label="Mobile">
-          <a href="#catalog">Specialists</a>
-          <a href="#counseling">Counseling</a>
-          <a href="#how-it-works">How it works</a>
-          <a href="#faq">FAQ</a>
-          <a href="#contact">Contact</a>
+        <nav class="menu-panel" id="menuPanel" data-state="closed" aria-label="Mobile" data-i18n-attr="aria-label:nav.mobile">
+          <a href="#catalog" data-i18n="nav.specialists">Specialists</a>
+          <a href="#counseling" data-i18n="nav.counseling">Counseling</a>
+          <a href="#how-it-works" data-i18n="nav.howItWorks">How it works</a>
+          <a href="#faq" data-i18n="nav.faq">FAQ</a>
+          <a href="#contact" data-i18n="nav.contact">Contact</a>
+          <button class="lang-toggle" type="button" lang="ar" data-lang-toggle
+            data-i18n="lang.switchTo" data-i18n-attr="lang:lang.switchToCode">عربي</button>
         </nav>
       </div>
     </header>
@@ -85,40 +108,40 @@
       <section class="hero" id="top" aria-labelledby="hero-title">
         <div class="wrap hero-grid">
           <div class="hero-copy">
-            <h1 id="hero-title">Find the right tutor or <em>study&#8209;destination</em> counselor.</h1>
-            <p class="lede">
+            <h1 id="hero-title" data-i18n-html="hero.title">Find the right tutor or <em>study&#8209;destination</em> counselor.</h1>
+            <p class="lede" data-i18n="hero.lede">
               IGCSE and A-level tutoring for families across the Gulf, from the
               UAE and Saudi Arabia to Qatar, Kuwait, Bahrain and Oman, plus
               counselors who studied in the country your family is considering.
             </p>
             <form class="match" id="matchForm">
               <div>
-                <span class="field-label" id="needLabel">What does your student need?</span>
+                <span class="field-label" id="needLabel" data-i18n="hero.need">What does your student need?</span>
                 <div class="segmented" role="radiogroup" aria-labelledby="needLabel" id="needGroup">
                   <span class="seg-indicator" aria-hidden="true"></span>
-                  <button type="button" role="radio" aria-checked="true" tabindex="0" data-need="tutoring">Tutoring</button>
-                  <button type="button" role="radio" aria-checked="false" tabindex="-1" data-need="counseling">Counseling</button>
-                  <button type="button" role="radio" aria-checked="false" tabindex="-1" data-need="both">Both</button>
+                  <button type="button" role="radio" aria-checked="true" tabindex="0" data-need="tutoring" data-i18n="hero.need.tutoring">Tutoring</button>
+                  <button type="button" role="radio" aria-checked="false" tabindex="-1" data-need="counseling" data-i18n="hero.need.counseling">Counseling</button>
+                  <button type="button" role="radio" aria-checked="false" tabindex="-1" data-need="both" data-i18n="hero.need.both">Both</button>
                 </div>
               </div>
               <div class="match-where">
                 <div>
-                  <label class="field-label" for="matchWhere">Where</label>
-                  <select id="matchWhere"><option value="">Anywhere</option></select>
+                  <label class="field-label" for="matchWhere" data-i18n="filter.where">Where</label>
+                  <select id="matchWhere"><option value="" data-i18n="filter.anywhere">Anywhere</option></select>
                 </div>
                 <div id="matchCityField" hidden>
-                  <label class="field-label" for="matchCity">City</label>
-                  <select id="matchCity"><option value="">Any city</option></select>
+                  <label class="field-label" for="matchCity" data-i18n="filter.city">City</label>
+                  <select id="matchCity"><option value="" data-i18n="filter.anyCity">Any city</option></select>
                 </div>
               </div>
               <div class="match-row">
                 <div>
-                  <label class="field-label" for="matchTopic" id="matchTopicLabel">Subject</label>
-                  <select id="matchTopic"><option value="">Any</option></select>
+                  <label class="field-label" for="matchTopic" id="matchTopicLabel" data-i18n="hero.topic.subject">Subject</label>
+                  <select id="matchTopic"><option value="" data-i18n="filter.any">Any</option></select>
                 </div>
                 <button class="btn btn-primary" type="submit">
-                  Show matches
-                  <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
+                  <span data-i18n="hero.submit">Show matches</span>
+                  <svg class="icon icon-forward" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
                 </button>
               </div>
             </form>
@@ -130,6 +153,7 @@
               height="887"
               fetchpriority="high"
               alt="A tutor and three students working together at a study table"
+              data-i18n-attr="alt:meta.imageAlt"
             />
           </div>
         </div>
@@ -138,42 +162,42 @@
       <section id="catalog" class="catalog" aria-labelledby="catalog-title">
         <div class="wrap">
           <div class="section-head">
-            <h2 id="catalog-title">Compare specialists</h2>
+            <h2 id="catalog-title" data-i18n="catalog.title">Compare specialists</h2>
             <p class="lede" id="factsLine" hidden></p>
           </div>
-          <div class="filter-row" id="filterRow" role="group" aria-label="Location and curriculum" hidden>
+          <div class="filter-row" id="filterRow" role="group" aria-label="Location and curriculum" data-i18n-attr="aria-label:filter.rowLabel" hidden>
             <div>
-              <label class="field-label" for="whereFilter">Where</label>
-              <select id="whereFilter"><option value="">Anywhere</option></select>
+              <label class="field-label" for="whereFilter" data-i18n="filter.where">Where</label>
+              <select id="whereFilter"><option value="" data-i18n="filter.anywhere">Anywhere</option></select>
             </div>
             <div id="cityFilterField" hidden>
-              <label class="field-label" for="cityFilter">City</label>
-              <select id="cityFilter"><option value="">Any city</option></select>
+              <label class="field-label" for="cityFilter" data-i18n="filter.city">City</label>
+              <select id="cityFilter"><option value="" data-i18n="filter.anyCity">Any city</option></select>
             </div>
             <div id="curriculumFilterField" hidden>
-              <label class="field-label" for="curriculumFilter">Curriculum</label>
-              <select id="curriculumFilter"><option value="">Any curriculum</option></select>
+              <label class="field-label" for="curriculumFilter" data-i18n="filter.curriculum">Curriculum</label>
+              <select id="curriculumFilter"><option value="" data-i18n="filter.anyCurriculum">Any curriculum</option></select>
             </div>
           </div>
-          <div class="chips" id="chipGroup" role="group" aria-label="Filter specialists"></div>
-          <p class="sr-only" id="catalogStatus" role="status" aria-live="polite">Loading specialists.</p>
+          <div class="chips" id="chipGroup" role="group" aria-label="Filter specialists" data-i18n-attr="aria-label:filter.chipsLabel"></div>
+          <p class="sr-only" id="catalogStatus" role="status" aria-live="polite" data-i18n="catalog.loading">Loading specialists.</p>
           <div class="cards" id="cardGrid">
             <div class="card skeleton" aria-hidden="true"><span></span><span></span><span></span></div>
             <div class="card skeleton" aria-hidden="true"><span></span><span></span><span></span></div>
           </div>
           <div class="empty" id="emptyState" hidden>
-            <h3>No specialist matches this yet.</h3>
-            <p>Tell us what you need and we will look for the right person.</p>
-            <button class="btn btn-quiet" type="button" id="showAll">Show all specialists</button>
+            <h3 data-i18n="catalog.empty.title">No specialist matches this yet.</h3>
+            <p data-i18n="catalog.empty.body">Tell us what you need and we will look for the right person.</p>
+            <button class="btn btn-quiet" type="button" id="showAll" data-i18n="catalog.showAll">Show all specialists</button>
           </div>
         </div>
       </section>
 
       <section id="counseling" class="countries" aria-labelledby="counseling-title">
         <div class="wrap">
-          <h2 id="counseling-title">Counseling from people who studied there</h2>
+          <h2 id="counseling-title" data-i18n="countries.title">Counseling from people who studied there</h2>
           <div class="country-grid" id="countryGrid"></div>
-          <p class="note">
+          <p class="note" data-i18n="countries.note">
             More destinations are added as counselors join. Counseling is
             educational guidance only, not admissions, visa or immigration advice.
           </p>
@@ -182,27 +206,27 @@
 
       <section id="how-it-works" aria-labelledby="process-title">
         <div class="wrap">
-          <h2 id="process-title">From goal to next step</h2>
+          <h2 id="process-title" data-i18n="how.title">From goal to next step</h2>
           <ol class="steps">
             <li>
               <span class="step-num" aria-hidden="true">1</span>
-              <h3>Tell us the goal</h3>
-              <p>Student level, curriculum, subject, where you live, destination and timeline.</p>
+              <h3 data-i18n="how.goal.title">Tell us the goal</h3>
+              <p data-i18n="how.goal.body">Student level, curriculum, subject, where you live, destination and timeline.</p>
             </li>
             <li>
               <span class="step-num" aria-hidden="true">2</span>
-              <h3>Compare matches</h3>
-              <p>See tutors or counselors with relevant study and teaching experience.</p>
+              <h3 data-i18n="how.compare.title">Compare matches</h3>
+              <p data-i18n="how.compare.body">See tutors or counselors with relevant study and teaching experience.</p>
             </li>
             <li>
               <span class="step-num" aria-hidden="true">3</span>
-              <h3>Book a focused session</h3>
-              <p>Tutoring, test prep, pathway planning or parent questions.</p>
+              <h3 data-i18n="how.book.title">Book a focused session</h3>
+              <p data-i18n="how.book.body">Tutoring, test prep, pathway planning or parent questions.</p>
             </li>
             <li>
               <span class="step-num" aria-hidden="true">4</span>
-              <h3>Leave with a plan</h3>
-              <p>Practice, applications, deadlines or follow-up support.</p>
+              <h3 data-i18n="how.plan.title">Leave with a plan</h3>
+              <p data-i18n="how.plan.body">Practice, applications, deadlines or follow-up support.</p>
             </li>
           </ol>
         </div>
@@ -210,56 +234,56 @@
 
       <section id="faq" class="faq" aria-labelledby="faq-title">
         <div class="wrap faq-grid">
-          <h2 id="faq-title">Common questions</h2>
+          <h2 id="faq-title" data-i18n="faq.title">Common questions</h2>
           <div class="faq-list" id="faqList">
             <div class="faq-item is-open">
               <button class="faq-q" type="button" aria-expanded="true" aria-controls="faq1">
-                How does TutorCat match students?
+                <span data-i18n="faq.match.q">How does TutorCat match students?</span>
                 <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
               </button>
-              <div class="faq-a" id="faq1"><div><p>We compare the student's level, curriculum, goals, subject or counseling focus, destination, where your family lives, preferred format, urgency and profile fit.</p></div></div>
+              <div class="faq-a" id="faq1"><div><p data-i18n="faq.match.a">We compare the student's level, curriculum, goals, subject or counseling focus, destination, where your family lives, preferred format, urgency and profile fit.</p></div></div>
             </div>
             <div class="faq-item">
               <button class="faq-q" type="button" aria-expanded="false" aria-controls="faqGulf">
-                Which countries do you cover?
+                <span data-i18n="faq.gulf.q">Which countries do you cover?</span>
                 <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
               </button>
-              <div class="faq-a" id="faqGulf"><div><p>Families in the UAE, Saudi Arabia, Qatar, Kuwait, Bahrain and Oman. Online tutors list the Gulf countries they teach, and in-person tutors show their city. Use Where to see who serves you.</p></div></div>
+              <div class="faq-a" id="faqGulf"><div><p data-i18n="faq.gulf.a">Families in the UAE, Saudi Arabia, Qatar, Kuwait, Bahrain and Oman. Online tutors list the Gulf countries they teach, and in-person tutors show their city. Use Where to see who serves you.</p></div></div>
             </div>
             <div class="faq-item">
               <button class="faq-q" type="button" aria-expanded="false" aria-controls="faq2">
-                Can parents join the session?
+                <span data-i18n="faq.parents.q">Can parents join the session?</span>
                 <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
               </button>
-              <div class="faq-a" id="faq2"><div><p>Yes. Parent participation is especially useful for counseling, destination planning and younger students.</p></div></div>
+              <div class="faq-a" id="faq2"><div><p data-i18n="faq.parents.a">Yes. Parent participation is especially useful for counseling, destination planning and younger students.</p></div></div>
             </div>
             <div class="faq-item">
               <button class="faq-q" type="button" aria-expanded="false" aria-controls="faq3">
-                Can I choose a counselor who studied in our destination country?
+                <span data-i18n="faq.destination.q">Can I choose a counselor who studied in our destination country?</span>
                 <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
               </button>
-              <div class="faq-a" id="faq3"><div><p>You can request that preference. Profiles show relevant study, work or advising experience when available.</p></div></div>
+              <div class="faq-a" id="faq3"><div><p data-i18n="faq.destination.a">You can request that preference. Profiles show relevant study, work or advising experience when available.</p></div></div>
             </div>
             <div class="faq-item">
               <button class="faq-q" type="button" aria-expanded="false" aria-controls="faq4">
-                Is this admissions or immigration advice?
+                <span data-i18n="faq.advice.q">Is this admissions or immigration advice?</span>
                 <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
               </button>
-              <div class="faq-a" id="faq4"><div><p>No. Counseling sessions are educational guidance only and do not replace official admissions, visa, legal or immigration advice.</p></div></div>
+              <div class="faq-a" id="faq4"><div><p data-i18n="faq.advice.a">No. Counseling sessions are educational guidance only and do not replace official admissions, visa, legal or immigration advice.</p></div></div>
             </div>
             <div class="faq-item">
               <button class="faq-q" type="button" aria-expanded="false" aria-controls="faq5">
-                Do you offer online sessions?
+                <span data-i18n="faq.online.q">Do you offer online sessions?</span>
                 <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
               </button>
-              <div class="faq-a" id="faq5"><div><p>Yes. Many profiles teach online across the Gulf, and some also meet in person in their own city. Choose "Online, anywhere in the Gulf" under Where to see online tutors.</p></div></div>
+              <div class="faq-a" id="faq5"><div><p data-i18n="faq.online.a">Yes. Many profiles teach online across the Gulf, and some also meet in person in their own city. Choose "Online, anywhere in the Gulf" under Where to see online tutors.</p></div></div>
             </div>
             <div class="faq-item">
               <button class="faq-q" type="button" aria-expanded="false" aria-controls="faq6">
-                How do I request a tutor introduction?
+                <span data-i18n="faq.request.q">How do I request a tutor introduction?</span>
                 <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
               </button>
-              <div class="faq-a" id="faq6"><div><p>Use Show matches, the Request an introduction button on a profile, or the contact form. Each opens a prefilled email you can review before sending.</p></div></div>
+              <div class="faq-a" id="faq6"><div><p data-i18n="faq.request.a">Use Show matches, the Request an introduction button on a profile, or the contact form. Each opens a prefilled email you can review before sending.</p></div></div>
             </div>
           </div>
         </div>
@@ -268,56 +292,56 @@
       <section id="contact" class="contact" aria-labelledby="contact-title">
         <div class="wrap contact-grid">
           <div class="section-head">
-            <h2 id="contact-title">Request an introduction</h2>
-            <p class="lede">
+            <h2 id="contact-title" data-i18n="contact.title">Request an introduction</h2>
+            <p class="lede" data-i18n="contact.lede">
               Wherever your family lives in the Gulf, share a few details and we
               will suggest the right specialist and a first session time.
             </p>
           </div>
           <form class="form" id="contactForm" novalidate>
             <div>
-              <label class="field-label" for="contactName">Parent or student name</label>
+              <label class="field-label" for="contactName" data-i18n="contact.name">Parent or student name</label>
               <input id="contactName" name="name" autocomplete="name" required />
             </div>
             <div>
-              <label class="field-label" for="contactEmail">Email</label>
-              <input id="contactEmail" name="email" type="email" autocomplete="email" required aria-describedby="contactEmailError" />
-              <p class="error" id="contactEmailError" hidden>Enter an email like name@example.com so we can reply.</p>
+              <label class="field-label" for="contactEmail" data-i18n="form.email">Email</label>
+              <input id="contactEmail" name="email" type="email" dir="ltr" autocomplete="email" required aria-describedby="contactEmailError" />
+              <p class="error" id="contactEmailError" hidden data-i18n="contact.emailError">Enter an email like name@example.com so we can reply.</p>
             </div>
             <div>
-              <label class="field-label" for="contactLevel">Student level</label>
+              <label class="field-label" for="contactLevel" data-i18n="contact.level">Student level</label>
               <select id="contactLevel" name="level" required>
-                <option value="">Choose one</option>
-                <option>Middle school</option>
-                <option>High school</option>
-                <option>A-levels/IB/AP</option>
-                <option>Undergraduate</option>
-                <option>Transfer student</option>
-                <option>Other</option>
+                <option value="" data-i18n="form.chooseOne">Choose one</option>
+                <option value="Middle school" data-i18n="contact.level.middleSchool">Middle school</option>
+                <option value="High school" data-i18n="contact.level.highSchool">High school</option>
+                <option value="A-levels/IB/AP" data-i18n="contact.level.advanced">A-levels/IB/AP</option>
+                <option value="Undergraduate" data-i18n="contact.level.undergraduate">Undergraduate</option>
+                <option value="Transfer student" data-i18n="contact.level.transfer">Transfer student</option>
+                <option value="Other" data-i18n="form.other">Other</option>
               </select>
             </div>
             <div>
-              <label class="field-label" for="contactSupport">What do you need?</label>
+              <label class="field-label" for="contactSupport" data-i18n="contact.support">What do you need?</label>
               <select id="contactSupport" name="support" required>
-                <option value="">Choose one</option>
-                <option>Academic tutoring</option>
-                <option>Test prep</option>
-                <option>Country counseling</option>
-                <option>University pathway planning</option>
-                <option>Unsure</option>
+                <option value="" data-i18n="form.chooseOne">Choose one</option>
+                <option value="Academic tutoring" data-i18n="contact.support.tutoring">Academic tutoring</option>
+                <option value="Test prep" data-i18n="contact.support.testPrep">Test prep</option>
+                <option value="Country counseling" data-i18n="contact.support.counseling">Country counseling</option>
+                <option value="University pathway planning" data-i18n="contact.support.pathway">University pathway planning</option>
+                <option value="Unsure" data-i18n="contact.support.unsure">Unsure</option>
               </select>
             </div>
             <div class="full">
-              <label class="field-label" for="contactSpecialist">Specialist</label>
-              <select id="contactSpecialist" name="specialist"><option value="">No preference</option></select>
+              <label class="field-label" for="contactSpecialist" data-i18n="contact.specialist">Specialist</label>
+              <select id="contactSpecialist" name="specialist"><option value="" data-i18n="contact.noPreference">No preference</option></select>
             </div>
             <div class="full">
-              <label class="field-label" for="contactMessage">What would help most?</label>
+              <label class="field-label" for="contactMessage" data-i18n="contact.message">What would help most?</label>
               <textarea id="contactMessage" name="message"></textarea>
             </div>
             <div class="full form-actions">
-              <button class="btn btn-primary" type="submit">Send request</button>
-              <p class="hint">Opens your email app with the request filled in.</p>
+              <button class="btn btn-primary" type="submit" data-i18n="contact.submit">Send request</button>
+              <p class="hint" data-i18n="contact.hint">Opens your email app with the request filled in.</p>
             </div>
             <p class="form-status full" id="contactStatus" role="status" aria-live="polite"></p>
           </form>
@@ -328,12 +352,12 @@
     <footer class="site-footer">
       <div class="wrap footer-row">
         <div class="footer-brand">
-          <a class="brand" href="#top"><span class="brand-mark" aria-hidden="true">TC</span><span>TutorCat</span></a>
-          <p>Tutoring and study-destination counseling across the Gulf. Educational guidance only.</p>
+          <a class="brand" href="#top"><span class="brand-mark" aria-hidden="true">TC</span><span lang="en">TutorCat</span></a>
+          <p data-i18n="footer.tagline">Tutoring and study-destination counseling across the Gulf. Educational guidance only.</p>
         </div>
         <div class="footer-links">
-          <button class="text-btn" type="button" data-open-application>Join TutorCat as a tutor or counselor</button>
-          <a href="#contact">Contact</a>
+          <button class="text-btn" type="button" data-open-application data-i18n="footer.join">Join TutorCat as a tutor or counselor</button>
+          <a href="#contact" data-i18n="nav.contact">Contact</a>
         </div>
       </div>
     </footer>
@@ -353,12 +377,12 @@
       aria-labelledby="reviewModalTitle"
       hidden
     >
-      <button class="btn btn-quiet icon-btn modal-close" type="button" aria-label="Close review form" data-close-modal>
+      <button class="btn btn-quiet icon-btn modal-close" type="button" aria-label="Close review form" data-i18n-attr="aria-label:reviewForm.close" data-close-modal>
         <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
       </button>
       <div class="modal-heading">
-        <h2 id="reviewModalTitle">Rate this tutor</h2>
-        <p>
+        <h2 id="reviewModalTitle" data-i18n="reviewForm.title">Rate this tutor</h2>
+        <p data-i18n="review.policy">
           All TutorCat reviews are verified by the tutor/counselor and approved
           by TutorCat before being displayed publicly or included in overall ratings.
         </p>
@@ -366,69 +390,70 @@
       <form id="reviewForm" class="stacked-form">
         <div class="form-grid">
           <label>
-            <span>Student/parent name</span>
+            <span data-i18n="reviewForm.name">Student/parent name</span>
             <input name="studentName" type="text" autocomplete="name" required />
           </label>
           <label>
-            <span>Email</span>
-            <input name="studentEmail" type="email" autocomplete="email" required />
+            <span data-i18n="form.email">Email</span>
+            <input name="studentEmail" type="email" dir="ltr" autocomplete="email" required />
           </label>
           <label>
-            <span>Tutor/counselor selected</span>
+            <span data-i18n="reviewForm.profile">Tutor/counselor selected</span>
             <select id="reviewProfile" name="profileId" required>
-              <option value="">Choose one</option>
+              <option value="" data-i18n="form.chooseOne">Choose one</option>
             </select>
           </label>
           <label>
-            <span>Rating</span>
+            <span data-i18n="reviewForm.rating">Rating</span>
             <select name="rating" required>
-              <option value="">Choose one</option>
-              <option value="5">5 - Excellent</option>
-              <option value="4">4 - Very good</option>
-              <option value="3">3 - Good</option>
-              <option value="2">2 - Needs improvement</option>
-              <option value="1">1 - Poor</option>
+              <option value="" data-i18n="form.chooseOne">Choose one</option>
+              <option value="5" data-i18n="reviewForm.rating.5">5 - Excellent</option>
+              <option value="4" data-i18n="reviewForm.rating.4">4 - Very good</option>
+              <option value="3" data-i18n="reviewForm.rating.3">3 - Good</option>
+              <option value="2" data-i18n="reviewForm.rating.2">2 - Needs improvement</option>
+              <option value="1" data-i18n="reviewForm.rating.1">1 - Poor</option>
             </select>
           </label>
           <label>
-            <span>Session type</span>
+            <span data-i18n="reviewForm.sessionType">Session type</span>
             <select name="sessionType" required>
-              <option value="">Choose one</option>
-              <option>Tutoring</option>
-              <option>Counseling</option>
-              <option>Test Prep</option>
-              <option>Other</option>
+              <option value="" data-i18n="form.chooseOne">Choose one</option>
+              <option value="Tutoring" data-i18n="value.reviewSessionType.tutoring">Tutoring</option>
+              <option value="Counseling" data-i18n="value.reviewSessionType.counseling">Counseling</option>
+              <option value="Test Prep" data-i18n="value.reviewSessionType.test-prep">Test Prep</option>
+              <option value="Other" data-i18n="form.other">Other</option>
             </select>
           </label>
         </div>
         <label>
-          <span>Short review</span>
+          <span data-i18n="reviewForm.comment">Short review</span>
           <textarea
             name="comment"
             rows="5"
             maxlength="1200"
             placeholder="Share what was helpful about the session."
+              data-i18n-attr="placeholder:reviewForm.commentPlaceholder"
             required
           ></textarea>
         </label>
         <label class="checkbox-label">
           <input name="publicPermission" type="checkbox" />
-          <span>
+          <span data-i18n="reviewForm.permission">
             I give TutorCat permission to display this review publicly after
             tutor verification and TutorCat approval.
           </span>
         </label>
         <label class="checkbox-label">
           <input name="moderationAgreement" type="checkbox" required />
-          <span>
+          <span data-i18n="reviewForm.moderation">
             I understand reviews are verified by the tutor/counselor and
             moderated before appearing on the website.
           </span>
         </label>
         <div id="reviewFormStatus" class="form-status" role="status" aria-live="polite"></div>
         <div class="modal-actions">
-          <button class="btn btn-quiet" type="button" data-close-modal>Cancel</button>
-          <button class="btn btn-primary" type="submit">Submit Review</button>
+          <button class="btn btn-quiet" type="button" data-close-modal data-i18n="form.cancel">Cancel</button>
+          <button class="btn btn-primary" type="submit" data-i18n="reviewForm.submit">Submit Review</button>
         </div>
       </form>
     </section>
@@ -441,12 +466,12 @@
       aria-labelledby="applicationModalTitle"
       hidden
     >
-      <button class="btn btn-quiet icon-btn modal-close" type="button" aria-label="Close application form" data-close-modal>
+      <button class="btn btn-quiet icon-btn modal-close" type="button" aria-label="Close application form" data-i18n-attr="aria-label:applyForm.close" data-close-modal>
         <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
       </button>
       <div class="modal-heading">
-        <h2 id="applicationModalTitle">Tutor/counselor application</h2>
-        <p>
+        <h2 id="applicationModalTitle" data-i18n="applyForm.title">Tutor/counselor application</h2>
+        <p data-i18n="applyForm.intro">
           TutorCat reviews tutor and counselor applications manually before any
           public profile is added.
         </p>
@@ -454,130 +479,136 @@
       <form id="applicationForm" class="stacked-form">
         <div class="form-grid">
           <label>
-            <span>Full name</span>
+            <span data-i18n="applyForm.fullName">Full name</span>
             <input name="fullName" type="text" autocomplete="name" required />
           </label>
           <label>
-            <span>Email</span>
-            <input name="email" type="email" autocomplete="email" required />
+            <span data-i18n="form.email">Email</span>
+            <input name="email" type="email" dir="ltr" autocomplete="email" required />
           </label>
           <label>
-            <span>Phone or WhatsApp</span>
-            <input name="phone" type="text" autocomplete="tel" />
+            <span data-i18n="applyForm.phone">Phone or WhatsApp</span>
+            <input name="phone" type="tel" dir="ltr" autocomplete="tel" />
           </label>
           <label>
-            <span>Country</span>
+            <span data-i18n="applyForm.country">Country</span>
             <select name="country" id="applicationCountry">
-              <option value="">Choose one</option>
-              <option value="Other">Other</option>
+              <option value="" data-i18n="form.chooseOne">Choose one</option>
+              <option value="Other" data-i18n="form.other">Other</option>
             </select>
           </label>
           <label id="applicationCityField" hidden>
-            <span>City</span>
-            <select name="city" id="applicationCity"><option value="">Choose one</option></select>
+            <span data-i18n="applyForm.city">City</span>
+            <select name="city" id="applicationCity"><option value="" data-i18n="form.chooseOne">Choose one</option></select>
           </label>
           <label id="applicationPlaceField" hidden>
-            <span>Where are you based?</span>
+            <span data-i18n="applyForm.place">Where are you based?</span>
             <input name="place" type="text" autocomplete="address-level2" />
           </label>
           <label>
-            <span>I want to join as</span>
+            <span data-i18n="applyForm.joinAs">I want to join as</span>
             <select name="applicantType" required>
-              <option value="">Choose one</option>
-              <option>Tutor</option>
-              <option>Counselor</option>
-              <option>Tutor + Counselor</option>
+              <option value="" data-i18n="form.chooseOne">Choose one</option>
+              <option value="Tutor" data-i18n="value.profileType.tutor">Tutor</option>
+              <option value="Counselor" data-i18n="value.profileType.counselor">Counselor</option>
+              <option value="Tutor + Counselor" data-i18n="value.profileType.tutor-counselor">Tutor + Counselor</option>
             </select>
           </label>
           <label>
-            <span>Years of experience</span>
+            <span data-i18n="applyForm.years">Years of experience</span>
             <input name="years" type="number" min="0" max="60" inputmode="numeric" />
           </label>
           <label>
-            <span>Subjects I can teach</span>
+            <span data-i18n="applyForm.subjects">Subjects I can teach</span>
             <input
               id="applicationSubjects"
               name="subjects"
               type="text"
               placeholder="Math, English, SAT, chemistry..."
+              data-i18n-attr="placeholder:applyForm.subjectsPlaceholder"
             />
           </label>
           <label>
-            <span>Countries I can advise on</span>
+            <span data-i18n="applyForm.countries">Countries I can advise on</span>
             <input
               id="applicationCountries"
               name="countries"
               type="text"
               placeholder="US, Canada, Germany..."
+              data-i18n-attr="placeholder:applyForm.countriesPlaceholder"
             />
           </label>
           <label>
-            <span>Languages spoken</span>
-            <input name="languages" type="text" placeholder="English, Arabic, Hindi..." />
+            <span data-i18n="applyForm.languages">Languages spoken</span>
+            <input name="languages" type="text" placeholder="English, Arabic, Hindi..."
+              data-i18n-attr="placeholder:applyForm.languagesPlaceholder" />
           </label>
           <label>
-            <span>Session mode</span>
+            <span data-i18n="applyForm.sessionMode">Session mode</span>
             <select name="sessionMode">
-              <option value="">Choose one</option>
-              <option>Online</option>
-              <option>In-person</option>
-              <option>Hybrid</option>
+              <option value="" data-i18n="form.chooseOne">Choose one</option>
+              <option value="Online" data-i18n="value.sessionMode.online">Online</option>
+              <option value="In-person" data-i18n="value.sessionMode.in-person">In-person</option>
+              <option value="Hybrid" data-i18n="value.sessionMode.hybrid">Hybrid</option>
             </select>
           </label>
           <label>
-            <span>Availability</span>
-            <input name="availability" type="text" placeholder="Weekday evenings, Saturdays..." />
+            <span data-i18n="applyForm.availability">Availability</span>
+            <input name="availability" type="text" placeholder="Weekday evenings, Saturdays..."
+              data-i18n-attr="placeholder:applyForm.availabilityPlaceholder" />
           </label>
           <label>
-            <span>Profile picture URL, optional</span>
-            <input name="photoUrl" type="url" placeholder="https://..." />
+            <span data-i18n="applyForm.photoUrl">Profile picture URL, optional</span>
+            <input name="photoUrl" type="url" dir="ltr" placeholder="https://..." />
           </label>
           <label>
-            <span>LinkedIn/portfolio/profile link, optional</span>
-            <input name="profileLink" type="url" placeholder="https://..." />
+            <span data-i18n="applyForm.profileLink">LinkedIn/portfolio/profile link, optional</span>
+            <input name="profileLink" type="url" dir="ltr" placeholder="https://..." />
           </label>
         </div>
         <label>
-          <span>Education/experience</span>
+          <span data-i18n="applyForm.experience">Education/experience</span>
           <textarea
             name="experience"
             rows="4"
             placeholder="Degrees, schools, advising experience, tutoring background."
+              data-i18n-attr="placeholder:applyForm.experiencePlaceholder"
           ></textarea>
         </label>
         <label>
-          <span>Short bio</span>
+          <span data-i18n="applyForm.bio">Short bio</span>
           <textarea
             name="bio"
             rows="4"
             placeholder="A concise profile summary TutorCat can review."
+              data-i18n-attr="placeholder:applyForm.bioPlaceholder"
           ></textarea>
         </label>
         <label class="checkbox-label">
           <input name="consent" type="checkbox" required />
-          <span>
+          <span data-i18n="applyForm.consent">
             I confirm that the information I provided is accurate and I give
             TutorCat permission to contact me about being listed.
           </span>
         </label>
         <label class="checkbox-label">
           <input name="photoConsent" type="checkbox" />
-          <span>
+          <span data-i18n="applyForm.photoConsent">
             I give TutorCat permission to display my submitted profile picture
             if I am approved.
           </span>
         </label>
         <label class="checkbox-label">
           <input name="listingAgreement" type="checkbox" required />
-          <span>
+          <span data-i18n="applyForm.listingAgreement">
             I understand that submitting this form does not guarantee that I
             will be listed.
           </span>
         </label>
         <div id="applicationFormStatus" class="form-status" role="status" aria-live="polite"></div>
         <div class="modal-actions">
-          <button class="btn btn-quiet" type="button" data-close-modal>Cancel</button>
-          <button class="btn btn-primary" type="submit">Submit Application</button>
+          <button class="btn btn-quiet" type="button" data-close-modal data-i18n="form.cancel">Cancel</button>
+          <button class="btn btn-primary" type="submit" data-i18n="applyForm.submit">Submit Application</button>
         </div>
       </form>
     </section>
