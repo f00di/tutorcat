@@ -7,6 +7,7 @@ const REVIEW_FORM_URL = "";
 const TUTOR_APPLICATION_FORM_URL = "";
 
 const DATA_URL = "./data/tutors.json";
+const REGIONS_URL = "./data/regions.json";
 
 const htmlEscapes = {
   "&": "&amp;",
@@ -222,6 +223,9 @@ const normalizeLoadedProfile = (rawProfile, index) => {
     counselingTopics: asArray(rawProfile.counselingTopics),
     educationOrExperience: String(rawProfile.educationOrExperience || "").trim(),
     location: String(rawProfile.location || "").trim(),
+    baseCountry: String(rawProfile.baseCountry || "").trim(),
+    city: String(rawProfile.city || "").trim(),
+    servesCountries: asArray(rawProfile.servesCountries),
     sessionModes: asArray(rawProfile.sessionModes),
     languages: asArray(rawProfile.languages),
     currentStudents: parseNumber(rawProfile.currentStudents),
@@ -230,9 +234,13 @@ const normalizeLoadedProfile = (rawProfile, index) => {
     experienceYears: parseNumber(rawProfile.experienceYears),
     availability: String(rawProfile.availability || "").trim(),
     shortBio: String(rawProfile.shortBio || "").trim(),
+    shortBioAr: String(rawProfile.shortBioAr || "").trim(),
     parentNote: String(rawProfile.parentNote || "").trim(),
     outcomes: normalizeOutcomes(rawProfile.outcomes),
     tags: asArray(rawProfile.tags),
+    curricula: asArray(rawProfile.curricula),
+    permitCountry: String(rawProfile.permitCountry || "").trim(),
+    permitVerified: parseBoolean(rawProfile.permitVerified) === true,
     imageUrl: isSafeImageUrl(rawProfile.imageUrl) ? String(rawProfile.imageUrl).trim() : "",
     imageAlt: String(rawProfile.imageAlt || "").trim(),
     photoApproved: parseBoolean(rawProfile.photoApproved) === true,
@@ -678,7 +686,9 @@ const getApplicationSubmissionTarget = (application) => {
     `Full name: ${application.fullName}`,
     `Email: ${application.email}`,
     `Phone or WhatsApp: ${application.phone || "Not provided"}`,
-    `City/country: ${application.location || "Not provided"}`,
+    `Country: ${application.country || "Not provided"}`,
+    `City: ${application.city || "Not provided"}`,
+    ...(application.place ? [`Location details: ${application.place}`] : []),
     `Subjects I can teach: ${application.subjects || "Not provided"}`,
     `Countries I can advise on: ${application.countries || "Not provided"}`,
     `Languages spoken: ${application.languages || "Not provided"}`,
@@ -779,9 +789,34 @@ const openReviewForm = (profileId = "") => {
   openFormModal(reviewModal);
 };
 
+const fillApplicationCountries = () => {
+  applicationCountry.innerHTML = optionsHtml([
+    ["", "Choose one"],
+    ...regions.countries.map((country) => [country.name, country.name]),
+    ["Other", "Other"],
+  ]);
+};
+
+// Free text only when the country or city is not in the lists.
+const updateApplicationPlace = () => {
+  applicationPlaceField.hidden = !(applicationCountry.value === "Other" || applicationCity.value === "Other");
+};
+
+const updateApplicationLocation = () => {
+  const region = findRegion(applicationCountry.value);
+  applicationCity.innerHTML = optionsHtml([
+    ["", "Choose one"],
+    ...(region?.cities ?? []).map((city) => [city.name, city.name]),
+    ["Other", "Other / not listed"],
+  ]);
+  applicationCityField.hidden = !region;
+  updateApplicationPlace();
+};
+
 const openApplicationForm = () => {
   if (!applicationForm || !applicationModal) return;
   applicationForm.reset();
+  updateApplicationLocation();
   setFormStatus(applicationFormStatus, "");
   openFormModal(applicationModal);
 };
@@ -855,7 +890,9 @@ const handleApplicationSubmit = (event) => {
     fullName: getTrimmedFormValue(formData, "fullName"),
     email: getTrimmedFormValue(formData, "email"),
     phone: getTrimmedFormValue(formData, "phone"),
-    location: getTrimmedFormValue(formData, "location"),
+    country: getTrimmedFormValue(formData, "country"),
+    city: applicationCityField.hidden ? "" : getTrimmedFormValue(formData, "city"),
+    place: applicationPlaceField.hidden ? "" : getTrimmedFormValue(formData, "place"),
     applicantType: getTrimmedFormValue(formData, "applicantType"),
     subjects: getTrimmedFormValue(formData, "subjects"),
     countries: getTrimmedFormValue(formData, "countries"),
@@ -893,9 +930,12 @@ const extractProfilesFromPayload = (payload) => {
 // Page state and elements
 // ---------------------------------------------------------------------------
 
+const DEFAULT_FILTER = { type: "all", value: "", where: "", city: "", curriculum: "" };
+
 let profiles = [];
+let regions = { countries: [], curricula: [] };
 let dataLoadFailed = false;
-let filter = { type: "all", value: "" };
+let filter = { ...DEFAULT_FILTER };
 let need = "tutoring";
 let lastFocusedElement = null;
 let lastModalFocusedElement = null;
@@ -932,16 +972,49 @@ const reviewFormStatus = $("#reviewFormStatus");
 const applicationModal = $("#applicationModal");
 const applicationForm = $("#applicationForm");
 const applicationFormStatus = $("#applicationFormStatus");
+const applicationCountry = $("#applicationCountry");
+const applicationCity = $("#applicationCity");
+const applicationCityField = $("#applicationCityField");
+const applicationPlaceField = $("#applicationPlaceField");
+const filterRow = $("#filterRow");
+const whereFilter = $("#whereFilter");
+const cityFilter = $("#cityFilter");
+const cityFilterField = $("#cityFilterField");
+const curriculumFilter = $("#curriculumFilter");
+const curriculumFilterField = $("#curriculumFilterField");
+const matchWhere = $("#matchWhere");
+const matchCity = $("#matchCity");
+const matchCityField = $("#matchCityField");
 
 const allSubjects = () => uniqueList(profiles.flatMap((profile) => profile.subjects));
 const allCountries = () => uniqueList(profiles.flatMap((profile) => profile.countries));
 const isTutor = (profile) => profile.profileType.includes("Tutor");
 const isCounselor = (profile) => profile.profileType.includes("Counselor") || profile.countries.length > 0;
 
+// "Where" = the Gulf country/city a tutor is based in or teaches online (data/regions.json).
+// Not to be confused with `countries`, the study-abroad destinations counselors advise on.
+const ONLINE_ANYWHERE = "online";
+const findRegion = (name) => regions.countries.find((country) => country.name === name);
+const shortCountry = (name) => findRegion(name)?.short || name;
+const offersOnline = (profile) => profile.sessionModes.some((mode) => /online|hybrid/i.test(mode));
+const offersInPerson = (profile) => profile.sessionModes.some((mode) => /in.?person|hybrid|home|face/i.test(mode));
+// Online tutors teach their base country plus any Serves Countries.
+const servedCountries = (profile) => uniqueList([profile.baseCountry, ...profile.servesCountries].filter(Boolean));
+const hasVerifiedPermit = (profile) => profile.permitVerified && Boolean(findRegion(profile.permitCountry)?.permitBadge);
+const allCurricula = () => {
+  const used = new Set(profiles.flatMap((profile) => profile.curricula));
+  const known = [...regions.curricula, ...regions.countries.flatMap((country) => country.nationalCurricula ?? [])].map(
+    (curriculum) => curriculum.name
+  );
+  return [...known.filter((name) => used.has(name)), ...[...used].filter((name) => !known.includes(name))];
+};
+
 const bookmarkIcon =
   '<svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 4h12v16l-6-4-6 4z"/></svg>';
 const closeIcon =
   '<svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>';
+const checkIcon =
+  '<svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12.5l4.5 4.5L19 7"/></svg>';
 
 // ---------------------------------------------------------------------------
 // Facts line (computed from the data so it never overstates)
@@ -958,9 +1031,11 @@ const renderFacts = () => {
   const subjects = allSubjects();
   const countries = allCountries();
   const modes = uniqueList(profiles.flatMap((profile) => profile.sessionModes));
+  const gulf = uniqueList(profiles.flatMap(servedCountries)).filter(findRegion);
   const parts = [
     `${profiles.length} specialist${profiles.length === 1 ? "" : "s"} today`,
     subjects.length ? `teaching ${subjects.length} subject${subjects.length === 1 ? "" : "s"}` : "",
+    gulf.length ? `across ${gulf.length} Gulf countr${gulf.length === 1 ? "y" : "ies"}` : "",
     countries.length ? `with counseling for ${joinWords(countries)}` : "",
   ].filter(Boolean);
   const format = modes.length === 1 ? ` All sessions are ${modes[0].toLowerCase()}.` : "";
@@ -998,7 +1073,7 @@ const setNeed = (button) => {
 // Specialist catalog
 // ---------------------------------------------------------------------------
 
-const matchesFilter = (profile) => {
+const matchesType = (profile) => {
   switch (filter.type) {
     case "tutoring":
       return isTutor(profile);
@@ -1014,6 +1089,21 @@ const matchesFilter = (profile) => {
       return true;
   }
 };
+
+// In-person tutors match their own country (and city); online tutors match every country they teach.
+const matchesWhere = (profile) => {
+  if (!filter.where) return true;
+  const served = servedCountries(profile);
+  if (filter.where === ONLINE_ANYWHERE) return offersOnline(profile) && served.some(findRegion);
+  const inPerson =
+    offersInPerson(profile) && profile.baseCountry === filter.where && (!filter.city || profile.city === filter.city);
+  return inPerson || (offersOnline(profile) && served.includes(filter.where));
+};
+
+const matchesFilter = (profile) =>
+  matchesType(profile) &&
+  matchesWhere(profile) &&
+  (!filter.curriculum || profile.curricula.includes(filter.curriculum));
 
 const getChipOptions = () => [
   { type: "all", value: "", label: "All" },
@@ -1038,9 +1128,25 @@ const renderChipFilters = () => {
     .join("");
 };
 
+// "Dubai, UAE" for in-person tutors, "Online in UAE and Oman" for online-only ones.
+const describeLocation = (profile) => {
+  const base = [profile.city, profile.baseCountry && shortCountry(profile.baseCountry)].filter(Boolean).join(", ");
+  const online = offersOnline(profile) ? servedCountries(profile).map(shortCountry) : [];
+  if (base && offersInPerson(profile)) return base;
+  return online.length ? `Online in ${joinWords(online)}` : base;
+};
+
+const renderPermitBadge = (profile) =>
+  hasVerifiedPermit(profile) ? `<p class="permit-badge">${checkIcon}Permit verified</p>` : "";
+
 const renderProfileCard = (profile, index, animate) => {
   const hasReviews = getVerifiedReviewStats(profile).verifiedReviews.length > 0;
-  const details = [profile.tags.slice(0, 2).join(", "), formatList(profile.sessionModes, ""), `${formatExperience(profile)} experience`]
+  const details = [
+    describeLocation(profile),
+    profile.tags.slice(0, 2).join(", "),
+    formatList(profile.sessionModes, ""),
+    `${formatExperience(profile)} experience`,
+  ]
     .filter(Boolean)
     .join(". ");
   return `
@@ -1050,6 +1156,7 @@ const renderProfileCard = (profile, index, animate) => {
         <div class="card-heading">
           <h3>${escapeHtml(profile.name)}</h3>
           <p class="role">${escapeHtml(profile.role)}</p>
+          ${renderPermitBadge(profile)}
         </div>
       </div>
       ${profile.subjects.length ? `<div class="tags">${renderChips(profile.subjects, "tag")}</div>` : ""}
@@ -1082,8 +1189,68 @@ const renderCards = (animate = false) => {
 };
 
 const setFilter = (type, value = "") => {
-  filter = { type, value };
+  filter = { ...filter, type, value };
   renderChipFilters();
+  renderCards(true);
+};
+
+const resetFilters = () => {
+  filter = { ...DEFAULT_FILTER };
+  syncFilterControls();
+  renderChipFilters();
+  renderCards(true);
+};
+
+// ---------------------------------------------------------------------------
+// Where and curriculum filters (catalog row + hero match form)
+// ---------------------------------------------------------------------------
+
+const optionsHtml = (items) =>
+  items.map(([value, label]) => `<option value="${escapeHtml(value)}">${escapeHtml(label)}</option>`).join("");
+
+const whereOptionsHtml = () =>
+  optionsHtml([
+    ["", "Anywhere"],
+    ...(regions.countries.length ? [[ONLINE_ANYWHERE, "Online, anywhere in the Gulf"]] : []),
+    ...regions.countries.map((country) => [country.name, country.name]),
+  ]);
+
+// The City select only appears once a Gulf country with cities is chosen.
+const fillCitySelect = (select, field, where, value = "") => {
+  const cities = findRegion(where)?.cities ?? [];
+  select.innerHTML = optionsHtml([["", "Any city"], ...cities.map((city) => [city.name, city.name])]);
+  select.value = cities.some((city) => city.name === value) ? value : "";
+  field.hidden = !cities.length;
+};
+
+const syncFilterControls = () => {
+  whereFilter.value = filter.where;
+  fillCitySelect(cityFilter, cityFilterField, filter.where, filter.city);
+  curriculumFilter.value = filter.curriculum;
+};
+
+const renderLocationFilters = () => {
+  const curricula = allCurricula();
+  const hasRegions = regions.countries.length > 0;
+  whereFilter.innerHTML = whereOptionsHtml();
+  whereFilter.parentElement.hidden = !hasRegions;
+  matchWhere.innerHTML = whereOptionsHtml();
+  $(".match-where").hidden = !hasRegions;
+  fillCitySelect(matchCity, matchCityField, "");
+  curriculumFilter.innerHTML = optionsHtml([["", "Any curriculum"], ...curricula.map((name) => [name, name])]);
+  curriculumFilterField.hidden = !curricula.length;
+  filterRow.hidden = !profiles.length || (!hasRegions && !curricula.length);
+  syncFilterControls();
+};
+
+const setWhere = (where, city = "") => {
+  filter = { ...filter, where, city: findRegion(where) ? city : "" };
+  syncFilterControls();
+  renderCards(true);
+};
+
+const setCurriculum = (curriculum) => {
+  filter = { ...filter, curriculum };
   renderCards(true);
 };
 
@@ -1176,6 +1343,7 @@ const renderDrawer = (profile) => {
     <div>
       <h2 id="drawerName">${escapeHtml(profile.name)}</h2>
       <p class="role">${escapeHtml(profile.role)}</p>
+      ${renderPermitBadge(profile)}
     </div>
     ${profile.shortBio ? `<p>${escapeHtml(profile.shortBio)}</p>` : ""}
     <dl class="detail-list">
@@ -1186,7 +1354,10 @@ const renderDrawer = (profile) => {
         ["Counseling for", listOrEmpty(profile.countries)],
         ["Counseling topics", listOrEmpty(profile.counselingTopics)],
         ["Languages", listOrEmpty(profile.languages)],
-        ["Location", profile.location ? escapeHtml(profile.location) : ""],
+        ["Based in", escapeHtml([profile.city, profile.baseCountry].filter(Boolean).join(", "))],
+        ["Teaches online in", offersOnline(profile) ? escapeHtml(joinWords(servedCountries(profile))) : ""],
+        ["Location", !profile.baseCountry && profile.location ? escapeHtml(profile.location) : ""],
+        ["Permit", hasVerifiedPermit(profile) ? escapeHtml(`${findRegion(profile.permitCountry).permitName}, checked by the TutorCat team`) : ""],
         ["Format and experience", escapeHtml(`${formatList(profile.sessionModes, "Online")}. ${formatExperience(profile)}.`)],
         ["Availability", profile.availability ? escapeHtml(profile.availability) : ""],
         ["Parent note", profile.parentNote ? escapeHtml(profile.parentNote) : ""],
@@ -1326,10 +1497,27 @@ const loadProfiles = async () => {
   }
 };
 
+// Regions only power the Where filters; without them the catalog still works.
+const loadRegions = async () => {
+  try {
+    const response = await fetch(REGIONS_URL, { cache: "no-cache" });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    const data = await response.json();
+    regions = {
+      countries: Array.isArray(data.countries) ? data.countries : [],
+      curricula: Array.isArray(data.curricula) ? data.curricula : [],
+    };
+  } catch (error) {
+    regions = { countries: [], curricula: [] };
+  }
+};
+
 const initializeApp = async () => {
-  await loadProfiles();
+  await Promise.all([loadProfiles(), loadRegions()]);
   renderFacts();
   fillMatchTopics();
+  renderLocationFilters();
+  fillApplicationCountries();
   renderChipFilters();
   renderCards();
   renderCountries();
@@ -1359,6 +1547,8 @@ needGroup.addEventListener("keydown", (event) => {
 
 $("#matchForm").addEventListener("submit", (event) => {
   event.preventDefault();
+  filter = { ...filter, where: matchWhere.value, city: findRegion(matchWhere.value) ? matchCity.value : "" };
+  syncFilterControls();
   const topic = matchTopic.value;
   if (topic) setFilter(allCountries().includes(topic) ? "country" : "subject", topic);
   else setFilter(need === "both" ? "all" : need);
@@ -1377,7 +1567,14 @@ cardGrid.addEventListener("click", (event) => {
   if (saveButton) toggleShortlist(saveButton.dataset.save);
 });
 
-$("#showAll").addEventListener("click", () => setFilter("all"));
+$("#showAll").addEventListener("click", resetFilters);
+
+matchWhere.addEventListener("change", () => fillCitySelect(matchCity, matchCityField, matchWhere.value));
+whereFilter.addEventListener("change", () => setWhere(whereFilter.value));
+cityFilter.addEventListener("change", () => setWhere(filter.where, cityFilter.value));
+curriculumFilter.addEventListener("change", () => setCurriculum(curriculumFilter.value));
+applicationCountry.addEventListener("change", updateApplicationLocation);
+applicationCity.addEventListener("change", updateApplicationPlace);
 
 $("#countryGrid").addEventListener("click", (event) => {
   const button = event.target.closest("[data-country]");

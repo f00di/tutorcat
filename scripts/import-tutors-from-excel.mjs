@@ -9,6 +9,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 const ROOT_DIR = join(__dirname, "..");
 export const SOURCE_FILE = join(ROOT_DIR, "source", "tutors.xlsx");
 export const OUTPUT_FILE = join(ROOT_DIR, "data", "tutors.json");
+export const REGIONS_FILE = join(ROOT_DIR, "data", "regions.json");
 
 // A profile whose Status / Application Status is one of these stays in the workbook but is not published.
 const UNPUBLISHED_STATUSES = new Set([
@@ -34,6 +35,7 @@ const ARRAY_FIELDS = new Set([
   "languages",
   "outcomes",
   "tags",
+  "servesCountries",
 ]);
 
 const NUMBER_FIELDS = new Set(["currentStudents", "rating", "reviewCount", "experienceYears"]);
@@ -98,7 +100,12 @@ const HEADER_ALIASES = {
     "major",
     "degree",
   ],
-  location: ["location", "city", "area"],
+  location: ["location", "area"],
+  baseCountry: ["base country", "country of residence", "based in"],
+  city: ["city", "base city"],
+  servesCountries: ["serves countries", "serves", "online countries"],
+  permitCountry: ["permit country"],
+  permitVerified: ["permit verified"],
   sessionModes: ["session modes", "mode", "online/in-person", "online in person"],
   languages: ["languages", "language"],
   currentStudents: ["current students", "student load", "students"],
@@ -108,6 +115,7 @@ const HEADER_ALIASES = {
   rating: ["rating"],
   reviewCount: ["review count", "reviews"],
   shortBio: ["short bio", "bio", "about"],
+  shortBioAr: ["short bio arabic", "arabic bio", "bio arabic"],
   parentNote: ["parent note", "notes for parents", "parent/student note"],
   outcomes: ["outcomes", "achievements"],
   tags: ["tags", "keywords", "board", "curriculum", "level", "course", "courses"],
@@ -491,6 +499,162 @@ function isClearlyPublicImageUrl(value) {
   return /^\.?\/?assets\//i.test(url);
 }
 
+// ---------------------------------------------------------------------------
+// Gulf regions (data/regions.json): where a tutor is based or teaches, and curricula.
+// Unlike `countries` (study-abroad destinations), these are matched against the config.
+// ---------------------------------------------------------------------------
+
+export function loadRegions(file = REGIONS_FILE) {
+  return JSON.parse(readFileSync(file, "utf8"));
+}
+
+// "U.A.E." -> "uae", "Al-Ain" -> "al ain". Keeps Arabic letters.
+function regionKey(value) {
+  return cleanText(value).toLowerCase().replace(/\./g, "").replace(/[-_]+/g, " ").replace(/\s+/g, " ").trim();
+}
+
+// Whole words only, so "A/AS-level" -> " a as level " and "ap" never matches inside "apple".
+function wordKey(value) {
+  return ` ${cleanText(value).toLowerCase().replace(/[^a-z0-9؀-ۿ]+/g, " ").trim()} `;
+}
+
+const regionIndexes = new WeakMap();
+
+function regionIndex(regions) {
+  if (regionIndexes.has(regions)) return regionIndexes.get(regions);
+  const countries = new Map();
+  const cities = new Map();
+  for (const country of regions.countries ?? []) {
+    for (const key of [country.name, country.short, country.ar, country.shortAr, ...(country.aliases ?? [])]) {
+      if (key) countries.set(regionKey(key), country);
+    }
+    for (const city of country.cities ?? []) {
+      for (const key of [city.name, city.ar, ...(city.aliases ?? [])]) {
+        if (!key) continue;
+        const list = cities.get(regionKey(key)) ?? [];
+        list.push({ country: country.name, city: city.name });
+        cities.set(regionKey(key), list);
+      }
+    }
+  }
+  const index = {
+    country: (value) => countries.get(regionKey(value)) ?? null,
+    cities: (value) => cities.get(regionKey(value)) ?? [],
+  };
+  regionIndexes.set(regions, index);
+  return index;
+}
+
+const offersOnline = (profile) => profile.sessionModes.some((mode) => /online|hybrid/i.test(mode));
+const offersInPerson = (profile) => profile.sessionModes.some((mode) => /in.?person|hybrid|home|face/i.test(mode));
+const LOCATION_FILLER = /^(online|remote|in.?person|home|hybrid|anywhere|gcc|gulf)$/i;
+
+function resolveLocation(profile, regions, warnings) {
+  const index = regionIndex(regions);
+  const who = `Row for "${profile.name}"`;
+  let baseCountry = "";
+  let city = "";
+
+  if (profile.baseCountry) {
+    baseCountry = index.country(profile.baseCountry)?.name ?? "";
+    if (!baseCountry) warnings.push(`${who}: Base Country "${profile.baseCountry}" is not in data/regions.json, left out.`);
+  }
+
+  if (profile.city) {
+    const matches = index.cities(profile.city);
+    const match = matches.find((item) => !baseCountry || item.country === baseCountry);
+    if (match) {
+      city = match.city;
+      baseCountry ||= match.country;
+    } else {
+      warnings.push(
+        matches.length
+          ? `${who}: City "${profile.city}" is not in ${baseCountry}, left out.`
+          : `${who}: City "${profile.city}" is not in data/regions.json (add it there or fix the spelling), left out.`
+      );
+    }
+  }
+
+  // Older workbooks only have free-text Location: map it when the new columns are empty.
+  if (!profile.baseCountry && !profile.city && profile.location) {
+    const unmapped = [];
+    const cityParts = [];
+    for (const part of profile.location.split(/[,/|;]+|\s+-\s+/).map(cleanText).filter(Boolean)) {
+      const country = index.country(part);
+      if (country) baseCountry ||= country.name;
+      else if (index.cities(part).length) cityParts.push(part);
+      else if (!LOCATION_FILLER.test(part)) unmapped.push(part);
+    }
+    for (const part of cityParts) {
+      const match = index.cities(part).find((item) => !baseCountry || item.country === baseCountry);
+      if (match && !city) {
+        city = match.city;
+        baseCountry ||= match.country;
+      } else if (!match) {
+        unmapped.push(part);
+      }
+    }
+    if (baseCountry) {
+      warnings.push(
+        `${who}: Location "${profile.location}" read as ${[baseCountry, city].filter(Boolean).join(" / ")}. Fill Base Country and City to confirm.`
+      );
+    }
+    if (unmapped.length) {
+      warnings.push(`${who}: Location "${profile.location}" has parts not recognised (${unmapped.join(", ")}). Fill Base Country and City.`);
+    }
+  }
+
+  const serves = [];
+  for (const item of profile.servesCountries) {
+    const country = index.country(item);
+    if (country) serves.push(country.name);
+    else warnings.push(`${who}: Serves Countries "${item}" is not in data/regions.json, left out.`);
+  }
+
+  profile.baseCountry = baseCountry;
+  profile.city = city;
+  profile.servesCountries = unique(serves);
+
+  if (offersOnline(profile) && !profile.servesCountries.length) {
+    warnings.push(
+      baseCountry
+        ? `${who}: online, but Serves Countries is empty, so they only show for ${baseCountry}.`
+        : `${who}: online with no Base Country or Serves Countries, so they only show under "Any" location.`
+    );
+  } else if (offersInPerson(profile) && !baseCountry) {
+    warnings.push(`${who}: in-person with no Base Country, so they only show under "Any" location.`);
+  }
+}
+
+function resolvePermit(profile, regions, warnings) {
+  if (profile.permitCountry) {
+    const country = regionIndex(regions).country(profile.permitCountry);
+    if (!country) {
+      warnings.push(`Row for "${profile.name}": Permit Country "${profile.permitCountry}" is not in data/regions.json, left out.`);
+    }
+    profile.permitCountry = country?.name ?? "";
+  }
+  profile.permitVerified = profile.permitVerified === true;
+  if (profile.permitVerified && !profile.permitCountry) {
+    warnings.push(`Row for "${profile.name}": Permit Verified is Yes but Permit Country is empty, so no badge is shown.`);
+  }
+}
+
+// Curricula come from the Curriculum/Board/tags values, matched against data/regions.json,
+// so the catalog filter only lists curricula tutors actually entered.
+function deriveCurricula(tags, regions) {
+  const curricula = [
+    ...(regions.curricula ?? []),
+    ...(regions.countries ?? []).flatMap((country) => country.nationalCurricula ?? []),
+  ];
+  const words = tags.map(wordKey);
+  return curricula
+    .filter((curriculum) =>
+      [curriculum.name, ...(curriculum.aliases ?? [])].some((alias) => words.some((tag) => tag.includes(wordKey(alias))))
+    )
+    .map((curriculum) => curriculum.name);
+}
+
 function emptyProfile() {
   return {
     id: "",
@@ -503,6 +667,9 @@ function emptyProfile() {
     counselingTopics: [],
     educationOrExperience: "",
     location: "",
+    baseCountry: "",
+    city: "",
+    servesCountries: [],
     sessionModes: [],
     languages: [],
     currentStudents: null,
@@ -513,9 +680,12 @@ function emptyProfile() {
     rating: null,
     reviewCount: null,
     shortBio: "",
+    shortBioAr: "",
     parentNote: "",
     outcomes: [],
     tags: [],
+    permitCountry: "",
+    permitVerified: null,
     imageUrl: "",
     imageAlt: "",
     photoApproved: null,
@@ -703,6 +873,11 @@ function applyValue(profile, field, value, warnings, rowNumber, header) {
     return;
   }
 
+  if (field === "permitVerified") {
+    profile.permitVerified = parseBoolean(value);
+    return;
+  }
+
   if (field === "publicContactType") {
     profile.publicContactMethod.type = cleanText(value).toLowerCase();
     return;
@@ -827,14 +1002,14 @@ function mergeContinuation(target, addition, options = {}) {
     target[field] = unique([...(target[field] || []), ...(addition[field] || [])]);
   }
 
-  for (const field of ["educationOrExperience", "improvement", "experience", "availability", "shortBio", "parentNote"]) {
+  for (const field of ["educationOrExperience", "improvement", "experience", "availability", "shortBio", "shortBioAr", "parentNote"]) {
     if (!addition[field]) continue;
     target[field] = target[field]
       ? unique(`${target[field]}; ${addition[field]}`.split("; ").map(cleanText)).join("; ")
       : addition[field];
   }
 
-  for (const field of ["location", "imageUrl"]) {
+  for (const field of ["location", "baseCountry", "city", "permitCountry", "imageUrl"]) {
     if (!target[field] && addition[field]) target[field] = addition[field];
   }
 
@@ -844,6 +1019,10 @@ function mergeContinuation(target, addition, options = {}) {
 
   if (target.photoApproved === null && addition.photoApproved !== null) {
     target.photoApproved = addition.photoApproved;
+  }
+
+  if (target.permitVerified === null && addition.permitVerified !== null) {
+    target.permitVerified = addition.permitVerified;
   }
 
   if (!target.publicContactMethod.type && addition.publicContactMethod.type) {
@@ -865,7 +1044,7 @@ function mergeContinuation(target, addition, options = {}) {
   }
 }
 
-function finalizeProfiles(drafts, warnings) {
+function finalizeProfiles(drafts, warnings, regions) {
   const usedIds = new Map();
 
   return drafts.map((profile) => {
@@ -916,6 +1095,10 @@ function finalizeProfiles(drafts, warnings) {
       approved: profile.publicContactMethod.approved === true,
     };
 
+    resolveLocation(profile, regions, warnings);
+    resolvePermit(profile, regions, warnings);
+    profile.curricula = deriveCurricula(profile.tags, regions);
+
     return {
       id: profile.id,
       name: profile.name,
@@ -927,6 +1110,9 @@ function finalizeProfiles(drafts, warnings) {
       counselingTopics: profile.counselingTopics,
       educationOrExperience: profile.educationOrExperience,
       location: profile.location,
+      baseCountry: profile.baseCountry,
+      city: profile.city,
+      servesCountries: profile.servesCountries,
       sessionModes: profile.sessionModes,
       languages: profile.languages,
       currentStudents: profile.currentStudents,
@@ -937,9 +1123,13 @@ function finalizeProfiles(drafts, warnings) {
       rating: profile.rating,
       reviewCount: profile.reviewCount,
       shortBio: profile.shortBio,
+      shortBioAr: profile.shortBioAr,
       parentNote: profile.parentNote,
       outcomes: profile.outcomes,
       tags: profile.tags,
+      curricula: profile.curricula,
+      permitCountry: profile.permitCountry,
+      permitVerified: profile.permitVerified,
       imageUrl: profile.imageUrl,
       imageAlt: profile.imageAlt,
       photoApproved: profile.photoApproved,
@@ -957,7 +1147,7 @@ export function isPublishedStatus(status) {
 }
 
 // Pure step: worksheets in, public profiles out. No file access, so tests can call it directly.
-export function profilesFromSheets(sheets) {
+export function profilesFromSheets(sheets, regions = loadRegions()) {
   const selected = selectDataSheet(sheets);
   const headerMap = buildHeaderMap(selected.row.cells);
   const warnings = [];
@@ -991,7 +1181,7 @@ export function profilesFromSheets(sheets) {
     warnings.unshift(`Merged ${mergedRows} continuation row${mergedRows === 1 ? "" : "s"} into the profile above them (compact layout).`);
   }
 
-  const all = finalizeProfiles(drafts, warnings);
+  const all = finalizeProfiles(drafts, warnings, regions);
 
   return {
     sheetName: selected.name,

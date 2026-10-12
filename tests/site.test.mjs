@@ -14,6 +14,7 @@ const PROFILE_KEYS = new Set([
   "availability", "rating", "reviewCount", "shortBio", "parentNote", "outcomes",
   "tags", "imageUrl", "imageAlt", "photoApproved", "reviews", "email",
   "verificationContactEmail", "publicContactMethod", "applicationStatus",
+  "baseCountry", "city", "servesCountries", "curricula", "permitCountry", "permitVerified", "shortBioAr",
 ]);
 const EMAIL = /[^\s@]+@[^\s@]+\.[^\s@]+/;
 // 9+ digits in a phone-shaped run, so year ranges like "2019-2023" don't trip it.

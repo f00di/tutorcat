@@ -18,9 +18,31 @@ Run `npm run tutors:template` to create `source/tutors-template.xlsx`: one row p
 
 - **Status**: `Published` shows the profile. `Draft`, `Hidden`, `Pending`, `Paused` or `Inactive` keep the row in the workbook but off the site, so you never need to delete rows.
 - Lists (subjects, curriculum, countries, languages) are comma separated.
+- **Countries** means study-abroad destinations a counselor advises on. Where the tutor lives and teaches is separate: see "Gulf location" below.
 - Columns with `private`, `internal`, `email`, `phone`, `contact`, `address` or `payment` in the header are never published.
 
 The older compact layout (one person across several rows) still imports, but it relies on guessing where each person starts, so prefer one row per person.
+
+## Gulf location
+
+TutorCat covers the UAE, Saudi Arabia, Qatar, Kuwait, Bahrain and Oman. Countries, cities and recognised curricula live in `data/regions.json`.
+
+- **Base Country** (dropdown): the Gulf country they live and teach in.
+- **City** (dropdown): a city in that country. A city not in the list is flagged; add it to `data/regions.json` and rerun.
+- **Serves Countries**: online tutors only, the Gulf countries they teach online (comma separated). Left blank, an online tutor only shows for their base country. With no Base Country either, they only show when the family picks "Anywhere".
+- **Location** (old free text) still works. When Base Country and City are empty, the importer maps it: "Dubai" becomes United Arab Emirates / Dubai, "Riyadh, KSA" becomes Saudi Arabia / Riyadh. Every mapping and every part it can't read is printed as a warning, so fill the new columns to confirm. A bare "SA" is never guessed as Saudi Arabia.
+
+On the site, in-person tutors appear for their own country and city, and online tutors appear for every country they serve.
+
+**Curriculum filter.** The importer reads the Curriculum (Board, tags) column and matches known boards to curricula: IGCSE, A/AS-level, Cambridge, Edexcel or AQA → British; AP or SAT → American; IB; CBSE or ICSE → Indian; French baccalaureate → French. Only curricula that tutors actually entered appear in the filter. National curricula are added per country in `data/regions.json` (`nationalCurricula`).
+
+**Permits.**
+- **Permit Country** (dropdown) and **Permit Verified** (Yes/No) are public. Set Yes only after your team has checked the permit. The "Permit verified" badge shows only for UAE permits for now (see `docs/gcc-rules-todo.md`).
+- **Private Permit Number** is never published. Any header containing "private" is left out.
+
+**Short Bio (Arabic).** This is optional: the tutor's own Arabic bio, shown when the site is in Arabic. Never machine-translate it.
+
+Run `npm run tutors:template -- --force` to get a workbook with these columns and dropdowns. The country and city lists live on a hidden "Lists" sheet.
 
 ## Privacy
 

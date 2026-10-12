@@ -3,18 +3,18 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>TutorCat | Tutoring and Study-Destination Counseling</title>
+    <title>TutorCat | Tutors and Study-Destination Counselors across the Gulf</title>
     <meta
       name="description"
-      content="IGCSE and A-level tutoring, plus counselors who studied in the country your family is considering. Compare TutorCat specialists and request an introduction."
+      content="IGCSE and A-level tutoring for families in the UAE, Saudi Arabia, Qatar, Kuwait, Bahrain and Oman, plus counselors who studied in the country your family is considering. Compare TutorCat specialists and request an introduction."
     />
     <meta
       property="og:title"
-      content="TutorCat | Tutoring and Study-Destination Counseling"
+      content="TutorCat | Tutors and Study-Destination Counselors across the Gulf"
     />
     <meta
       property="og:description"
-      content="IGCSE and A-level tutoring, plus counselors who studied in the country your family is considering."
+      content="IGCSE and A-level tutoring across the Gulf, plus counselors who studied in the country your family is considering."
     />
     <meta property="og:type" content="website" />
     <meta property="og:url" content="https://f00di.github.io/tutorcat/" />
@@ -87,8 +87,9 @@
           <div class="hero-copy">
             <h1 id="hero-title">Find the right tutor or <em>study&#8209;destination</em> counselor.</h1>
             <p class="lede">
-              IGCSE and A-level tutoring, plus counselors who studied in the
-              country your family is considering.
+              IGCSE and A-level tutoring for families across the Gulf, from the
+              UAE and Saudi Arabia to Qatar, Kuwait, Bahrain and Oman, plus
+              counselors who studied in the country your family is considering.
             </p>
             <form class="match" id="matchForm">
               <div>
@@ -98,6 +99,16 @@
                   <button type="button" role="radio" aria-checked="true" tabindex="0" data-need="tutoring">Tutoring</button>
                   <button type="button" role="radio" aria-checked="false" tabindex="-1" data-need="counseling">Counseling</button>
                   <button type="button" role="radio" aria-checked="false" tabindex="-1" data-need="both">Both</button>
+                </div>
+              </div>
+              <div class="match-where">
+                <div>
+                  <label class="field-label" for="matchWhere">Where</label>
+                  <select id="matchWhere"><option value="">Anywhere</option></select>
+                </div>
+                <div id="matchCityField" hidden>
+                  <label class="field-label" for="matchCity">City</label>
+                  <select id="matchCity"><option value="">Any city</option></select>
                 </div>
               </div>
               <div class="match-row">
@@ -129,6 +140,20 @@
           <div class="section-head">
             <h2 id="catalog-title">Compare specialists</h2>
             <p class="lede" id="factsLine" hidden></p>
+          </div>
+          <div class="filter-row" id="filterRow" role="group" aria-label="Location and curriculum" hidden>
+            <div>
+              <label class="field-label" for="whereFilter">Where</label>
+              <select id="whereFilter"><option value="">Anywhere</option></select>
+            </div>
+            <div id="cityFilterField" hidden>
+              <label class="field-label" for="cityFilter">City</label>
+              <select id="cityFilter"><option value="">Any city</option></select>
+            </div>
+            <div id="curriculumFilterField" hidden>
+              <label class="field-label" for="curriculumFilter">Curriculum</label>
+              <select id="curriculumFilter"><option value="">Any curriculum</option></select>
+            </div>
           </div>
           <div class="chips" id="chipGroup" role="group" aria-label="Filter specialists"></div>
           <p class="sr-only" id="catalogStatus" role="status" aria-live="polite">Loading specialists.</p>
@@ -162,7 +187,7 @@
             <li>
               <span class="step-num" aria-hidden="true">1</span>
               <h3>Tell us the goal</h3>
-              <p>Student level, subject, destination, timeline and family priorities.</p>
+              <p>Student level, curriculum, subject, where you live, destination and timeline.</p>
             </li>
             <li>
               <span class="step-num" aria-hidden="true">2</span>
@@ -192,7 +217,14 @@
                 How does TutorCat match students?
                 <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
               </button>
-              <div class="faq-a" id="faq1"><div><p>We compare the student's level, goals, subject or counseling focus, destination, preferred format, urgency and profile fit.</p></div></div>
+              <div class="faq-a" id="faq1"><div><p>We compare the student's level, curriculum, goals, subject or counseling focus, destination, where your family lives, preferred format, urgency and profile fit.</p></div></div>
+            </div>
+            <div class="faq-item">
+              <button class="faq-q" type="button" aria-expanded="false" aria-controls="faqGulf">
+                Which countries do you cover?
+                <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
+              </button>
+              <div class="faq-a" id="faqGulf"><div><p>Families in the UAE, Saudi Arabia, Qatar, Kuwait, Bahrain and Oman. Online tutors list the Gulf countries they teach, and in-person tutors show their city. Use Where to see who serves you.</p></div></div>
             </div>
             <div class="faq-item">
               <button class="faq-q" type="button" aria-expanded="false" aria-controls="faq2">
@@ -203,7 +235,7 @@
             </div>
             <div class="faq-item">
               <button class="faq-q" type="button" aria-expanded="false" aria-controls="faq3">
-                Can I choose a counselor who studied in the country?
+                Can I choose a counselor who studied in our destination country?
                 <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
               </button>
               <div class="faq-a" id="faq3"><div><p>You can request that preference. Profiles show relevant study, work or advising experience when available.</p></div></div>
@@ -220,7 +252,7 @@
                 Do you offer online sessions?
                 <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 5v14M5 12h14" /></svg>
               </button>
-              <div class="faq-a" id="faq5"><div><p>Yes. Many profiles support online sessions, and some support in-person or hybrid formats depending on location.</p></div></div>
+              <div class="faq-a" id="faq5"><div><p>Yes. Many profiles teach online across the Gulf, and some also meet in person in their own city. Choose "Online, anywhere in the Gulf" under Where to see online tutors.</p></div></div>
             </div>
             <div class="faq-item">
               <button class="faq-q" type="button" aria-expanded="false" aria-controls="faq6">
@@ -238,8 +270,8 @@
           <div class="section-head">
             <h2 id="contact-title">Request an introduction</h2>
             <p class="lede">
-              Share a few details and we will suggest the right specialist and
-              a first session time.
+              Wherever your family lives in the Gulf, share a few details and we
+              will suggest the right specialist and a first session time.
             </p>
           </div>
           <form class="form" id="contactForm" novalidate>
@@ -297,7 +329,7 @@
       <div class="wrap footer-row">
         <div class="footer-brand">
           <a class="brand" href="#top"><span class="brand-mark" aria-hidden="true">TC</span><span>TutorCat</span></a>
-          <p>Tutoring and study-destination counseling. Educational guidance only.</p>
+          <p>Tutoring and study-destination counseling across the Gulf. Educational guidance only.</p>
         </div>
         <div class="footer-links">
           <button class="text-btn" type="button" data-open-application>Join TutorCat as a tutor or counselor</button>
@@ -434,8 +466,19 @@
             <input name="phone" type="text" autocomplete="tel" />
           </label>
           <label>
-            <span>City/country</span>
-            <input name="location" type="text" autocomplete="address-level2" />
+            <span>Country</span>
+            <select name="country" id="applicationCountry">
+              <option value="">Choose one</option>
+              <option value="Other">Other</option>
+            </select>
+          </label>
+          <label id="applicationCityField" hidden>
+            <span>City</span>
+            <select name="city" id="applicationCity"><option value="">Choose one</option></select>
+          </label>
+          <label id="applicationPlaceField" hidden>
+            <span>Where are you based?</span>
+            <input name="place" type="text" autocomplete="address-level2" />
           </label>
           <label>
             <span>I want to join as</span>

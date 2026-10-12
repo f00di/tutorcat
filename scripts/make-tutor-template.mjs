@@ -9,7 +9,7 @@ import { existsSync, mkdirSync, mkdtempSync, readFileSync, rmSync, writeFileSync
 import { tmpdir } from "node:os";
 import { dirname, join, relative } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
-import { OUTPUT_FILE, SOURCE_FILE, profilesFromSheets, readWorkbook } from "./import-tutors-from-excel.mjs";
+import { OUTPUT_FILE, SOURCE_FILE, loadRegions, profilesFromSheets, readWorkbook } from "./import-tutors-from-excel.mjs";
 
 const ROOT_DIR = join(dirname(fileURLToPath(import.meta.url)), "..");
 const TEMPLATE_FILE = join(ROOT_DIR, "source", "tutors-template.xlsx");
@@ -18,6 +18,10 @@ const list = (items) => (items || []).join(", ");
 const yesNo = (value) => (value ? "Yes" : "No");
 const outcome = ([area, , after]) => (after ? `${area} -> ${after}` : area);
 
+const regions = loadRegions();
+const COUNTRY_NAMES = regions.countries.map((country) => country.name);
+const CITY_NAMES = regions.countries.flatMap((country) => country.cities.map((city) => city.name));
+
 // [header, width, guide text, value from a public profile]. Headers must match importer aliases.
 export const TEMPLATE_COLUMNS = [
   ["Status", 12, "Published shows the profile on the site. Draft or Hidden keeps it here without publishing.", (p) => p.applicationStatus || "Published"],
@@ -25,17 +29,21 @@ export const TEMPLATE_COLUMNS = [
   ["Profile Type", 18, "Tutor, Counselor, or Tutor + Counselor.", (p) => p.profileType],
   ["Role", 34, "One-line title, e.g. \"Math tutor and United States counselor\". Left blank, one is generated.", (p) => p.role],
   ["Subjects", 28, "Tutoring subjects, comma separated.", (p) => list(p.subjects)],
-  ["Curriculum", 28, "Boards, levels and courses, comma separated (IGCSE, A/AS-level, IB, AP...).", (p) => list(p.tags)],
+  ["Curriculum", 28, "Boards, levels and courses, comma separated (IGCSE, A/AS-level, IB, AP, CBSE...). Recognised boards feed the curriculum filter (list in data/regions.json).", (p) => list(p.tags)],
   ["Countries", 24, "Study destinations they counsel for, comma separated.", (p) => list(p.countries)],
   ["Counseling Topics", 28, "Counseling focus areas, comma separated.", (p) => list(p.counselingTopics)],
   ["Education / Experience", 40, "Schools, degrees, work. Separate items with a semicolon.", (p) => p.educationOrExperience],
-  ["Location", 16, "City or area (public).", (p) => p.location],
+  ["Base Country", 20, "Gulf country they live and teach in (dropdown).", (p) => p.baseCountry],
+  ["City", 16, "City in the base country (dropdown; a new city must be added to data/regions.json).", (p) => p.city],
+  ["Serves Countries", 28, `Online only: Gulf countries they teach online, comma separated, from: ${COUNTRY_NAMES.join(", ")}. Left blank, online tutors show for their base country only.`, (p) => list(p.servesCountries)],
+  ["Location", 16, "Old free-text location (public). Only read when Base Country and City are empty.", (p) => p.location],
   ["Session Modes", 18, "Online, In-person, Hybrid (comma separated).", (p) => list(p.sessionModes)],
   ["Languages", 18, "Comma separated.", (p) => list(p.languages)],
   ["Current Students", 10, "Number only.", (p) => p.currentStudents],
   ["Experience Years", 10, "Number only.", (p) => p.experienceYears],
   ["Availability", 22, "e.g. Weekday evenings.", (p) => p.availability],
   ["Short Bio", 44, "Two or three public sentences.", (p) => p.shortBio],
+  ["Short Bio (Arabic)", 44, "Optional: the person's own Arabic bio, shown when the site is in Arabic. Never machine-translate.", (p) => p.shortBioAr],
   ["Parent Note", 36, "Optional note for parents.", (p) => p.parentNote],
   ["Outcomes", 36, "Real results only, comma separated, as \"Area -> result\".", (p) => (p.outcomes || []).map(outcome).join(", ")],
   ["Photo URL", 28, "Public https:// link or assets/ path.", (p) => p.imageUrl],
@@ -44,9 +52,18 @@ export const TEMPLATE_COLUMNS = [
   ["Public Contact Type", 14, "email, whatsapp, linkedin or website.", (p) => p.publicContactMethod?.type],
   ["Public Contact Value", 28, "Shown publicly only when approved.", (p) => p.publicContactMethod?.value],
   ["Public Contact Approved", 10, "Yes only with the person's permission.", (p) => yesNo(p.publicContactMethod?.approved)],
+  ["Permit Country", 20, "Country that issued their private-tutoring permit (dropdown).", (p) => p.permitCountry],
+  ["Permit Verified", 10, "Yes only after your team checked the permit. The badge shows for UAE (MoHRE) permits only for now.", (p) => yesNo(p.permitVerified)],
+  ["Private Permit Number (never published)", 22, "For your records. Never written to the site.", () => ""],
   ["Private Email (never published)", 28, "For your records. Never written to the site.", () => ""],
   ["Private Phone (never published)", 20, "For your records. Never written to the site.", () => ""],
   ["Internal Notes (never published)", 36, "For your records. Never written to the site.", () => ""],
+];
+
+// Short lists are written inline. Longer ones live on the hidden "Lists" sheet (inline lists max out at 255 characters).
+const LISTS = [
+  ["Country list", COUNTRY_NAMES],
+  ["City list", CITY_NAMES],
 ];
 
 const DROPDOWNS = {
@@ -55,6 +72,10 @@ const DROPDOWNS = {
   "Photo Approved": ["Yes", "No"],
   "Public Contact Approved": ["Yes", "No"],
   "Public Contact Type": ["email", "whatsapp", "linkedin", "website"],
+  "Base Country": { list: 0 },
+  City: { list: 1, warnOnly: true },
+  "Permit Country": { list: 0 },
+  "Permit Verified": ["Yes", "No"],
 };
 
 const escapeXml = (value) =>
@@ -91,15 +112,33 @@ const sheetXml = (rows, widths, extra = "") => {
   );
 };
 
+const listRange = (index) => {
+  const letter = columnLetter(index);
+  return `Lists!$${letter}$2:$${letter}$${LISTS[index][1].length + 1}`;
+};
+
 const dataValidations = () => {
   const items = TEMPLATE_COLUMNS.map(([header], i) => [header, columnLetter(i)])
     .filter(([header]) => DROPDOWNS[header])
-    .map(
-      ([header, letter]) =>
-        `<dataValidation type="list" allowBlank="1" showErrorMessage="1" sqref="${letter}2:${letter}500">` +
-        `<formula1>"${DROPDOWNS[header].join(",")}"</formula1></dataValidation>`
-    );
+    .map(([header, letter]) => {
+      const dropdown = DROPDOWNS[header];
+      const source = Array.isArray(dropdown) ? `"${dropdown.join(",")}"` : listRange(dropdown.list);
+      // warnOnly: a value not in the list gets a warning instead of being refused (e.g. a new city).
+      const style = dropdown.warnOnly ? ' errorStyle="warning"' : "";
+      return (
+        `<dataValidation type="list" allowBlank="1" showErrorMessage="1"${style} sqref="${letter}2:${letter}500">` +
+        `<formula1>${escapeXml(source)}</formula1></dataValidation>`
+      );
+    });
   return `<dataValidations count="${items.length}">${items.join("")}</dataValidations>`;
+};
+
+const listsRows = () => {
+  const longest = Math.max(...LISTS.map(([, values]) => values.length));
+  return [
+    LISTS.map(([header]) => header),
+    ...Array.from({ length: longest }, (_, row) => LISTS.map(([, values]) => values[row] ?? "")),
+  ];
 };
 
 const STATIC_PARTS = {
@@ -109,18 +148,21 @@ const STATIC_PARTS = {
     `<Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>` +
     `<Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>` +
     `<Override PartName="/xl/worksheets/sheet2.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>` +
+    `<Override PartName="/xl/worksheets/sheet3.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>` +
     `<Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/></Types>`,
   "_rels/.rels":
     `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">` +
     `<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>`,
   "xl/workbook.xml":
     `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">` +
-    `<sheets><sheet name="Profiles" sheetId="1" r:id="rId1"/><sheet name="Guide" sheetId="2" r:id="rId2"/></sheets></workbook>`,
+    `<sheets><sheet name="Profiles" sheetId="1" r:id="rId1"/><sheet name="Guide" sheetId="2" r:id="rId2"/>` +
+    `<sheet name="Lists" sheetId="3" state="hidden" r:id="rId4"/></sheets></workbook>`,
   "xl/_rels/workbook.xml.rels":
     `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">` +
     `<Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/>` +
     `<Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet2.xml"/>` +
-    `<Relationship Id="rId3" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>`,
+    `<Relationship Id="rId3" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>` +
+    `<Relationship Id="rId4" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet3.xml"/></Relationships>`,
   "xl/styles.xml":
     `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">` +
     `<fonts count="2"><font><sz val="11"/><name val="Calibri"/></font><font><b/><sz val="11"/><name val="Calibri"/></font></fonts>` +
@@ -148,6 +190,7 @@ export function writeTemplate(file, profiles) {
       ...STATIC_PARTS,
       "xl/worksheets/sheet1.xml": sheetXml([headers, ...profileRows], TEMPLATE_COLUMNS.map(([, width]) => width), dataValidations()),
       "xl/worksheets/sheet2.xml": sheetXml(guideRows, [32, 90]),
+      "xl/worksheets/sheet3.xml": sheetXml(listsRows(), LISTS.map(() => 24)),
     };
     for (const [name, content] of Object.entries(parts)) {
       mkdirSync(dirname(join(dir, name)), { recursive: true });

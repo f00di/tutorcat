@@ -1,0 +1,137 @@
+{
+  "about": "Public config: Gulf countries and cities where tutors are based or teach, plus the curricula the catalog filter recognises. Add a country or city here; no code change needed. Aliases are matched case-insensitively (dots and hyphens ignored). permitBadge: show the 'Permit verified' badge for permits from this country (UAE only until other countries' rules are confirmed, see docs/gcc-rules-todo.md).",
+  "countries": [
+    {
+      "name": "United Arab Emirates",
+      "ar": "الإمارات العربية المتحدة",
+      "short": "UAE",
+      "shortAr": "الإمارات",
+      "aliases": ["uae", "u a e", "emirates", "the emirates", "الإمارات", "الامارات"],
+      "permitBadge": true,
+      "permitName": "MoHRE Private Teacher Work Permit",
+      "nationalCurricula": [],
+      "cities": [
+        { "name": "Abu Dhabi", "ar": "أبوظبي", "aliases": ["abudhabi", "أبو ظبي"] },
+        { "name": "Dubai", "ar": "دبي", "aliases": [] },
+        { "name": "Sharjah", "ar": "الشارقة", "aliases": [] },
+        { "name": "Ajman", "ar": "عجمان", "aliases": [] },
+        { "name": "Umm Al Quwain", "ar": "أم القيوين", "aliases": ["uaq"] },
+        { "name": "Ras Al Khaimah", "ar": "رأس الخيمة", "aliases": ["rak"] },
+        { "name": "Fujairah", "ar": "الفجيرة", "aliases": [] },
+        { "name": "Al Ain", "ar": "العين", "aliases": ["alain"] }
+      ]
+    },
+    {
+      "name": "Saudi Arabia",
+      "ar": "المملكة العربية السعودية",
+      "short": "Saudi Arabia",
+      "shortAr": "السعودية",
+      "aliases": ["ksa", "saudi", "kingdom of saudi arabia", "السعودية"],
+      "permitBadge": false,
+      "permitName": "",
+      "nationalCurricula": [],
+      "cities": [
+        { "name": "Riyadh", "ar": "الرياض", "aliases": [] },
+        { "name": "Jeddah", "ar": "جدة", "aliases": ["jedda", "jiddah"] },
+        { "name": "Mecca", "ar": "مكة المكرمة", "aliases": ["makkah", "makka", "مكة"] },
+        { "name": "Medina", "ar": "المدينة المنورة", "aliases": ["madinah", "al madinah"] },
+        { "name": "Dammam", "ar": "الدمام", "aliases": [] },
+        { "name": "Khobar", "ar": "الخبر", "aliases": ["al khobar"] },
+        { "name": "Dhahran", "ar": "الظهران", "aliases": [] }
+      ]
+    },
+    {
+      "name": "Qatar",
+      "ar": "قطر",
+      "short": "Qatar",
+      "shortAr": "قطر",
+      "aliases": ["state of qatar"],
+      "permitBadge": false,
+      "permitName": "",
+      "nationalCurricula": [],
+      "cities": [
+        { "name": "Doha", "ar": "الدوحة", "aliases": [] },
+        { "name": "Al Rayyan", "ar": "الريان", "aliases": ["rayyan"] },
+        { "name": "Al Wakrah", "ar": "الوكرة", "aliases": ["wakrah"] },
+        { "name": "Lusail", "ar": "لوسيل", "aliases": [] }
+      ]
+    },
+    {
+      "name": "Kuwait",
+      "ar": "الكويت",
+      "short": "Kuwait",
+      "shortAr": "الكويت",
+      "aliases": ["state of kuwait"],
+      "permitBadge": false,
+      "permitName": "",
+      "nationalCurricula": [],
+      "cities": [
+        { "name": "Kuwait City", "ar": "مدينة الكويت", "aliases": [] },
+        { "name": "Hawalli", "ar": "حولي", "aliases": [] },
+        { "name": "Salmiya", "ar": "السالمية", "aliases": ["salmiyah"] },
+        { "name": "Al Ahmadi", "ar": "الأحمدي", "aliases": ["ahmadi"] },
+        { "name": "Jahra", "ar": "الجهراء", "aliases": ["al jahra"] }
+      ]
+    },
+    {
+      "name": "Bahrain",
+      "ar": "البحرين",
+      "short": "Bahrain",
+      "shortAr": "البحرين",
+      "aliases": ["kingdom of bahrain"],
+      "permitBadge": false,
+      "permitName": "",
+      "nationalCurricula": [],
+      "cities": [
+        { "name": "Manama", "ar": "المنامة", "aliases": [] },
+        { "name": "Muharraq", "ar": "المحرق", "aliases": ["al muharraq"] },
+        { "name": "Riffa", "ar": "الرفاع", "aliases": [] },
+        { "name": "Isa Town", "ar": "مدينة عيسى", "aliases": [] }
+      ]
+    },
+    {
+      "name": "Oman",
+      "ar": "سلطنة عُمان",
+      "short": "Oman",
+      "shortAr": "عُمان",
+      "aliases": ["sultanate of oman", "عُمان"],
+      "permitBadge": false,
+      "permitName": "",
+      "nationalCurricula": [],
+      "cities": [
+        { "name": "Muscat", "ar": "مسقط", "aliases": [] },
+        { "name": "Salalah", "ar": "صلالة", "aliases": [] },
+        { "name": "Sohar", "ar": "صحار", "aliases": [] },
+        { "name": "Nizwa", "ar": "نزوى", "aliases": [] },
+        { "name": "Sur", "ar": "صور", "aliases": [] }
+      ]
+    }
+  ],
+  "curricula": [
+    {
+      "name": "British (IGCSE/A-Level)",
+      "ar": "البريطاني (IGCSE / A-Level)",
+      "aliases": ["british", "uk curriculum", "igcse", "gcse", "a level", "a/as-level", "as level", "a2 level", "cambridge", "cambridge international", "edexcel", "pearson edexcel", "aqa", "oxford aqa", "ocr", "btec"]
+    },
+    {
+      "name": "American (AP/SAT)",
+      "ar": "الأمريكي (AP / SAT)",
+      "aliases": ["american", "us curriculum", "common core", "ap", "advanced placement", "sat", "psat", "act"]
+    },
+    {
+      "name": "IB",
+      "ar": "البكالوريا الدولية (IB)",
+      "aliases": ["ib", "ibdp", "ib dp", "ib myp", "ib pyp", "myp", "pyp", "international baccalaureate"]
+    },
+    {
+      "name": "Indian (CBSE/ICSE)",
+      "ar": "الهندي (CBSE / ICSE)",
+      "aliases": ["indian", "indian curriculum", "cbse", "icse", "isc", "nios"]
+    },
+    {
+      "name": "French",
+      "ar": "الفرنسي",
+      "aliases": ["french curriculum", "french baccalaureate", "baccalaureat", "bac francais", "brevet"]
+    }
+  ]
+}

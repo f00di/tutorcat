@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-06-27T04:51:13.650Z",
+  "lastUpdated": "2026-10-12T08:29:35.187Z",
   "sourceSheet": "Sheet1",
   "profiles": [
     {
@@ -18,6 +18,9 @@
       "counselingTopics": [],
       "educationOrExperience": "Gems Cambridge International School Abu dhabi Banyas; California State University, Long Beach.; Bachelor in Computer Science",
       "location": "",
+      "baseCountry": "",
+      "city": "",
+      "servesCountries": [],
       "sessionModes": [
         "Online"
       ],
@@ -30,6 +33,7 @@
       "rating": null,
       "reviewCount": null,
       "shortBio": "",
+      "shortBioAr": "",
       "parentNote": "",
       "outcomes": [],
       "tags": [
@@ -38,6 +42,11 @@
         "Calc I",
         "Calc II"
       ],
+      "curricula": [
+        "British (IGCSE/A-Level)"
+      ],
+      "permitCountry": "",
+      "permitVerified": false,
       "imageUrl": "",
       "imageAlt": "",
       "photoApproved": false,
@@ -68,6 +77,9 @@
       "counselingTopics": [],
       "educationOrExperience": "Gems Cambridge International School Abu dhabi Banyas; University of Cape Town, South Africa; Bachelor of Social Science in Psychology",
       "location": "",
+      "baseCountry": "",
+      "city": "",
+      "servesCountries": [],
       "sessionModes": [
         "Online"
       ],
@@ -80,6 +92,7 @@
       "rating": null,
       "reviewCount": null,
       "shortBio": "",
+      "shortBioAr": "",
       "parentNote": "",
       "outcomes": [],
       "tags": [
@@ -88,6 +101,68 @@
         "Oxford AQA",
         "Cambridge"
       ],
+      "curricula": [
+        "British (IGCSE/A-Level)"
+      ],
+      "permitCountry": "",
+      "permitVerified": false,
+      "imageUrl": "",
+      "imageAlt": "",
+      "photoApproved": false,
+      "reviews": [],
+      "email": "",
+      "verificationContactEmail": "",
+      "publicContactMethod": {
+        "type": "",
+        "value": "",
+        "approved": false
+      },
+      "applicationStatus": ""
+    },
+    {
+      "id": "shady-bolos-tutor-counselor",
+      "name": "Shady Bolos",
+      "initials": "SB",
+      "profileType": "Tutor + Counselor",
+      "role": "Math tutor and Czech Republic counselor",
+      "subjects": [
+        "Math",
+        "Biology",
+        "Chemistry"
+      ],
+      "countries": [
+        "Czech Republic"
+      ],
+      "counselingTopics": [],
+      "educationOrExperience": "Gems Cambridge International School Abu dhabi Banyas; Charles University, Third Faculty of Medicine; Doctor of Medicine",
+      "location": "",
+      "baseCountry": "",
+      "city": "",
+      "servesCountries": [],
+      "sessionModes": [
+        "Online"
+      ],
+      "languages": [],
+      "currentStudents": null,
+      "improvement": "",
+      "experience": "1 yr",
+      "experienceYears": 1,
+      "availability": "",
+      "rating": null,
+      "reviewCount": null,
+      "shortBio": "",
+      "shortBioAr": "",
+      "parentNote": "",
+      "outcomes": [],
+      "tags": [
+        "IGCSE",
+        "A/AS-level"
+      ],
+      "curricula": [
+        "British (IGCSE/A-Level)"
+      ],
+      "permitCountry": "",
+      "permitVerified": false,
       "imageUrl": "",
       "imageAlt": "",
       "photoApproved": false,
