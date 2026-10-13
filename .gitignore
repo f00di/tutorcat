@@ -1,2 +1,10 @@
 source/*.xlsx
 source/*.xls
+
+# Build
+node_modules/
+dist/
+.output/
+.tanstack/
+.vite/
+*.local

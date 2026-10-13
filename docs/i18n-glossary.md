@@ -14,6 +14,7 @@ The Arabic version (`i18n/ar.json`) is written in Modern Standard Arabic for Gul
 | review | مراجعة | A written review. Plural مراجعات. Alternative: رأي / آراء (more casual). |
 | rating | تقييم | The 1–5 score. Kept distinct from مراجعة. |
 | permit | تصريح | UAE: تصريح عمل المعلم الخصوصي (MoHRE), stored as `permitNameAr` in `data/regions.json`. |
+| find my match (finder button) | ابحث عن الأنسب لي | Lovable's "Find my match". A literal مطابقتي sounds like a dating app. |
 | request an introduction | اطلب التواصل | "Ask to be put in touch." A literal "تعريف" sounds odd. Used on the button, the drawer and the FAQ, which must match. |
 | shortlist | قائمتي | "My list." Shorter than القائمة المختصرة and familiar from shopping apps. |
 | online / in person / hybrid | عبر الإنترنت / حضوريًا / مدمج | مدمج (blended) is used by Gulf schools. Alternative for hybrid: حضوري وعن بُعد. |
@@ -24,7 +25,7 @@ The Arabic version (`i18n/ar.json`) is written in Modern Standard Arabic for Gul
 - Western digits (0-9), as on UAE sites (`ar-AE-u-nu-latn`). Gregorian month names (يناير، فبراير…).
 - Arabic comma (،) and semicolon (؛) in Arabic text. Lists of Latin course codes keep the English comma.
 - Plurals follow Arabic rules: zero, one, two, few (3–10), many (11–99), other (100+). Every plural string in `ar.json` has all six forms.
-- The brand stays "TutorCat" in Latin letters.
+- The brand stays "Tutorcat" in Latin letters (Lovable's spelling; emails to the team still say "TutorCat").
 - Tutors' and reviewers' own words are never machine-translated. Tutors can add their own Arabic bio in the workbook ("Short Bio (Arabic)").
 - Emails sent to the TutorCat team stay in English, with a "Site language" line.
 
