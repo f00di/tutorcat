@@ -1,6 +1,6 @@
 import { test } from "node:test";
 import assert from "node:assert/strict";
-import { existsSync, readFileSync } from "node:fs";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
 
 const root = new URL("../", import.meta.url);
 const read = (path) => readFileSync(new URL(path, root), "utf8");
@@ -38,51 +38,33 @@ if (LANGS.includes("ar")) {
   });
 }
 
-test("every key used in index.html exists in en.json", () => {
-  const html = read("index.html");
-  const used = [
-    ...[...html.matchAll(/data-i18n(?:-html)?="([^"]+)"/g)].map((match) => match[1]),
-    ...[...html.matchAll(/data-i18n-attr="([^"]+)"/g)].flatMap((match) =>
-      match[1].split(";").map((pair) => pair.split(":")[1]?.trim())
-    ),
-  ];
-  assert.ok(used.length > 50);
-  for (const key of used) assert.ok(key in en, `index.html uses missing key "${key}"`);
+// The React source: every key it uses exists, and no visible English is hard-coded in JSX.
+const sourceFiles = readdirSync(new URL("src/", root), { recursive: true })
+  .filter((file) => /\.(ts|tsx)$/.test(file) && !/\.test\.|routeTree\.gen|components\/ui\//.test(file))
+  .map((file) => [file, read(`src/${file}`)]);
+const NAMESPACES = [...new Set(Object.keys(en).map((key) => key.split(".")[0]))].join("|");
+const KEY_LITERAL = new RegExp(`["'\`]((?:${NAMESPACES})\\.[A-Za-z0-9.-]*)(\\$\\{)?`, "g");
+
+test("every translation key used in src/ exists in en.json", () => {
+  let checked = 0;
+  for (const [file, code] of sourceFiles) {
+    for (const [, key, dynamic] of code.matchAll(KEY_LITERAL)) {
+      checked += 1;
+      if (dynamic) assert.ok(Object.keys(en).some((known) => known.startsWith(key)), `${file}: no keys start with "${key}"`);
+      else assert.ok(key in en, `${file} uses missing key "${key}"`);
+    }
+  }
+  assert.ok(checked > 100);
 });
 
-test('every t("…") key in script.js exists in en.json', () => {
-  const script = read("script.js");
-  const used = [...script.matchAll(/\bt\(\s*"([^"]+)"/g)].map((match) => match[1]);
-  assert.ok(used.length > 50);
-  for (const key of used) assert.ok(key in en, `script.js uses missing key "${key}"`);
-});
-
-// Heuristic: after removing translated elements, scripts and tags, no English words should be left in index.html.
-test("index.html has no visible English text outside data-i18n", () => {
-  const html = read("index.html")
-    .replace(/<head>[\s\S]*?<\/head>/, "")
-    .replace(/<(script|style)\b[\s\S]*?<\/\1>/g, "")
-    .replace(/<(\w+)\b[^>]*\sdata-i18n(?:-html)?="[^"]*"[^>]*>[\s\S]*?<\/\1>/g, "")
-    .replace(/<span lang="en">TutorCat<\/span>/g, "");
-  const leftover = html
-    .replace(/<[^>]+>/g, " ")
-    .replace(/&[#\w]+;/g, " ")
-    .match(/[A-Za-z]{2,}/g)
-    ?.filter((word) => word !== "TC");
-  assert.deepEqual(leftover ?? [], [], "untranslated text in index.html");
-});
-
-test("index.html attributes with English text are translated", () => {
-  // Set by script.js with a plural count, so it can't be a static key.
-  const scriptManaged = new Set(["shortlistButton"]);
-  for (const tag of read("index.html").match(/<[a-z][^>]*>/g)) {
-    const id = tag.match(/\sid="([^"]+)"/)?.[1];
-    if (scriptManaged.has(id)) continue;
-    const translated = tag.match(/data-i18n-attr="([^"]+)"/)?.[1] ?? "";
-    for (const [, attribute, value] of tag.matchAll(/\s(placeholder|aria-label|alt|title|content)="([^"]*)"/g)) {
-      if (!/[A-Za-z]{3,}/.test(value) || /^https?:/.test(value) || /^(width=|summary_|website|#)/.test(value)) continue;
-      if (attribute === "content" && !/^<meta (name="description"|property="og:(title|description|image:alt)")/.test(tag.replace(/\s+/g, " "))) continue;
-      assert.ok(translated.includes(`${attribute}:`), `untranslated ${attribute}="${value}"`);
+test("no hard-coded English text or attributes in the JSX", () => {
+  const allowed = new Set(["Tutorcat", "https://..."]);
+  for (const [file, code] of sourceFiles.filter(([file]) => file.endsWith(".tsx"))) {
+    for (const [, text] of code.matchAll(/>\s*([^<>{}=;()]*[A-Za-z]{3,}[^<>{}=;()]*?)\s*<\//g)) {
+      assert.fail(`${file}: hard-coded text "${text.trim()}"`);
+    }
+    for (const [, attribute, value] of code.matchAll(/\b(aria-label|placeholder|alt|title)="([^"]*)"/g)) {
+      if (/[A-Za-z]{3,}/.test(value) && !allowed.has(value)) assert.fail(`${file}: hard-coded ${attribute}="${value}"`);
     }
   }
 });

@@ -58,32 +58,22 @@ for (const profile of data.profiles ?? []) {
   });
 }
 
-test("index.html only references files that exist", () => {
-  const html = read("index.html");
-  const refs = [...html.matchAll(/(?:src|href)="([^"#]+)"/g)]
-    .map((match) => match[1])
-    .filter((ref) => !/^(https?:|mailto:|data:)/.test(ref));
-  assert.ok(refs.length > 0);
-  for (const ref of refs) assert.ok(existsSync(new URL(ref, root)), `missing ${ref}`);
+test("the app bundles its data from data/ and i18n/", () => {
+  for (const path of ["data/tutors.json", "data/regions.json", "i18n/en.json", "i18n/ar.json"]) {
+    assert.ok(existsSync(new URL(path, root)), `missing ${path}`);
+  }
+  assert.match(read("src/lib/profiles.ts"), /from "\.\.\/\.\.\/data\/tutors\.json"/, "catalogue must come from data/tutors.json");
 });
 
-test("files script.js fetches exist", () => {
-  const paths = [...read("script.js").matchAll(/"\.\/([^"]+\.json)"/g)].map((match) => match[1]);
-  assert.ok(paths.length >= 2);
-  for (const path of paths) assert.ok(existsSync(new URL(path, root)), `missing ${path}`);
+test("the deploy workflow tests, builds and publishes only the build output", () => {
+  const workflow = read(".github/workflows/deploy-pages.yml");
+  const steps = ["npm ci", "npm test", "npm run build", "npm run test:build", "path: dist/client"].map((step) => workflow.indexOf(step));
+  for (const [index, at] of steps.entries()) assert.ok(at > 0, `workflow is missing step ${index + 1}`);
+  assert.deepEqual([...steps].sort((a, b) => a - b), steps, "workflow must install, test, build, check, then publish");
+  assert.doesNotMatch(workflow, /\b(source|scripts|docs|tests)\/?\s+_site|path:\s*\.\s*$/m, "never publish source/, scripts/, docs/ or tests/");
 });
 
-test("the deploy workflow publishes every file the page needs", () => {
-  const stage = read(".github/workflows/deploy-pages.yml").match(/- name: Stage site[\s\S]*?(?=\n\s*- name:)/)[0];
-  const published = new Set(
-    [...stage.matchAll(/^\s*cp (?:-R )?(.+?) _site\/$/gm)].flatMap((match) => match[1].split(/\s+/))
-  );
-  const html = read("index.html");
-  const needed = [
-    ...[...html.matchAll(/(?:src|href)="([^"#]+)"/g)].map((match) => match[1]).filter((ref) => !/^(https?:|mailto:|data:)/.test(ref)),
-    ...[...read("script.js").matchAll(/"\.\/([^"]+\.json)"/g)].map((match) => match[1]),
-    "i18n/en.json",
-    "i18n/ar.json",
-  ];
-  for (const path of needed) assert.ok(published.has(path.split("/")[0]), `${path} is not copied to _site in the deploy workflow`);
+test("private workbooks are git-ignored", () => {
+  const ignored = read(".gitignore").split("\n");
+  for (const pattern of ["source/*.xlsx", "source/*.xls"]) assert.ok(ignored.includes(pattern), `${pattern} must be in .gitignore`);
 });

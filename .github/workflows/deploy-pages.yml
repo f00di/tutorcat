@@ -24,17 +24,23 @@ jobs:
         uses: actions/setup-node@v6
         with:
           node-version: 22
+          cache: npm
 
-      - name: Test (privacy + asset checks)
+      - name: Install
+        run: npm ci
+
+      - name: Test (privacy, i18n, regions, importer, components)
         run: npm test
 
-      # Publish only the public site files, never scripts/, source/, docs/ or tests/.
-      - name: Stage site
-        run: |
-          mkdir _site
-          cp index.html styles.css script.js i18n.js _site/
-          cp -R assets data i18n _site/
-          touch _site/.nojekyll
+      - name: Typecheck
+        run: npm run typecheck
+
+      # Prerenders the home page to static HTML under /tutorcat/ (vite base + router basepath).
+      - name: Build
+        run: npm run build
+
+      - name: Check build output
+        run: npm run test:build
 
       - name: Configure Pages
         if: github.event_name != 'pull_request'
@@ -44,7 +50,8 @@ jobs:
         if: github.event_name != 'pull_request'
         uses: actions/upload-pages-artifact@v4
         with:
-          path: _site
+          # Only the build output: never source/, scripts/, docs/, tests/ or data files.
+          path: dist/client
 
   deploy:
     if: github.event_name != 'pull_request'

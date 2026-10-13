@@ -103,7 +103,7 @@ test("online tutors with no Serves Countries are flagged", () => {
   );
   assert.deepEqual(result.profiles[0].servesCountries, []);
   assert.ok(result.warnings.some((w) => w.includes("Test Person One") && w.includes("only show for Oman")));
-  assert.ok(result.warnings.some((w) => w.includes("Test Person Two") && w.includes('only show under "Any"')));
+  assert.ok(result.warnings.some((w) => w.includes("Test Person Two") && w.includes('only show when families pick "Anywhere in the Gulf"')));
 });
 
 test("permit columns: country and verified are public, the permit number never is", () => {
