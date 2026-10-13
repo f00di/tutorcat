@@ -13,9 +13,11 @@ import {
   type Profile,
 } from "@/lib/profiles";
 
-// Photos are shown only when approved; assets/ paths are served from the site's base path.
-const photoSrc = (url: string) => (/^https?:\/\//i.test(url) ? url : `${import.meta.env.BASE_URL}${url.replace(/^\.?\//, "")}`);
+// Photos are shown only when approved; assets/ paths are served from the site's base path
+// (import.meta.env only exists in the site's own build, so fall back to the root elsewhere).
+const photoSrc = (url: string) => (/^https?:\/\//i.test(url) ? url : `${import.meta.env?.BASE_URL ?? "/"}${url.replace(/^\.?\//, "")}`);
 
+/** Round avatar: the tutor's approved photo, otherwise their initials. @category Specialists */
 export function Avatar({ profile }: { profile: Profile }) {
   const { t } = useI18n();
   const [broken, setBroken] = useState(false);
@@ -35,6 +37,7 @@ export function Avatar({ profile }: { profile: Profile }) {
   );
 }
 
+/** "Permit verified" pill; renders nothing unless the profile has a verified Gulf tutoring permit. @category Specialists */
 export const PermitBadge = ({ profile }: { profile: Profile }) => {
   const { t } = useI18n();
   return hasVerifiedPermit(profile) ? (
@@ -51,6 +54,7 @@ const stars = (rating: number) => {
 };
 
 // Average and count from verified reviews (or TutorCat records), never from unverified ones.
+/** Stars, average and count from verified reviews only; otherwise "No verified public reviews yet". @category Specialists */
 export function RatingSummary({ profile }: { profile: Profile }) {
   const { t, formatRating } = useI18n();
   const info = ratingInfo(profile);
@@ -69,8 +73,12 @@ export function RatingSummary({ profile }: { profile: Profile }) {
   );
 }
 
-type CardProps = { profile: Profile; tone: string; saved: boolean; onToggleSave: () => void; onOpen: () => void };
+/** Card cover colours. */
+export type Tone = "sage" | "peach" | "lavender";
 
+type CardProps = { profile: Profile; tone: Tone; saved: boolean; onToggleSave: () => void; onOpen: () => void };
+
+/** A tutor or counselor card: tone-coloured cover with avatar and save button, then name, role, subjects, levels, study destination, experience, location and View profile. @category Specialists */
 export function SpecialistCard({ profile, tone, saved, onToggleSave, onOpen }: CardProps) {
   const translator = useI18n();
   const { t, label, formatList } = translator;

@@ -71,7 +71,7 @@
 .site-header { height: 88px; background: var(--card); border-bottom: 1px solid var(--border); }
 .header-inner { position: relative; height: 100%; display: flex; align-items: center; justify-content: space-between; gap: 30px; }
 /* The logo is one colour, drawn as a mask so it can follow the theme. */
-.logo { display: block; width: 163px; height: 43px; background: var(--logo); mask: var(--logo-url) no-repeat center / contain; -webkit-mask: var(--logo-url) no-repeat center / contain; }
+.logo { display: block; width: auto; height: 36px; color: var(--logo); }
 .main-nav { display: flex; align-items: center; gap: 30px; font-size: 13px; font-weight: 500; }
 .main-nav a { color: var(--muted-foreground); } .main-nav a:hover { color: var(--primary); }
 .header-actions { display: flex; align-items: center; gap: 12px; }
@@ -140,7 +140,7 @@
 .destination-list { display: grid; gap: 10px; }.destination-row { display: flex; justify-content: space-between; align-items: center; gap: 12px; padding: 15px 0; border-bottom: 1px solid var(--border); }.destination-row strong { font-size: 14px; }.destination-row p { font-size: 11px; margin: 3px 0 0; }.destination-icon { font-size: 24px; width: 37px; }.destination-main { display: flex; gap: 12px; align-items: center; }
 .steps-section { padding: 64px 0; }.steps-grid { display: grid; grid-template-columns: repeat(3,1fr); gap: 55px; margin-top: 35px; }.step-number { color: var(--primary); font-size: 13px; background: var(--secondary); width: 35px; height: 35px; border-radius: 50%; display: grid; place-items: center; }.steps-grid h3 { font-size: 17px; margin-top: 19px; }.steps-grid p { font-size: 13px; line-height: 1.7; color: var(--muted-foreground); }
 .faq-section { border-top: 1px solid var(--border); padding: 42px 0 56px; display: grid; grid-template-columns: 1fr 1.4fr; gap: 65px; }.faq-section details { padding: 17px 0; border-bottom: 1px solid var(--border); font-size: 13px; }.faq-section summary { cursor: pointer; font-weight: 500; }.faq-section details p { color: var(--muted-foreground); line-height: 1.8; }
-footer { border-top: 1px solid var(--border); background: var(--card); padding: 29px 0; }.footer-inner { display: flex; justify-content: space-between; align-items: center; gap: 20px; }.footer-inner p { font-size: 11px; color: var(--muted-foreground); }.footer-logo { width: 115px; height: 32px; }
+footer { border-top: 1px solid var(--border); background: var(--card); padding: 29px 0; }.footer-inner { display: flex; justify-content: space-between; align-items: center; gap: 20px; }.footer-inner p { font-size: 11px; color: var(--muted-foreground); }.footer-logo { height: 25px; }
 .dialog-backdrop { position: fixed; inset: 0; z-index: 50; background: var(--backdrop); display: flex; align-items: center; justify-content: center; padding: 20px; backdrop-filter: blur(4px); }
 .dialog-panel { background: var(--card); border-radius: 8px; box-shadow: var(--shadow-dialog); width: 100%; max-width: 570px; max-height: 90dvh; overflow-y: auto; padding: 30px; position: relative; }.dialog-close { position: absolute; top: 15px; inset-inline-end: 15px; }.dialog-panel h2 { font-size: 25px; margin: 12px 0; padding-inline-end: 34px; }.dialog-panel p { font-size: 13px; color: var(--muted-foreground); line-height: 1.7; }.dialog-panel .avatar { background: var(--secondary); }.dialog-panel h3 { font-size: 15px; margin: 22px 0 8px; }
 .dialog-panel ul.plain { margin: 0; padding: 0; list-style: none; display: grid; gap: 6px; font-size: 13px; color: var(--muted-foreground); }
@@ -157,8 +157,8 @@ footer { border-top: 1px solid var(--border); background: var(--card); padding: 
 .empty-state { grid-column: 1/-1; padding: 55px 20px; text-align: center; border: 1px dashed var(--border); border-radius: 8px; }.empty-state h3 { font-size: 20px; }.empty-state p { font-size: 14px; color: var(--muted-foreground); }
 @media(min-width:1500px) { .hero-photo { object-position: center 45%; } }
 @media(max-width:900px) { .main-nav { gap: 15px; }.header-actions .join-button { display: none; }.hero h1 { font-size: 43px; max-width: 480px; }.search-fields { grid-template-columns: 1fr 1fr; }.specialist-grid { gap: 12px; }.profile-body { padding: 16px; }.profile-footer { flex-wrap: wrap; }.pathway-inner { gap: 30px; } }
-@media(max-width:640px) { .shell { padding-inline: 20px; }.site-header { height: 72px; }.header-inner { gap: 12px; }.logo { width: 130px; height: 35px; }.main-nav { display: none; }.main-nav.is-open { display: flex; position: absolute; top: 72px; inset-inline: 0; background: var(--card); padding: 20px; flex-direction: column; z-index: 20; border-bottom: 1px solid var(--border); align-items: start; }.header-actions { gap: 4px; }.header-actions .shortlist-label { display: none; }.mobile-menu { display: inline-flex; }.hero { min-height: 475px; }.hero-photo { object-position: 67% center; opacity: .3; }.hero:after { background: linear-gradient(var(--wash-angle),var(--background),color-mix(in oklab,var(--background) 55%,transparent)); }.hero-inner { padding-top: 44px; padding-bottom: 74px; }.hero h1 { font-size: 39px; max-width: 360px; }.hero-copy { font-size: 14px; max-width: 330px; }.hero-note { font-size: 11px; }.finder { padding-inline: 16px; }.finder-tabs { gap: 20px; }.finder-tabs button { font-size: 12px; }.search-fields { grid-template-columns: 1fr; gap: 15px; }.reassurance { gap: 15px; flex-wrap: wrap; font-size: 10px; padding-bottom: 23px; }.catalogue { padding-top: 31px; }.section-head { align-items: start; }.section-head h2,.section-title { font-size: 25px; }.section-head p { font-size: 12px; }.result-count { font-size: 10px; padding-top: 29px; }.catalogue-toolbar { flex-wrap: wrap; }.filter-chips { gap: 6px; }.filter-chips button { font-size: 10px; padding-inline: 11px; }.specialist-grid { grid-template-columns: 1fr; gap: 20px; }.profile-cover { height: 120px; }.profile-body { padding: 22px; }.profile-footer { flex-wrap: nowrap; }.pathway-inner,.faq-section { grid-template-columns: 1fr; gap: 20px; }.steps-grid { grid-template-columns: 1fr; gap: 22px; }.steps-section { padding-block: 40px; }.footer-inner { flex-wrap: wrap; }.dialog-panel { padding: 25px; }.dialog-panel h2 { font-size: 22px; }.form-pair { grid-template-columns: 1fr; } }
-@media(max-width:380px) { .shell { padding-inline: 16px; }.logo { width: 108px; height: 30px; }.header-actions button { padding-inline: 8px; } }
+@media(max-width:640px) { .shell { padding-inline: 20px; }.site-header { height: 72px; }.header-inner { gap: 12px; }.site-header .logo { height: 27px; }.main-nav { display: none; }.main-nav.is-open { display: flex; position: absolute; top: 72px; inset-inline: 0; background: var(--card); padding: 20px; flex-direction: column; z-index: 20; border-bottom: 1px solid var(--border); align-items: start; }.header-actions { gap: 4px; }.header-actions .shortlist-label { display: none; }.mobile-menu { display: inline-flex; }.hero { min-height: 475px; }.hero-photo { object-position: 67% center; opacity: .3; }.hero:after { background: linear-gradient(var(--wash-angle),var(--background),color-mix(in oklab,var(--background) 55%,transparent)); }.hero-inner { padding-top: 44px; padding-bottom: 74px; }.hero h1 { font-size: 39px; max-width: 360px; }.hero-copy { font-size: 14px; max-width: 330px; }.hero-note { font-size: 11px; }.finder { padding-inline: 16px; }.finder-tabs { gap: 20px; }.finder-tabs button { font-size: 12px; }.search-fields { grid-template-columns: 1fr; gap: 15px; }.reassurance { gap: 15px; flex-wrap: wrap; font-size: 10px; padding-bottom: 23px; }.catalogue { padding-top: 31px; }.section-head { align-items: start; }.section-head h2,.section-title { font-size: 25px; }.section-head p { font-size: 12px; }.result-count { font-size: 10px; padding-top: 29px; }.catalogue-toolbar { flex-wrap: wrap; }.filter-chips { gap: 6px; }.filter-chips button { font-size: 10px; padding-inline: 11px; }.specialist-grid { grid-template-columns: 1fr; gap: 20px; }.profile-cover { height: 120px; }.profile-body { padding: 22px; }.profile-footer { flex-wrap: nowrap; }.pathway-inner,.faq-section { grid-template-columns: 1fr; gap: 20px; }.steps-grid { grid-template-columns: 1fr; gap: 22px; }.steps-section { padding-block: 40px; }.footer-inner { flex-wrap: wrap; }.dialog-panel { padding: 25px; }.dialog-panel h2 { font-size: 22px; }.form-pair { grid-template-columns: 1fr; } }
+@media(max-width:380px) { .shell { padding-inline: 16px; }.site-header .logo { height: 23px; }.header-actions button { padding-inline: 8px; } }
 @media(prefers-reduced-motion:reduce) { html { scroll-behavior: auto; } * { transition: none !important; animation: none !important; } }
 
 .tab-short { display: none; }
@@ -175,22 +175,63 @@ footer { border-top: 1px solid var(--border); background: var(--card); padding: 
 :root:lang(ar) .hero h1 { line-height: 1.35; }
 :root:lang(ar) :is(.section-title, .section-head h2) { line-height: 1.45; }
 
-/* Arabic links stay hidden for a moment until the Arabic text is in (boot script in __root.tsx). */
-.i18n-pending body { visibility: hidden; }
-
-.cat-peek { position: absolute; top: -48px; inset-inline-end: 56px; z-index: 0; font-size: 76px; width: 1em; height: 1em; pointer-events: none; will-change: transform; }
+/* The cat (src/lib/cat.ts). Head and paws sit in .finder-wrap; on a section edge the script sets
+   physical left/top relative to .finder-wrap, so the cat scrolls with the page natively. */
+.cat-peek { position: absolute; top: -48px; inset-inline-end: 56px; z-index: 0; font-size: 76px; width: 1em; height: 1em; pointer-events: none; }
 .cat-peek span { position: absolute; display: block; }
 .cat-ear { top: .02em; width: .44em; height: .44em; background: var(--cat); clip-path: polygon(50% 0, 100% 100%, 0 100%); }
 .cat-ear-l { inset-inline-start: .04em; transform: rotate(-16deg); } .cat-ear-r { inset-inline-end: .04em; transform: rotate(16deg); }
 .cat-head { top: .2em; inset-inline-start: 0; width: 1em; height: .8em; border-radius: 50%; background: var(--cat); }
 .cat-eye { top: .42em; width: .11em; height: .16em; border-radius: 50%; background: var(--cat-eye); animation: blink 5s infinite; }
 .cat-eye-l { inset-inline-start: .27em; } .cat-eye-r { inset-inline-end: .27em; }
-.cat-paws { position: absolute; inset: 0 0 auto 0; height: 0; z-index: 2; pointer-events: none; will-change: transform; }
+.cat-paws { position: absolute; inset: 0 0 auto 0; height: 0; z-index: 2; pointer-events: none; }
 .cat-paw { position: absolute; top: -7px; width: 20px; height: 13px; border-radius: 50%; background: var(--cat); }
-/* While roaming, script positions the cat with physical left/top from getBoundingClientRect. */
-.cat-peek[data-roaming] { position: fixed; inset-inline: auto; z-index: 10; clip-path: inset(0 0 28px); }
-.cat-paws[data-roaming] { position: fixed; inset-inline: auto; width: 76px; z-index: 11; }
+.cat-peek[data-roaming] { inset-inline: auto; z-index: 10; clip-path: inset(0 0 28px); }
+.cat-paws[data-roaming] { inset-inline: auto; width: 76px; z-index: 11; }
 .cat-paws[data-roaming] .cat-paw:first-child { inset-inline-end: 6px !important; }
 .cat-paws[data-roaming] .cat-paw:last-child { inset-inline-end: 54px !important; }
+/* The classic pixel cat: a 5-frame run cycle (63×36, stored at 4×) used as a mask, so it takes --cat
+   and its eyes (holes in the frames) show whatever is behind it. Shown at 2×. */
+.cat-sprite { display: block; width: 126px; height: 72px; background: var(--cat); -webkit-mask: url("./assets/cat-run.png") 0 0 / 630px 72px no-repeat; mask: url("./assets/cat-run.png") 0 0 / 630px 72px no-repeat; animation: cat-run .5s steps(5) infinite; }
+.cat-runner { position: absolute; top: 0; left: 0; z-index: 12; pointer-events: none; visibility: hidden; }
+.cat-runner[data-running] { visibility: visible; }
+@keyframes cat-run { to { -webkit-mask-position: -630px 0; mask-position: -630px 0; } }
 @keyframes blink { 0%, 92%, 100% { transform: scaleY(1); } 95% { transform: scaleY(.1); } }
-@media(prefers-reduced-motion:reduce) { .cat-eye { animation: blink 5s infinite !important; } }
+
+/* Loading screen (src/components/loading-buffer.tsx): a skeleton of the page with the pixel cat running
+   along the search card. Shown while Arabic loads on an Arabic visit, during a slow language switch,
+   and with ?loading for previewing. */
+.buffer { display: none; position: fixed; inset: 0; z-index: 100; overflow: hidden; background: var(--background); cursor: default; }
+.i18n-pending .buffer, .is-buffering .buffer, .buffer-preview .buffer, .buffer.is-open { display: block; }
+.i18n-pending body > :not(.buffer) { visibility: hidden; }
+.sk { display: block; border-radius: 6px; background: linear-gradient(90deg, var(--sk) 0%, var(--sk-shine) 50%, var(--sk) 100%) 0 0 / 200% 100%; animation: sk-shimmer 1.4s ease-in-out infinite; }
+:root { --sk: color-mix(in oklch, var(--foreground) 8%, transparent); --sk-shine: color-mix(in oklch, var(--foreground) 3%, transparent); }
+@keyframes sk-shimmer { from { background-position: 100% 0; } to { background-position: -100% 0; } }
+.buffer-header { height: 88px; background: var(--card); border-bottom: 1px solid var(--border); }
+.buffer-header .shell { height: 100%; display: flex; align-items: center; gap: 30px; }
+.buffer-nav { display: flex; gap: 30px; flex: 1; }
+.sk-nav { width: 96px; height: 12px; } .sk-button { width: 150px; height: 36px; margin-inline-start: auto; }
+.buffer-hero { min-height: 470px; background: var(--muted); }
+.buffer-hero .shell { padding-block: 57px 65px; }
+.sk-eyebrow { width: 230px; height: 11px; margin-bottom: 26px; }
+.sk-title { width: min(520px, 90%); height: 46px; margin-bottom: 12px; }
+.buffer-hero .sk-title:nth-of-type(3) { width: min(400px, 75%); margin-bottom: 26px; }
+.sk-line { width: min(400px, 92%); height: 12px; margin-bottom: 11px; }
+.sk-line:nth-last-of-type(1) { width: min(260px, 60%); }
+.buffer-finder { position: relative; margin-top: -28px; padding: 0 24px 23px; background: var(--card); border: 1px solid var(--border); border-radius: 8px; box-shadow: var(--shadow-soft); }
+.buffer-track { position: absolute; inset-inline: 0; bottom: 100%; height: 72px; overflow: hidden; container-type: inline-size; pointer-events: none; }
+.buffer-track .cat-sprite { position: absolute; bottom: -2px; left: 0; animation: cat-run .5s steps(5) infinite, cat-cross 4s linear infinite; }
+[dir="rtl"] .buffer-track { transform: scaleX(-1); }
+@keyframes cat-cross { from { transform: translateX(-126px); } to { transform: translateX(100cqw); } }
+.buffer-tabs { display: flex; gap: 28px; height: 58px; align-items: center; margin-bottom: 21px; border-bottom: 1px solid var(--border); }
+.sk-tab { width: 130px; height: 14px; }
+.buffer-fields { display: grid; grid-template-columns: 1.2fr 1fr 1fr 150px; gap: 17px; }
+.sk-field { height: 46px; } .sk-submit { background: color-mix(in oklch, var(--primary) 30%, transparent); animation: none; }
+.buffer-cards { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 21px; margin-top: 70px; }
+.buffer-card { display: block; padding-bottom: 14px; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; background: var(--card); }
+.buffer-card .sk-line { margin-inline: 21px; }
+.sk-cover { height: 112px; border-radius: 0; margin-bottom: 21px; }
+@media(max-width:900px) { .buffer-nav { display: none; } .buffer-fields { grid-template-columns: 1fr 1fr; } .buffer-cards { grid-template-columns: 1fr 1fr; } .buffer-card:nth-child(3) { display: none; } }
+@media(max-width:640px) { .buffer-header { height: 72px; } .buffer-header .logo { height: 28px; } .sk-button { width: 72px; } .buffer-hero { min-height: 420px; } .sk-title { height: 36px; } .buffer-finder { padding-inline: 16px; } .buffer-fields { grid-template-columns: 1fr; } .sk-tab { width: 80px; } .buffer-cards { grid-template-columns: 1fr; } .buffer-card:nth-child(2) { display: none; } }
+/* Reduced motion: no shimmer, no running; the cat sits still on the card. */
+@media(prefers-reduced-motion:reduce) { .buffer-track .cat-sprite { left: 50%; translate: -50% 0; } }

@@ -1,0 +1,66 @@
+{
+  "projectId": "a46f609f-e6fe-4697-b6c5-72a8d2bea036",
+  "shape": "package",
+  "pkg": "tutorcat",
+  "globalName": "Tutorcat",
+  "buildCmd": "npm run build && node .design-sync/prepare.mjs",
+  "entry": ".design-sync/.cache/pkg/index.ts",
+  "srcDir": "../../../src/components",
+  "tsconfig": "../../../tsconfig.json",
+  "cssEntry": "tutorcat.css",
+  "provider": {
+    "component": "I18nProvider"
+  },
+  "componentSrcMap": {
+    "I18nProvider": null,
+    "CatPeek": "../../../src/components/cat.tsx",
+    "CatPaws": "../../../src/components/cat.tsx",
+    "CatSprite": "../../../src/components/cat.tsx",
+    "Avatar": "../../../src/components/specialist-card.tsx",
+    "PermitBadge": "../../../src/components/specialist-card.tsx",
+    "RatingSummary": "../../../src/components/specialist-card.tsx",
+    "RequestForm": "../../../src/components/forms.tsx",
+    "JoinForm": "../../../src/components/forms.tsx",
+    "ReviewForm": "../../../src/components/forms.tsx",
+    "DraftReady": "../../../src/components/forms.tsx"
+  },
+  "overrides": {
+    "SpecialistCard": {
+      "cardMode": "column"
+    },
+    "LoadingBuffer": {
+      "cardMode": "single",
+      "viewport": "1200x720"
+    },
+    "SiteHeader": {
+      "cardMode": "column",
+      "viewport": "1280x420"
+    },
+    "ProfileView": {
+      "cardMode": "column"
+    },
+    "RequestForm": {
+      "cardMode": "column"
+    },
+    "JoinForm": {
+      "cardMode": "column"
+    },
+    "ReviewForm": {
+      "cardMode": "column"
+    },
+    "DraftReady": {
+      "cardMode": "column"
+    },
+    "DialogShell": {
+      "cardMode": "single",
+      "viewport": "1000x760"
+    },
+    "CatPeek": {
+      "cardMode": "column"
+    },
+    "CatSprite": {
+      "cardMode": "column"
+    }
+  },
+  "readmeHeader": ".design-sync/conventions.md"
+}

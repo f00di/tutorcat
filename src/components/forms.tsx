@@ -62,6 +62,7 @@ const Choices = ({ items }: { items: [value: string, label: string][] }) => (
   </>
 );
 
+/** Introduction request (name, email, level, need, specialist, message); onDraft receives an English email draft. @category Forms */
 export function RequestForm({ person, profiles, onDraft }: { person: Profile | null; profiles: Profile[]; onDraft: (draft: Draft) => void }) {
   const { t, langName } = useI18n();
   const { status, onSubmit } = useValidatedSubmit((data) => {
@@ -122,6 +123,7 @@ export function RequestForm({ person, profiles, onDraft }: { person: Profile | n
   );
 }
 
+/** Tutor/counselor application with Gulf country and city, subjects, destinations and the three consents; onDraft receives an English email draft. @category Forms */
 export function JoinForm({ onDraft }: { onDraft: (draft: Draft) => void }) {
   const { t, label, langName } = useI18n();
   const [country, setCountry] = useState("");
@@ -247,6 +249,7 @@ export function JoinForm({ onDraft }: { onDraft: (draft: Draft) => void }) {
 }
 
 // Reviews are only published after the tutor confirms the session and TutorCat approves them.
+/** Session review with rating and the verification consents; onDraft receives an English email draft. @category Forms */
 export function ReviewForm({ person, profiles, onDraft }: { person: Profile | null; profiles: Profile[]; onDraft: (draft: Draft) => void }) {
   const { t, label, langName } = useI18n();
   const { status, onSubmit } = useValidatedSubmit((data) => {
@@ -301,6 +304,7 @@ export function ReviewForm({ person, profiles, onDraft }: { person: Profile | nu
 }
 
 // Lovable's "draft is ready" step: copy it, or open it in the visitor's email app.
+/** The "your draft is ready" step: shows the draft with Copy request and Open email draft. @category Forms */
 export function DraftReady({ draft }: { draft: Draft }) {
   const { t } = useI18n();
   const [copied, setCopied] = useState(false);

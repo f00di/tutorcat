@@ -1,16 +1,14 @@
 import { ArrowUpRight, Bookmark, Menu, Moon, Sun, X } from "lucide-react";
-import { useState, type CSSProperties } from "react";
+import { useState } from "react";
 
-import logoUrl from "@/assets/tutorcat-logo.png";
+import { Logo } from "@/components/logo";
 import { Button } from "@/components/ui/button";
 import { isLang, useI18n } from "@/lib/i18n";
 import { useTheme } from "@/lib/theme";
 
-// The logo PNG is one colour, used as a CSS mask so it can follow the light/dark theme.
-export const logoStyle = { "--logo-url": `url(${logoUrl})` } as CSSProperties;
-
 type Props = { savedCount: number; onShortlist: () => void; onJoin: () => void };
 
+/** The site header: logo, main nav, Shortlist with a saved count, Join as a specialist, the عربي/English and light/dark toggles; collapses to a menu on phones. @category Layout */
 export function SiteHeader({ savedCount, onShortlist, onJoin }: Props) {
   const { t, formatNumber, setLang } = useI18n();
   const { theme, toggle } = useTheme();
@@ -24,7 +22,7 @@ export function SiteHeader({ savedCount, onShortlist, onJoin }: Props) {
       </a>
       <div className="shell header-inner">
         <a href="#" aria-label={t("nav.home")}>
-          <span className="logo" style={logoStyle} role="img" aria-label="Tutorcat" />
+          <Logo className="logo" />
         </a>
         <nav id="main-nav" aria-label={t("nav.main")} className={`main-nav ${menuOpen ? "is-open" : ""}`} onClick={() => setMenuOpen(false)}>
           <a href="#specialists">{t("nav.specialists")}</a>
