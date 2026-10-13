@@ -143,12 +143,14 @@ type I18nValue = Translator & { setLang: (lang: Lang) => void };
 const I18nContext = createContext<I18nValue | null>(null);
 
 // The page is prerendered in English; the visitor's language is applied right after hydration.
-// Arabic visitors don't see the English flash: the head script hides the page until then.
+// Arabic visitors don't see the English flash: the head script shows the loading screen until then.
 export function I18nProvider({ children }: { children: ReactNode }) {
   const [lang, setLangState] = useState<Lang>(DEFAULT_LANG);
   const [catalog, setCatalog] = useState<Catalog>(en);
 
   const switchTo = useCallback(async (next: Lang, remember: boolean) => {
+    // A slow switch shows the loading screen; a quick one never flashes it.
+    const buffering = window.setTimeout(() => document.documentElement.classList.add("is-buffering"), 150);
     try {
       setCatalog(await loadCatalog(next));
       setLangState(next);
@@ -157,6 +159,9 @@ export function I18nProvider({ children }: { children: ReactNode }) {
       setCatalog(en);
       setLangState(DEFAULT_LANG);
       applyDocumentLang(DEFAULT_LANG);
+    } finally {
+      window.clearTimeout(buffering);
+      document.documentElement.classList.remove("is-buffering");
     }
   }, []);
 

@@ -1,6 +1,7 @@
 import { HeadContent, Outlet, Scripts, createRootRoute } from "@tanstack/react-router";
 import { type ReactNode } from "react";
 
+import { LoadingBuffer } from "../components/loading-buffer";
 import { SITE_URL } from "../config";
 import { I18nProvider, createTranslator } from "../lib/i18n";
 import { BOOT_SCRIPT } from "../lib/theme";
@@ -63,6 +64,7 @@ function RootShell({ children }: { children: ReactNode }) {
 function RootComponent() {
   return (
     <I18nProvider>
+      <LoadingBuffer />
       <Outlet />
     </I18nProvider>
   );

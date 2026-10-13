@@ -10,6 +10,7 @@ type Props = { onClose: () => void; contentKey: string; children: ReactNode };
 
 // Lovable's dialog: focus moves into the panel, Tab stays inside, Escape and the backdrop close it.
 // contentKey changes when the dialog switches view (profile -> request), so focus moves to the new view.
+/** Centred dialog panel over a blurred backdrop: focus stays inside, Escape and the backdrop close it. Put a ProfileView or a form inside. @category Layout */
 export function DialogShell({ onClose, contentKey, children }: Props) {
   const { t } = useI18n();
   const panel = useRef<HTMLDivElement>(null);
