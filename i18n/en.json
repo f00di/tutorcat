@@ -8,6 +8,7 @@
   "theme.toDark": "Switch to dark mode",
   "theme.toLight": "Switch to light mode",
   "nav.skip": "Skip to content",
+  "buffer.loading": "Loading",
   "nav.home": "Tutorcat home",
   "nav.main": "Main navigation",
   "nav.specialists": "Find a specialist",

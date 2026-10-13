@@ -19,6 +19,16 @@ Object.defineProperty(window, "matchMedia", {
   }),
 });
 
+// jsdom has no ResizeObserver (the cat uses one to re-measure the page).
+Object.defineProperty(window, "ResizeObserver", {
+  writable: true,
+  value: class {
+    observe() {}
+    unobserve() {}
+    disconnect() {}
+  },
+});
+
 // Node 25 ships an experimental global localStorage that shadows jsdom's; use a plain
 // in-memory Storage so tests behave the same on every Node version.
 const memoryStorage = (): Storage => {

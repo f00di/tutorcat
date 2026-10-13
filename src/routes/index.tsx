@@ -3,14 +3,16 @@ import { ArrowRight, ArrowUpRight, Bookmark, BookOpen, Compass, GraduationCap, G
 import { useCallback, useMemo, useRef, useState } from "react";
 
 import sessionImage from "@/assets/tutorcat-session.jpg";
+import { CatPaws, CatPeek, CatSprite } from "@/components/cat";
 import { DialogShell } from "@/components/dialog-shell";
 import { DraftReady, JoinForm, RequestForm, ReviewForm } from "@/components/forms";
 import { ProfileView } from "@/components/profile-view";
-import { logoStyle, SiteHeader } from "@/components/site-header";
+import { Logo } from "@/components/logo";
+import { SiteHeader } from "@/components/site-header";
 import { SpecialistCard } from "@/components/specialist-card";
 import { Button } from "@/components/ui/button";
 import { isContactEmailSet } from "@/config";
-import { useCatPerches } from "@/lib/cat";
+import { useCat } from "@/lib/cat";
 import type { Draft } from "@/lib/drafts";
 import { regions, useI18n } from "@/lib/i18n";
 import {
@@ -40,7 +42,7 @@ type DialogState =
   | { type: "draft"; draft: Draft }
   | null;
 
-const TONES = ["sage", "peach", "lavender"];
+const TONES = ["sage", "peach", "lavender"] as const;
 const NO_FILTERS: Filters = { mode: "both", topic: "", curriculum: "", where: "" };
 const toneOf = (profile: Profile) => TONES[profiles.indexOf(profile) % TONES.length] ?? "sage";
 const scrollToId = (id: string) =>
@@ -62,7 +64,8 @@ function Index() {
   const catWrapRef = useRef<HTMLDivElement>(null);
   const catHeadRef = useRef<HTMLDivElement>(null);
   const catPawsRef = useRef<HTMLDivElement>(null);
-  useCatPerches(catWrapRef, catHeadRef, catPawsRef);
+  const catRunnerRef = useRef<HTMLSpanElement>(null);
+  useCat(catWrapRef, catHeadRef, catPawsRef, catRunnerRef);
 
   // Every option below comes from data/tutors.json and data/regions.json.
   const subjects = useMemo(() => allSubjects(profiles), []);
@@ -162,13 +165,7 @@ function Index() {
 
         <div className="shell">
           <div className="finder-wrap" ref={catWrapRef}>
-            <div className="cat-peek" ref={catHeadRef} aria-hidden="true">
-              <span className="cat-ear cat-ear-l" />
-              <span className="cat-ear cat-ear-r" />
-              <span className="cat-head" />
-              <span className="cat-eye cat-eye-l" />
-              <span className="cat-eye cat-eye-r" />
-            </div>
+            <CatPeek ref={catHeadRef} />
             <section className="finder" aria-label={t("finder.label")}>
               <div className="finder-tabs" role="group" aria-label={t("finder.supportType")}>
                 {(["tutoring", "counseling", "both"] as Mode[]).map((item) => (
@@ -245,10 +242,8 @@ function Index() {
                 </Button>
               </div>
             </section>
-            <div className="cat-paws" ref={catPawsRef} aria-hidden="true">
-              <span className="cat-paw" style={{ insetInlineEnd: 62 }} />
-              <span className="cat-paw" style={{ insetInlineEnd: 110 }} />
-            </div>
+            <CatPaws ref={catPawsRef} />
+            <CatSprite className="cat-runner" ref={catRunnerRef} />
           </div>
           <div className="reassurance">
             {profiles.some(offersOnline) && (
@@ -429,7 +424,7 @@ function Index() {
 
       <footer>
         <div className="shell footer-inner">
-          <span className="logo footer-logo" style={logoStyle} role="img" aria-label="Tutorcat" />
+          <Logo className="logo footer-logo" label="Tutorcat" />
           <p>{t("footer.tagline")}</p>
           <p>{t("footer.legal", { year: new Date().getFullYear() })}</p>
         </div>

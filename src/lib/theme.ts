@@ -53,5 +53,6 @@ export function useTheme() {
 
 // Runs in <head> before first paint, so there is no flash of the wrong theme or direction.
 // Theme: saved choice, else the system setting. Language: ?lang=ar or a remembered Arabic choice
-// sets lang/dir and hides the page until the Arabic text is in (1.5 s safety net).
-export const BOOT_SCRIPT = `(function(){var d=document.documentElement,t,l;try{t=localStorage.getItem("${THEME_STORAGE_KEY}")}catch(e){}if(t!=="light"&&t!=="dark")t=window.matchMedia&&matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light";if(t==="dark")d.classList.add("dark");d.style.colorScheme=t;l=new URLSearchParams(location.search).get("lang");try{l=l||localStorage.getItem("tutorcat.lang")}catch(e){}if(l==="ar"){d.lang="ar";d.dir="rtl";d.classList.add("i18n-pending");setTimeout(function(){d.classList.remove("i18n-pending")},1500)}})();`;
+// sets lang/dir and shows the loading screen until the Arabic text is in (1.5 s safety net).
+// ?loading shows the loading screen for previewing (click it to close).
+export const BOOT_SCRIPT = `(function(){var d=document.documentElement,t,l;try{t=localStorage.getItem("${THEME_STORAGE_KEY}")}catch(e){}if(t!=="light"&&t!=="dark")t=window.matchMedia&&matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light";if(t==="dark")d.classList.add("dark");d.style.colorScheme=t;l=new URLSearchParams(location.search).get("lang");try{l=l||localStorage.getItem("tutorcat.lang")}catch(e){}if(l==="ar"){d.lang="ar";d.dir="rtl";d.classList.add("i18n-pending");setTimeout(function(){d.classList.remove("i18n-pending")},1500)}if(new URLSearchParams(location.search).has("loading"))d.classList.add("buffer-preview")})();`;
