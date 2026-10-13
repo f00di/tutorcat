@@ -449,20 +449,12 @@ function slugify(value) {
     .replace(/^-+|-+$/g, "");
 }
 
-function generateRole(profile) {
-  const subject = profile.subjects[0] || "Academic";
-  const country = profile.countries[0] || "study-destination";
-
-  if (profile.profileType === "Tutor + Counselor") {
-    return `${subject} tutor and ${country} counselor`;
-  }
-
-  if (profile.profileType === "Counselor") {
-    return `${country} education counselor`;
-  }
-
-  return `${subject} tutor`;
-}
+// What the site shows when the workbook leaves Role blank (translated on the site).
+const ROLE_BY_TYPE = {
+  Tutor: "Academic tutor",
+  Counselor: "University counselor",
+  "Tutor + Counselor": "Academic tutor & university counselor",
+};
 
 function parseNumber(value) {
   const match = String(value ?? "").match(/\d+(?:\.\d+)?/);
@@ -619,10 +611,10 @@ function resolveLocation(profile, regions, warnings) {
     warnings.push(
       baseCountry
         ? `${who}: online, but Serves Countries is empty, so they only show for ${baseCountry}.`
-        : `${who}: online with no Base Country or Serves Countries, so they only show under "Any" location.`
+        : `${who}: online with no Base Country or Serves Countries, so they only show when families pick "Anywhere in the Gulf".`
     );
   } else if (offersInPerson(profile) && !baseCountry) {
-    warnings.push(`${who}: in-person with no Base Country, so they only show under "Any" location.`);
+    warnings.push(`${who}: in-person with no Base Country, so they only show when families pick "Anywhere in the Gulf".`);
   }
 }
 
@@ -1064,7 +1056,7 @@ function finalizeProfiles(drafts, warnings, regions) {
 
     // Left blank, the site builds the role from subjects and destinations so it can be translated.
     if (!profile.role) {
-      warnings.push(`Row for "${profile.name}": role missing, the site will show "${generateRole(profile)}".`);
+      warnings.push(`Row for "${profile.name}": role missing, the site will show "${ROLE_BY_TYPE[profile.profileType]}".`);
     }
 
     if (!profile.initials) {
