@@ -19,6 +19,7 @@ type Props = { profile: Profile; saved: boolean; onToggleSave: () => void; onReq
 
 // Everything here comes from the profile. Tutor-written text (bio, availability, notes, outcomes)
 // is shown as written, never translated; Arabic mode shows the tutor's own Arabic bio if there is one.
+/** A specialist's full profile, for inside DialogShell: avatar, role, subjects, bio, details, verified reviews, Request an introduction and Shortlist. @category Specialists */
 export function ProfileView({ profile, saved, onToggleSave, onRequest, onReview }: Props) {
   const translator = useI18n();
   const { t, label, lang, formatList, formatDate, formatRating } = translator;

@@ -36,6 +36,7 @@ export interface ButtonProps
   asChild?: boolean;
 }
 
+/** Tutorcat's button. variant: default (green, primary action) | outline | secondary | ghost | link | destructive; size: default | sm | lg | icon; asChild renders its child (e.g. an <a>) with button styling. @category Actions */
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant, size, asChild = false, ...props }, ref) => {
     const Comp = asChild ? Slot : "button";
