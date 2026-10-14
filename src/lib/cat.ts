@@ -1,8 +1,9 @@
-// The Tutorcat cat. Near the top it peeks over the search card; as you scroll it runs (the classic
-// pixel-cat frames in src/assets/cat-run.png) to the top edge of the next section and peeks over that
-// instead. Head, paws and runner are positioned in page coordinates inside .finder-wrap, so they
-// scroll with the page natively: script only works while the cat bobs, runs or picks a perch.
-// Browser-only, and off for visitors who prefer reduced motion.
+// The Tutorcat cat. Near the top it peeks over the search card; as you scroll it ducks behind its
+// edge and pops up over the top edge of the next section instead: paws first, then the head. Head
+// and paws are positioned in page coordinates inside .finder-wrap, so they scroll with the page
+// natively and the cat sits still on its edge. Script only runs to pick a perch and to move.
+// Browser-only, and off for visitors who prefer reduced motion. (The running pixel cat is only on
+// the loading screen.)
 import { useEffect, type RefObject } from "react";
 
 const PERCHES = ".catalogue, .pathway, .steps-section, .faq-section";
@@ -11,13 +12,13 @@ const NOTCHES = [0.78, 0.22, 0.68, 0.36];
 // A section edge is "in view" between these distances from the top and bottom of the screen.
 const BAND_TOP = 110;
 const BAND_BOTTOM = 60;
-const SETTLE_MS = 140; // the best perch must hold this long before the cat sets off
+const SETTLE_MS = 140; // the best perch must hold this long before the cat moves
 const HEAD = 76; // .cat-peek box (px)
-const RUNNER_W = 126; // .cat-sprite box: the 63×36 frames at 2×
-const RUNNER_H = 72;
-const RUN_SPEED = 1.4; // px per ms
-const RUN_MS = [450, 1100] as const; // shortest and longest run
-const HOP = 40; // height of the run's arc (px)
+// The head hides by sliding this far down behind its ledge. Its clip-path moves with it, so the
+// clip is animated too: only the part above the ledge ever shows.
+const DUCK_PX = 34;
+const SHOWN_CLIP = "inset(0 0 28px)";
+const HIDDEN_CLIP = `inset(0 0 ${28 + DUCK_PX}px)`;
 
 // Which perch the cat should sit on, from viewport tops: -1 is home (the search card).
 // With no section edge in the band, the cat stays where it is.
@@ -29,13 +30,12 @@ export function pickPerch(homeTop: number, sectionTops: number[], viewportHeight
 
 type Ref = RefObject<HTMLElement | null>;
 
-export function useCat(wrapRef: Ref, headRef: Ref, pawsRef: Ref, runnerRef: Ref) {
+export function useCat(wrapRef: Ref, headRef: Ref, pawsRef: Ref) {
   useEffect(() => {
     const wrap = wrapRef.current;
     const head = headRef.current;
     const paws = pawsRef.current;
-    const runner = runnerRef.current;
-    if (!wrap || !head || !paws || !runner || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    if (!wrap || !head || !paws || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
     const sections = Array.from(document.querySelectorAll<HTMLElement>(PERCHES));
     const rtl = () => document.documentElement.dir === "rtl";
@@ -61,134 +61,133 @@ export function useCat(wrapRef: Ref, headRef: Ref, pawsRef: Ref, runnerRef: Ref)
       const left = Math.max(20, Math.min(window.innerWidth - HEAD - 20, viewportLeft)) - wrapLeft;
       return { ledge: sectionTops[perch] ?? 0, left };
     };
-    const runnerAt = (perch: number) => {
-      const { ledge, left } = spot(perch);
-      return { x: left + HEAD / 2 - RUNNER_W / 2, y: ledge - RUNNER_H + 2 };
-    };
 
-    let perch = -1; // where the cat is, or is running to
-    let pending = -1;
-    let pendingSince = 0;
-    let run: Animation | null = null;
-
-    const place = (target: number) => {
-      if (target < 0) {
+    const place = (perch: number) => {
+      if (perch < 0) {
         delete head.dataset["roaming"];
         delete paws.dataset["roaming"];
         head.style.left = head.style.top = paws.style.left = paws.style.top = "";
         return;
       }
-      const { ledge, left } = spot(target);
+      const { ledge, left } = spot(perch);
       head.dataset["roaming"] = paws.dataset["roaming"] = "true";
       head.style.left = paws.style.left = `${left}px`;
       head.style.top = `${ledge - 48}px`;
       paws.style.top = `${ledge}px`;
     };
 
-    const arrive = () => {
-      run?.cancel();
-      run = null;
-      delete runner.dataset["running"];
-      place(perch);
-      head.style.visibility = paws.style.visibility = "";
-      // Pop up from behind the ledge: the clip moves down with the head, so only the part above shows.
-      head.animate(
-        [
-          { translate: "0 34px", clipPath: "inset(0 0 62px)" },
-          { translate: "0 0", clipPath: "inset(0 0 28px)" },
-        ],
-        { duration: 260, easing: "cubic-bezier(.2,.8,.2,1)" }
-      );
-      paws.animate([{ opacity: 0 }, { opacity: 1 }], { duration: 160, delay: 90, fill: "backwards" });
+    const running = new Set<Animation>();
+    const play = (element: HTMLElement, keyframes: Keyframe[], options: KeyframeAnimationOptions) => {
+      const animation = element.animate(keyframes, options);
+      running.add(animation);
+      animation.finished.then(() => running.delete(animation), () => running.delete(animation));
+      return animation;
     };
 
-    const runTo = (target: number) => {
-      // Start from wherever the cat visibly is, even mid-run, so a change of mind never snaps.
-      let from = runnerAt(perch);
-      if (run) {
-        const box = runner.getBoundingClientRect();
-        const origin = wrap.getBoundingClientRect();
-        from = { x: box.left - origin.left, y: box.top - origin.top };
-        run.cancel();
+    // Leaving: the head sinks first, then the paws let go. Both stay hidden (fill forwards) until
+    // the cat appears at its next perch.
+    const hide = () => [
+      play(head, [{ translate: "0 0", clipPath: SHOWN_CLIP }, { translate: `0 ${DUCK_PX}px`, clipPath: HIDDEN_CLIP }], {
+        duration: 150,
+        easing: "cubic-bezier(.5,0,.75,0)",
+        fill: "forwards",
+      }),
+      play(paws, [{ opacity: 1, translate: "0 0" }, { opacity: 0, translate: "0 4px" }], {
+        duration: 110,
+        delay: 60,
+        easing: "ease-in",
+        fill: "forwards",
+      }),
+    ];
+
+    // Arriving: the paws land on the ledge first, then the head rises behind them.
+    const show = () => [
+      play(paws, [{ opacity: 0, translate: "0 4px" }, { opacity: 1, translate: "0 0" }], {
+        duration: 160,
+        easing: "cubic-bezier(.2,.8,.2,1)",
+        fill: "backwards",
+      }),
+      play(head, [{ translate: `0 ${DUCK_PX}px`, clipPath: HIDDEN_CLIP }, { translate: "0 0", clipPath: SHOWN_CLIP }], {
+        duration: 280,
+        delay: 90,
+        easing: "cubic-bezier(.22,1,.36,1)",
+        fill: "backwards",
+      }),
+    ];
+
+    // `shown` is where the cat is; `target` is where it should be. One move at a time: a change of
+    // mind mid-move waits for that move to finish instead of snapping.
+    let shown = -1;
+    let target = -1;
+    let moving = false;
+    let disposed = false;
+    const move = async () => {
+      if (moving) return;
+      moving = true;
+      try {
+        while (shown !== target && !disposed) {
+          const hidden = hide();
+          await Promise.all(hidden.map((animation) => animation.finished));
+          shown = target;
+          place(shown);
+          // Start the arrival before dropping the hidden state, in the same task, so no frame shows
+          // the cat at its new perch before it pops up.
+          const arriving = show();
+          hidden.forEach((animation) => animation.cancel());
+          await Promise.all(arriving.map((animation) => animation.finished));
+        }
+      } catch {
+        // Cancelled by cleanup.
+      } finally {
+        moving = false;
       }
-      perch = pending = target;
-      const to = runnerAt(target);
-      const dx = to.x - from.x;
-      const dy = to.y - from.y;
-      const facing = Math.abs(dx) > 4 ? Math.sign(dx) : rtl() ? -1 : 1;
-      const duration = Math.min(RUN_MS[1], Math.max(RUN_MS[0], Math.hypot(dx, dy) / RUN_SPEED));
-      // An eased path with a gentle arc, sampled so the browser can run it off the main thread.
-      const keyframes = Array.from({ length: 17 }, (_, i) => {
-        const t = i / 16;
-        const p = t < 0.5 ? 2 * t * t : 1 - (-2 * t + 2) ** 2 / 2;
-        const x = from.x + dx * p;
-        const y = from.y + dy * p - HOP * 4 * p * (1 - p);
-        return { transform: `translate(${x.toFixed(1)}px, ${y.toFixed(1)}px) scaleX(${facing})` };
-      });
-      head.style.visibility = paws.style.visibility = "hidden";
-      runner.dataset["running"] = "true";
-      run = runner.animate(keyframes, { duration, fill: "forwards" });
-      run.onfinish = arrive;
     };
 
-    // Scroll speed drives a springy bob and a small tilt. Time-based, so 60 Hz and 120 Hz feel the same.
+    // Pick a perch on scroll; only move once the choice has held for SETTLE_MS.
     let frame = 0;
-    let last = 0;
-    let lastY = window.scrollY;
-    let speed = 0;
-    let bob = 0;
-    let bobVelocity = 0;
-    let tilt = 0;
-    const tick = (now: number) => {
-      const dt = Math.min(0.05, last ? (now - last) / 1000 : 1 / 60);
-      last = now;
-      const y = window.scrollY;
-      speed += ((y - lastY) / dt - speed) * (1 - Math.exp(-dt / 0.08));
-      lastY = y;
-      bobVelocity += (180 * (14 * Math.tanh(speed / 1800) - bob) - 14 * bobVelocity) * dt;
-      bob += bobVelocity * dt;
-      tilt += (4 * Math.tanh(speed / 2400) - tilt) * (1 - Math.exp(-dt / 0.12));
-      head.style.transform = `translateY(${bob.toFixed(2)}px) rotate(${tilt.toFixed(2)}deg)`;
-      paws.style.transform = `translateY(${(bob * 0.3).toFixed(2)}px)`;
-
-      const homeTop = wrapTop - y;
-      const best = pickPerch(homeTop, sectionTops.map((top) => homeTop + top), window.innerHeight, perch);
-      if (best === perch) pending = perch;
-      else if (best !== pending) {
-        pending = best;
-        pendingSince = now;
-      } else if (now - pendingSince >= SETTLE_MS) runTo(best);
-
-      const still = Math.abs(speed) < 1 && Math.abs(bob) < 0.05 && Math.abs(bobVelocity) < 0.05 && Math.abs(tilt) < 0.02;
-      if (still && pending === perch) {
-        frame = last = 0;
-        head.style.transform = paws.style.transform = "";
+    let settleTimer = 0;
+    let pending = -1;
+    const check = () => {
+      frame = 0;
+      const homeTop = wrapTop - window.scrollY;
+      const best = pickPerch(homeTop, sectionTops.map((top) => homeTop + top), window.innerHeight, target);
+      if (best === target) {
+        pending = target;
+        window.clearTimeout(settleTimer);
         return;
       }
-      frame = requestAnimationFrame(tick);
+      if (best === pending) return;
+      pending = best;
+      window.clearTimeout(settleTimer);
+      settleTimer = window.setTimeout(() => {
+        target = pending;
+        void move();
+      }, SETTLE_MS);
     };
-    const wake = () => {
-      if (!frame) frame = requestAnimationFrame(tick);
+    const onScroll = () => {
+      if (!frame) frame = requestAnimationFrame(check);
     };
 
     // Filters, fonts, language and window size all move the sections: re-measure and re-seat the cat.
     const relayout = () => {
       measure();
-      if (!run) place(perch);
-      wake();
+      place(shown);
+      onScroll();
     };
     const resize = new ResizeObserver(relayout);
     resize.observe(document.body);
     const direction = new MutationObserver(relayout);
     direction.observe(document.documentElement, { attributes: true, attributeFilter: ["dir"] });
-    window.addEventListener("scroll", wake, { passive: true });
+    window.addEventListener("scroll", onScroll, { passive: true });
 
     return () => {
+      disposed = true;
       cancelAnimationFrame(frame);
-      run?.cancel();
+      window.clearTimeout(settleTimer);
+      running.forEach((animation) => animation.cancel());
       resize.disconnect();
       direction.disconnect();
-      window.removeEventListener("scroll", wake);
+      window.removeEventListener("scroll", onScroll);
     };
-  }, [wrapRef, headRef, pawsRef, runnerRef]);
+  }, [wrapRef, headRef, pawsRef]);
 }
