@@ -3,7 +3,7 @@ import { ArrowRight, ArrowUpRight, Bookmark, BookOpen, Compass, GraduationCap, G
 import { useCallback, useMemo, useRef, useState } from "react";
 
 import sessionImage from "@/assets/tutorcat-session.jpg";
-import { CatPaws, CatPeek, CatSprite } from "@/components/cat";
+import { CatPaws, CatPeek } from "@/components/cat";
 import { DialogShell } from "@/components/dialog-shell";
 import { DraftReady, JoinForm, RequestForm, ReviewForm } from "@/components/forms";
 import { ProfileView } from "@/components/profile-view";
@@ -64,8 +64,7 @@ function Index() {
   const catWrapRef = useRef<HTMLDivElement>(null);
   const catHeadRef = useRef<HTMLDivElement>(null);
   const catPawsRef = useRef<HTMLDivElement>(null);
-  const catRunnerRef = useRef<HTMLSpanElement>(null);
-  useCat(catWrapRef, catHeadRef, catPawsRef, catRunnerRef);
+  useCat(catWrapRef, catHeadRef, catPawsRef);
 
   // Every option below comes from data/tutors.json and data/regions.json.
   const subjects = useMemo(() => allSubjects(profiles), []);
@@ -243,7 +242,6 @@ function Index() {
               </div>
             </section>
             <CatPaws ref={catPawsRef} />
-            <CatSprite className="cat-runner" ref={catRunnerRef} />
           </div>
           <div className="reassurance">
             {profiles.some(offersOnline) && (

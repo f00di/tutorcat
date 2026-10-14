@@ -4,8 +4,8 @@ import { cn } from "@/lib/utils";
 
 // The Tutorcat cat, in three parts so it can sit on any edge: CatPeek (head) goes behind the
 // box it peeks over, CatPaws in front of it, both inside a `position: relative` wrapper whose top
-// edge is the ledge. On the page, src/lib/cat.ts moves them from section to section, using
-// CatSprite to run between perches. Decorative only (aria-hidden).
+// edge is the ledge. On the page, src/lib/cat.ts makes them duck and pop up from section to
+// section; CatSprite (the running pixel cat) is used by the loading screen. Decorative only (aria-hidden).
 
 /** The flat cat head that peeks 48px above its wrapper's top edge, with blinking eyes. @category Brand */
 export function CatPeek({ className, ref }: { className?: string; ref?: Ref<HTMLDivElement> }) {
