@@ -176,7 +176,8 @@ footer { border-top: 1px solid var(--border); background: var(--card); padding: 
 :root:lang(ar) :is(.section-title, .section-head h2) { line-height: 1.45; }
 
 /* The cat (src/lib/cat.ts). Head and paws sit in .finder-wrap; on a section edge the script sets
-   physical left/top relative to .finder-wrap, so the cat scrolls with the page natively. */
+   physical left/top relative to .finder-wrap, so the cat scrolls with the page natively. It ducks and
+   pops up between spots; the running pixel cat (.cat-sprite) is only used by the loading screen. */
 .cat-peek { position: absolute; top: -48px; inset-inline-end: 56px; z-index: 0; font-size: 76px; width: 1em; height: 1em; pointer-events: none; }
 .cat-peek span { position: absolute; display: block; }
 .cat-ear { top: .02em; width: .44em; height: .44em; background: var(--cat); clip-path: polygon(50% 0, 100% 100%, 0 100%); }
@@ -193,8 +194,6 @@ footer { border-top: 1px solid var(--border); background: var(--card); padding: 
 /* The classic pixel cat: a 5-frame run cycle (63×36, stored at 4×) used as a mask, so it takes --cat
    and its eyes (holes in the frames) show whatever is behind it. Shown at 2×. */
 .cat-sprite { display: block; width: 126px; height: 72px; background: var(--cat); -webkit-mask: url("./assets/cat-run.png") 0 0 / 630px 72px no-repeat; mask: url("./assets/cat-run.png") 0 0 / 630px 72px no-repeat; animation: cat-run .5s steps(5) infinite; }
-.cat-runner { position: absolute; top: 0; left: 0; z-index: 12; pointer-events: none; visibility: hidden; }
-.cat-runner[data-running] { visibility: visible; }
 @keyframes cat-run { to { -webkit-mask-position: -630px 0; mask-position: -630px 0; } }
 @keyframes blink { 0%, 92%, 100% { transform: scaleY(1); } 95% { transform: scaleY(.1); } }
 
