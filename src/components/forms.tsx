@@ -3,8 +3,8 @@ import { useState, type FormEvent, type ReactNode } from "react";
 
 import { Button } from "@/components/ui/button";
 import { isContactEmailSet } from "@/config";
-import { applicationDraft, draftText, mailtoHref, requestDraft, reviewDraft, type Draft } from "@/lib/drafts";
-import { regions, useI18n } from "@/lib/i18n";
+import { COUNSELOR_SERVICES, applicationDraft, draftText, mailtoHref, requestDraft, reviewDraft, type Draft } from "@/lib/drafts";
+import { regions, slug, useI18n } from "@/lib/i18n";
 import type { Profile } from "@/lib/profiles";
 
 // The three forms from the previous site, in Lovable's dialog style. Each prepares an English
@@ -123,11 +123,20 @@ export function RequestForm({ person, profiles, onDraft }: { person: Profile | n
   );
 }
 
-/** Tutor/counselor application with Gulf country and city, subjects, destinations and the three consents; onDraft receives an English email draft. @category Forms */
-export function JoinForm({ onDraft }: { onDraft: (draft: Draft) => void }) {
+type JoinProps = {
+  onDraft: (draft: Draft) => void;
+  // Landing pages preset the role; the home dialog leaves it to the applicant.
+  joinAs?: "" | "Tutor" | "Counselor";
+  // /for-counselors only: the services offered and the commission disclosure.
+  counselorFields?: boolean;
+};
+
+/** Tutor/counselor application with Gulf country and city, subjects, destinations and the three consents (plus services and commission disclosure on /for-counselors); onDraft receives an English email draft. @category Forms */
+export function JoinForm({ onDraft, joinAs = "", counselorFields = false }: JoinProps) {
   const { t, label, langName } = useI18n();
   const [country, setCountry] = useState("");
   const [city, setCity] = useState("");
+  const [commission, setCommission] = useState("");
   const region = regions.countries.find((item) => item.name === country);
   const showPlace = country === "Other" || city === "Other";
   const { status, onSubmit } = useValidatedSubmit((data) => onDraft(applicationDraft(data, langName)), "applyForm.status.invalid");
@@ -154,7 +163,7 @@ export function JoinForm({ onDraft }: { onDraft: (draft: Draft) => void }) {
           <input type="tel" dir="ltr" name="phone" autoComplete="tel" />
         </Field>
         <Field label={t("applyForm.joinAs")}>
-          <select required name="applicantType" defaultValue="">
+          <select required name="applicantType" defaultValue={joinAs}>
             <option value="">{t("form.chooseOne")}</option>
             <Choices
               items={[
@@ -211,6 +220,35 @@ export function JoinForm({ onDraft }: { onDraft: (draft: Draft) => void }) {
       <Field label={t("applyForm.countries")}>
         <input name="countries" placeholder={t("applyForm.countriesPlaceholder")} />
       </Field>
+      {counselorFields && (
+        <>
+          <fieldset className="choice-group">
+            <legend className="field-label">{t("applyForm.services")}</legend>
+            {COUNSELOR_SERVICES.map((service) => (
+              <label key={service} className="check-label">
+                <input name="services" type="checkbox" value={service} />
+                <span>{t(`applyForm.service.${slug(service)}`)}</span>
+              </label>
+            ))}
+          </fieldset>
+          <fieldset className="choice-group">
+            <legend className="field-label">{t("applyForm.commission")}</legend>
+            <label className="check-label">
+              <input required name="commission" type="radio" value="No" checked={commission === "No"} onChange={() => setCommission("No")} />
+              <span>{t("applyForm.commission.no")}</span>
+            </label>
+            <label className="check-label">
+              <input required name="commission" type="radio" value="Yes" checked={commission === "Yes"} onChange={() => setCommission("Yes")} />
+              <span>{t("applyForm.commission.yes")}</span>
+            </label>
+          </fieldset>
+          {commission === "Yes" && (
+            <Field label={t("applyForm.commissionDetails")}>
+              <textarea required name="commissionDetails" placeholder={t("applyForm.commissionDetailsPlaceholder")} />
+            </Field>
+          )}
+        </>
+      )}
       <div className="form-pair">
         <Field label={t("applyForm.languages")}>
           <input name="languages" placeholder={t("applyForm.languagesPlaceholder")} />
@@ -305,12 +343,16 @@ export function ReviewForm({ person, profiles, onDraft }: { person: Profile | nu
 
 // Lovable's "draft is ready" step: copy it, or open it in the visitor's email app.
 /** The "your draft is ready" step: shows the draft with Copy request and Open email draft. @category Forms */
-export function DraftReady({ draft }: { draft: Draft }) {
+export function DraftReady({ draft, headingId = "dialog-title" }: { draft: Draft; headingId?: string }) {
   const { t } = useI18n();
   const [copied, setCopied] = useState(false);
+  // Inline on a page (not in a dialog) the heading takes focus when the draft appears.
+  const inline = headingId !== "dialog-title";
   return (
     <>
-      <h2 id="dialog-title">{t(`draft.title.${draft.kind}`)}</h2>
+      <h2 id={headingId} {...(inline ? { tabIndex: -1 } : {})}>
+        {t(`draft.title.${draft.kind}`)}
+      </h2>
       <p>{t(isContactEmailSet() ? "draft.ready" : "draft.pending")}</p>
       <pre className="draft-text" dir="ltr" lang="en">
         {draftText(draft)}

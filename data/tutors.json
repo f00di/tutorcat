@@ -1,6 +1,6 @@
 {
-  "lastUpdated": "2026-10-12T08:49:47.995Z",
-  "sourceSheet": "Sheet1",
+  "lastUpdated": "2026-10-15T03:52:35.109Z",
+  "sourceSheet": "Profiles",
   "profiles": [
     {
       "id": "hassan-ansari-tutor-counselor",
@@ -58,7 +58,7 @@
         "value": "",
         "approved": false
       },
-      "applicationStatus": ""
+      "applicationStatus": "Published"
     },
     {
       "id": "shweta-nundlall-tutor-counselor",
@@ -117,7 +117,7 @@
         "value": "",
         "approved": false
       },
-      "applicationStatus": ""
+      "applicationStatus": "Published"
     },
     {
       "id": "shady-bolos-tutor-counselor",
@@ -174,7 +174,117 @@
         "value": "",
         "approved": false
       },
-      "applicationStatus": ""
+      "applicationStatus": "Published"
+    },
+    {
+      "id": "muhammad-taha-tutor",
+      "name": "Muhammad Taha",
+      "initials": "MT",
+      "profileType": "Tutor",
+      "role": "IGCSE maths & sciences and A-level maths tutor",
+      "subjects": [
+        "Math",
+        "Chemistry",
+        "Physics"
+      ],
+      "countries": [],
+      "counselingTopics": [],
+      "educationOrExperience": "Mechanical Engineering student, Khalifa University; IGCSE: Math, Physics, Chemistry, Biology, Computer Science; A-levels: Math, Physics, Chemistry",
+      "location": "",
+      "baseCountry": "United Arab Emirates",
+      "city": "Abu Dhabi",
+      "servesCountries": [],
+      "sessionModes": [
+        "Online"
+      ],
+      "languages": [
+        "English",
+        "Urdu"
+      ],
+      "currentStudents": null,
+      "improvement": "",
+      "experience": "1 yr",
+      "experienceYears": 1,
+      "availability": "Weekdays after 6 pm, weekends before 3 pm",
+      "rating": null,
+      "reviewCount": null,
+      "shortBio": "I am currently a Mechanical Engineering student at Khalifa University, offering tutoring for GCSE and A-Level students. I have experience tutoring students following both the British and Canadian curricula, with a strong background in maths and science. I aim to make challenging concepts easier to understand through clear explanations and personalised teaching methods. My goal is to help students build confidence, strengthen their understanding, and achieve their academic goals.",
+      "shortBioAr": "",
+      "parentNote": "",
+      "outcomes": [],
+      "tags": [
+        "IGCSE",
+        "A-level"
+      ],
+      "curricula": [
+        "British (IGCSE/A-Level)"
+      ],
+      "permitCountry": "",
+      "permitVerified": false,
+      "imageUrl": "",
+      "imageAlt": "",
+      "photoApproved": false,
+      "reviews": [],
+      "email": "",
+      "verificationContactEmail": "",
+      "publicContactMethod": {
+        "type": "",
+        "value": "",
+        "approved": false
+      },
+      "applicationStatus": "Published"
+    },
+    {
+      "id": "vidula-veerakumar-counselor",
+      "name": "Vidula Veerakumar",
+      "initials": "VV",
+      "profileType": "Counselor",
+      "role": "UK study counselor, medical student at Brunel University",
+      "subjects": [
+        "Biology"
+      ],
+      "countries": [
+        "United Kingdom"
+      ],
+      "counselingTopics": [],
+      "educationOrExperience": "Medicine (second year), Brunel University; GCSEs; A-levels; M.A.P.S Anatomy peer tutor; Peer tutor in high school",
+      "location": "",
+      "baseCountry": "",
+      "city": "",
+      "servesCountries": [],
+      "sessionModes": [
+        "Online"
+      ],
+      "languages": [
+        "English"
+      ],
+      "currentStudents": null,
+      "improvement": "",
+      "experience": "",
+      "experienceYears": null,
+      "availability": "Weekend afternoons",
+      "rating": null,
+      "reviewCount": null,
+      "shortBio": "I am a second-year medical student at Brunel University with a strong academic background and a passion for helping others learn. I am patient, approachable and enthusiastic about making learning easier and more enjoyable for students. I aim to explain concepts clearly, adapt to different learning styles and help students build confidence in their abilities while achieving their academic goals.",
+      "shortBioAr": "",
+      "parentNote": "",
+      "outcomes": [],
+      "tags": [],
+      "curricula": [],
+      "permitCountry": "",
+      "permitVerified": false,
+      "imageUrl": "",
+      "imageAlt": "",
+      "photoApproved": false,
+      "reviews": [],
+      "email": "",
+      "verificationContactEmail": "",
+      "publicContactMethod": {
+        "type": "",
+        "value": "",
+        "approved": false
+      },
+      "applicationStatus": "Published"
     }
   ]
 }
