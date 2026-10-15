@@ -1,6 +1,7 @@
 import { ArrowUpRight, BookOpen, Bookmark, Globe2, GraduationCap, ShieldCheck } from "lucide-react";
 import { useState } from "react";
 
+import { SiteLink } from "@/components/site-link";
 import { Button } from "@/components/ui/button";
 import { useI18n } from "@/lib/i18n";
 import {
@@ -9,6 +10,7 @@ import {
   formatExperience,
   hasApprovedPhoto,
   hasVerifiedPermit,
+  profiles,
   ratingInfo,
   type Profile,
 } from "@/lib/profiles";
@@ -75,8 +77,12 @@ export function RatingSummary({ profile }: { profile: Profile }) {
 
 /** Card cover colours. */
 export type Tone = "sage" | "peach" | "lavender";
+const TONES: Tone[] = ["sage", "peach", "lavender"];
+// The same colour for each person as on the home page (by position in data/tutors.json).
+export const toneOf = (profile: Profile): Tone => TONES[Math.max(0, profiles.findIndex((item) => item.id === profile.id)) % TONES.length] ?? "sage";
 
-type CardProps = { profile: Profile; tone: Tone; saved: boolean; onToggleSave: () => void; onOpen: () => void };
+// With onOpen (home page) View profile opens the profile dialog; without it, it links to the profile page.
+type CardProps = { profile: Profile; tone: Tone; saved: boolean; onToggleSave: () => void; onOpen?: () => void };
 
 /** A tutor or counselor card: tone-coloured cover with avatar and save button, then name, role, subjects, levels, study destination, experience, location and View profile. @category Specialists */
 export function SpecialistCard({ profile, tone, saved, onToggleSave, onOpen }: CardProps) {
@@ -136,9 +142,17 @@ export function SpecialistCard({ profile, tone, saved, onToggleSave, onOpen }: C
         {ratingInfo(profile).verified.length > 0 && <RatingSummary profile={profile} />}
         <div className="profile-footer">
           <span className="online">{describeLocation(profile, translator)}</span>
-          <Button variant="outline" onClick={onOpen}>
-            {t("card.view")} <ArrowUpRight className="dir-icon" />
-          </Button>
+          {onOpen ? (
+            <Button variant="outline" onClick={onOpen}>
+              {t("card.view")} <ArrowUpRight className="dir-icon" />
+            </Button>
+          ) : (
+            <Button asChild variant="outline">
+              <SiteLink to="/tutors/$slug/" params={{ slug: profile.id }} aria-label={t("card.viewLabel", { name: profile.name })}>
+                {t("card.view")} <ArrowUpRight className="dir-icon" />
+              </SiteLink>
+            </Button>
+          )}
         </div>
       </div>
     </article>

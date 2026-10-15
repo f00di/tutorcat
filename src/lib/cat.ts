@@ -30,14 +30,15 @@ export function pickPerch(homeTop: number, sectionTops: number[], viewportHeight
 
 type Ref = RefObject<HTMLElement | null>;
 
-export function useCat(wrapRef: Ref, headRef: Ref, pawsRef: Ref) {
+// `perches` defaults to the home page sections; other pages pass their own (see CatCard).
+export function useCat(wrapRef: Ref, headRef: Ref, pawsRef: Ref, perches = PERCHES) {
   useEffect(() => {
     const wrap = wrapRef.current;
     const head = headRef.current;
     const paws = pawsRef.current;
     if (!wrap || !head || !paws || window.matchMedia("(prefers-reduced-motion: reduce)").matches) return;
 
-    const sections = Array.from(document.querySelectorAll<HTMLElement>(PERCHES));
+    const sections = Array.from(document.querySelectorAll<HTMLElement>(perches));
     const rtl = () => document.documentElement.dir === "rtl";
 
     // Layout cache. Section tops are relative to .finder-wrap, so they don't change while scrolling.
@@ -56,7 +57,7 @@ export function useCat(wrapRef: Ref, headRef: Ref, pawsRef: Ref) {
     // The ledge the cat sits on and the left edge of its head, relative to .finder-wrap.
     const spot = (perch: number) => {
       if (perch < 0) return { ledge: 0, left: rtl() ? 56 : wrapWidth - 56 - HEAD };
-      const notch = NOTCHES[perch] ?? 0.5;
+      const notch = NOTCHES[perch % NOTCHES.length] ?? 0.5;
       const viewportLeft = wrapLeft + wrapWidth * (rtl() ? 1 - notch : notch) - HEAD / 2;
       const left = Math.max(20, Math.min(window.innerWidth - HEAD - 20, viewportLeft)) - wrapLeft;
       return { ledge: sectionTops[perch] ?? 0, left };
@@ -189,5 +190,5 @@ export function useCat(wrapRef: Ref, headRef: Ref, pawsRef: Ref) {
       direction.disconnect();
       window.removeEventListener("scroll", onScroll);
     };
-  }, [wrapRef, headRef, pawsRef]);
+  }, [wrapRef, headRef, pawsRef, perches]);
 }
