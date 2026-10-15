@@ -27,9 +27,20 @@ export function requestDraft(data: FormData, specialistName: string, siteLanguag
   };
 }
 
+// Services a counselor can list on /for-counselors (English values for the team; labels are translated).
+export const COUNSELOR_SERVICES = [
+  "Choosing a country and university",
+  "Applications and personal statements",
+  "Test planning",
+  "Scholarships",
+  "Pre-departure help",
+] as const;
+
 export function applicationDraft(data: FormData, siteLanguage: string): Draft {
   const name = field(data, "fullName");
   const place = field(data, "place");
+  const services = data.getAll("services").map(String);
+  const commission = field(data, "commission");
   return {
     kind: "application",
     subject: `TutorCat Tutor/Counselor Application — ${name}`,
@@ -44,6 +55,9 @@ export function applicationDraft(data: FormData, siteLanguage: string): Draft {
       ...(place ? [`Location details: ${place}`] : []),
       `Subjects I can teach: ${or(field(data, "subjects"))}`,
       `Countries I can advise on: ${or(field(data, "countries"))}`,
+      // Only the /for-counselors form has these, so the home form's draft is unchanged.
+      ...(services.length ? [`Services offered: ${services.join(", ")}`] : []),
+      ...(commission ? [`Commissions from universities or agents: ${commission === "Yes" ? `Yes. ${field(data, "commissionDetails")}` : "No"}`] : []),
       `Languages spoken: ${or(field(data, "languages"))}`,
       `Education/experience: ${or(field(data, "experience"))}`,
       `Years of experience: ${or(field(data, "years"))}`,

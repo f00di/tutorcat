@@ -1,5 +1,6 @@
 source/*.xlsx
 source/*.xls
+source/*.txt
 
 # Build
 node_modules/

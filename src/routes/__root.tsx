@@ -2,12 +2,16 @@ import { HeadContent, Outlet, Scripts, createRootRoute } from "@tanstack/react-r
 import { type ReactNode } from "react";
 
 import { LoadingBuffer } from "../components/loading-buffer";
+import { NotFoundContent } from "../components/not-found";
+import { PageShell } from "../components/page-shell";
 import { SITE_URL } from "../config";
 import { I18nProvider, createTranslator } from "../lib/i18n";
 import { BOOT_SCRIPT } from "../lib/theme";
 import appCss from "../styles.css?url";
 
-// The page is prerendered in English; i18n switches the title and descriptions after load.
+// Pages are prerendered in English; each page switches its title and descriptions after load
+// (usePageMeta). These are the home page's tags; other routes override them and add their own
+// og:url and canonical (src/lib/seo.ts).
 const { t } = createTranslator("en");
 const base = import.meta.env.BASE_URL;
 
@@ -30,7 +34,6 @@ export const Route = createRootRoute({
       { name: "twitter:card", content: "summary_large_image" },
     ],
     links: [
-      { rel: "canonical", href: SITE_URL },
       { rel: "stylesheet", href: appCss },
       { rel: "icon", href: `${base}favicon.png`, type: "image/png" },
       { rel: "preconnect", href: "https://fonts.googleapis.com" },
@@ -43,6 +46,12 @@ export const Route = createRootRoute({
   }),
   shellComponent: RootShell,
   component: RootComponent,
+  // Fallback only: unknown URLs normally match the catch-all route (src/routes/$.tsx).
+  notFoundComponent: () => (
+    <PageShell>
+      <NotFoundContent />
+    </PageShell>
+  ),
 });
 
 function RootShell({ children }: { children: ReactNode }) {

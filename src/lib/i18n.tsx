@@ -174,15 +174,7 @@ export function I18nProvider({ children }: { children: ReactNode }) {
     [lang, catalog, switchTo]
   );
 
-  // Title and meta tags follow the language (crawlers still get the English prerender).
-  useEffect(() => {
-    document.title = value.t("meta.title");
-    const set = (selector: string, text: string) => document.querySelector(selector)?.setAttribute("content", text);
-    set('meta[name="description"]', value.t("meta.description"));
-    set('meta[property="og:title"]', value.t("meta.ogTitle"));
-    set('meta[property="og:description"]', value.t("meta.ogDescription"));
-  }, [value]);
-
+  // Each page keeps its own title and meta tags in the current language: usePageMeta (src/lib/seo.ts).
   return <I18nContext.Provider value={value}>{children}</I18nContext.Provider>;
 }
 
