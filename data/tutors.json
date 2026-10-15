@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-10-15T03:52:35.109Z",
+  "lastUpdated": "2026-10-15T05:29:26.578Z",
   "sourceSheet": "Profiles",
   "profiles": [
     {
@@ -271,6 +271,67 @@
       "outcomes": [],
       "tags": [],
       "curricula": [],
+      "permitCountry": "",
+      "permitVerified": false,
+      "imageUrl": "",
+      "imageAlt": "",
+      "photoApproved": false,
+      "reviews": [],
+      "email": "",
+      "verificationContactEmail": "",
+      "publicContactMethod": {
+        "type": "",
+        "value": "",
+        "approved": false
+      },
+      "applicationStatus": "Published"
+    },
+    {
+      "id": "syed-feras-jamshed-tutor",
+      "name": "Syed Feras Jamshed",
+      "initials": "SF",
+      "profileType": "Tutor",
+      "role": "Maths, chemistry & physics tutor (A-level, IGCSE, AP)",
+      "subjects": [
+        "Math",
+        "Chemistry",
+        "Physics"
+      ],
+      "countries": [],
+      "counselingTopics": [],
+      "educationOrExperience": "BSc Chemical Engineering (current), Khalifa University; A-level: 2 A*, 1 A (Chemistry, Maths, Physics); IGCSE: 6 A*, 1 A, 1 B",
+      "location": "",
+      "baseCountry": "United Arab Emirates",
+      "city": "Abu Dhabi",
+      "servesCountries": [],
+      "sessionModes": [
+        "Hybrid"
+      ],
+      "languages": [
+        "English",
+        "Urdu",
+        "Hindi"
+      ],
+      "currentStudents": null,
+      "improvement": "",
+      "experience": "2 yrs",
+      "experienceYears": 2,
+      "availability": "Weekends",
+      "rating": null,
+      "reviewCount": null,
+      "shortBio": "Completed 500+ hours of providing individualized tutoring in Chemistry, Physics, Mathematics, and related STEM subjects to students across multiple international curricula, including AS/A Level, IGCSE, and AP. Developing tailored lesson plans and progress strategies to address each student’s learning pace and academic goals. My goal is to encourage reliable learning habits and critical problem-solving skills through structured practice and continuous feedback.",
+      "shortBioAr": "",
+      "parentNote": "",
+      "outcomes": [],
+      "tags": [
+        "A/AS-level",
+        "IGCSE",
+        "AP"
+      ],
+      "curricula": [
+        "British (IGCSE/A-Level)",
+        "American (AP/SAT)"
+      ],
       "permitCountry": "",
       "permitVerified": false,
       "imageUrl": "",
