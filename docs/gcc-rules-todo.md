@@ -26,3 +26,8 @@ Everything below is a question for you, a local adviser or a lawyer to answer. N
 ## Also decide
 - [ ] National curricula names for each country (English and Arabic). Add them to `nationalCurricula` in `data/regions.json`; the filter picks them up with no code change.
 - [ ] Whether the contact form should ask which Gulf country the family lives in (useful for matching in-person tutors).
+
+## Counselors (/for-counselors)
+- [ ] **Visa and immigration advice.** In some study destinations (for example the UK, Canada and Australia) only licensed advisers may give immigration advice. "Visa guidance" is left out of the counselor services and the /for-counselors page until the wording is approved. Decide whether to list it at all, and with what disclaimer.
+- [ ] **Counselor licences or permits in the Gulf.** Unknown for all six countries. The site makes no claim about counselor permits until this is confirmed.
+- [ ] **Commission disclosure.** Counselors who apply on /for-counselors must say whether universities or agents pay them commissions or referral fees. Counselors who apply through the home page's Join dialog aren't asked, so ask them by email before listing. Decide whether profiles should show it.

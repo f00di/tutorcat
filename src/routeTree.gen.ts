@@ -10,33 +10,167 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as SplatRouteImport } from './routes/$'
+import { Route as CommunityGuidelinesRouteImport } from './routes/community-guidelines'
+import { Route as CounselingRouteImport } from './routes/counseling'
+import { Route as ForCounselorsRouteImport } from './routes/for-counselors'
+import { Route as ForTutorsRouteImport } from './routes/for-tutors'
+import { Route as HowItWorksRouteImport } from './routes/how-it-works'
+import { Route as ReviewPolicyRouteImport } from './routes/review-policy'
+import { Route as TermsRouteImport } from './routes/terms'
+import { Route as TutorsIndexRouteImport } from './routes/tutors/index'
+import { Route as TutorsSlugRouteImport } from './routes/tutors/$slug'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
   getParentRoute: () => rootRouteImport,
 } as any)
+const SplatRoute = SplatRouteImport.update({
+  id: '/$',
+  path: '/$',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CommunityGuidelinesRoute = CommunityGuidelinesRouteImport.update({
+  id: '/community-guidelines',
+  path: '/community-guidelines',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const CounselingRoute = CounselingRouteImport.update({
+  id: '/counseling',
+  path: '/counseling',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ForCounselorsRoute = ForCounselorsRouteImport.update({
+  id: '/for-counselors',
+  path: '/for-counselors',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ForTutorsRoute = ForTutorsRouteImport.update({
+  id: '/for-tutors',
+  path: '/for-tutors',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const HowItWorksRoute = HowItWorksRouteImport.update({
+  id: '/how-it-works',
+  path: '/how-it-works',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ReviewPolicyRoute = ReviewPolicyRouteImport.update({
+  id: '/review-policy',
+  path: '/review-policy',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TermsRoute = TermsRouteImport.update({
+  id: '/terms',
+  path: '/terms',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TutorsIndexRoute = TutorsIndexRouteImport.update({
+  id: '/tutors/',
+  path: '/tutors/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TutorsSlugRoute = TutorsSlugRouteImport.update({
+  id: '/tutors/$slug',
+  path: '/tutors/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/$': typeof SplatRoute
+  '/community-guidelines': typeof CommunityGuidelinesRoute
+  '/counseling': typeof CounselingRoute
+  '/for-counselors': typeof ForCounselorsRoute
+  '/for-tutors': typeof ForTutorsRoute
+  '/how-it-works': typeof HowItWorksRoute
+  '/review-policy': typeof ReviewPolicyRoute
+  '/terms': typeof TermsRoute
+  '/tutors/$slug': typeof TutorsSlugRoute
+  '/tutors/': typeof TutorsIndexRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/$': typeof SplatRoute
+  '/community-guidelines': typeof CommunityGuidelinesRoute
+  '/counseling': typeof CounselingRoute
+  '/for-counselors': typeof ForCounselorsRoute
+  '/for-tutors': typeof ForTutorsRoute
+  '/how-it-works': typeof HowItWorksRoute
+  '/review-policy': typeof ReviewPolicyRoute
+  '/terms': typeof TermsRoute
+  '/tutors/$slug': typeof TutorsSlugRoute
+  '/tutors': typeof TutorsIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/$': typeof SplatRoute
+  '/community-guidelines': typeof CommunityGuidelinesRoute
+  '/counseling': typeof CounselingRoute
+  '/for-counselors': typeof ForCounselorsRoute
+  '/for-tutors': typeof ForTutorsRoute
+  '/how-it-works': typeof HowItWorksRoute
+  '/review-policy': typeof ReviewPolicyRoute
+  '/terms': typeof TermsRoute
+  '/tutors/$slug': typeof TutorsSlugRoute
+  '/tutors/': typeof TutorsIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/'
+  fullPaths:
+    | '/'
+    | '/$'
+    | '/community-guidelines'
+    | '/counseling'
+    | '/for-counselors'
+    | '/for-tutors'
+    | '/how-it-works'
+    | '/review-policy'
+    | '/terms'
+    | '/tutors/$slug'
+    | '/tutors/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/'
-  id: '__root__' | '/'
+  to:
+    | '/'
+    | '/$'
+    | '/community-guidelines'
+    | '/counseling'
+    | '/for-counselors'
+    | '/for-tutors'
+    | '/how-it-works'
+    | '/review-policy'
+    | '/terms'
+    | '/tutors/$slug'
+    | '/tutors'
+  id:
+    | '__root__'
+    | '/'
+    | '/$'
+    | '/community-guidelines'
+    | '/counseling'
+    | '/for-counselors'
+    | '/for-tutors'
+    | '/how-it-works'
+    | '/review-policy'
+    | '/terms'
+    | '/tutors/$slug'
+    | '/tutors/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  SplatRoute: typeof SplatRoute
+  CommunityGuidelinesRoute: typeof CommunityGuidelinesRoute
+  CounselingRoute: typeof CounselingRoute
+  ForCounselorsRoute: typeof ForCounselorsRoute
+  ForTutorsRoute: typeof ForTutorsRoute
+  HowItWorksRoute: typeof HowItWorksRoute
+  ReviewPolicyRoute: typeof ReviewPolicyRoute
+  TermsRoute: typeof TermsRoute
+  TutorsSlugRoute: typeof TutorsSlugRoute
+  TutorsIndexRoute: typeof TutorsIndexRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -48,11 +182,91 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof IndexRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/$': {
+      id: '/$'
+      path: '/$'
+      fullPath: '/$'
+      preLoaderRoute: typeof SplatRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/community-guidelines': {
+      id: '/community-guidelines'
+      path: '/community-guidelines'
+      fullPath: '/community-guidelines'
+      preLoaderRoute: typeof CommunityGuidelinesRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/counseling': {
+      id: '/counseling'
+      path: '/counseling'
+      fullPath: '/counseling'
+      preLoaderRoute: typeof CounselingRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/for-counselors': {
+      id: '/for-counselors'
+      path: '/for-counselors'
+      fullPath: '/for-counselors'
+      preLoaderRoute: typeof ForCounselorsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/for-tutors': {
+      id: '/for-tutors'
+      path: '/for-tutors'
+      fullPath: '/for-tutors'
+      preLoaderRoute: typeof ForTutorsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/how-it-works': {
+      id: '/how-it-works'
+      path: '/how-it-works'
+      fullPath: '/how-it-works'
+      preLoaderRoute: typeof HowItWorksRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/review-policy': {
+      id: '/review-policy'
+      path: '/review-policy'
+      fullPath: '/review-policy'
+      preLoaderRoute: typeof ReviewPolicyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/terms': {
+      id: '/terms'
+      path: '/terms'
+      fullPath: '/terms'
+      preLoaderRoute: typeof TermsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/tutors/': {
+      id: '/tutors/'
+      path: '/tutors'
+      fullPath: '/tutors/'
+      preLoaderRoute: typeof TutorsIndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/tutors/$slug': {
+      id: '/tutors/$slug'
+      path: '/tutors/$slug'
+      fullPath: '/tutors/$slug'
+      preLoaderRoute: typeof TutorsSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  SplatRoute: SplatRoute,
+  CommunityGuidelinesRoute: CommunityGuidelinesRoute,
+  CounselingRoute: CounselingRoute,
+  ForCounselorsRoute: ForCounselorsRoute,
+  ForTutorsRoute: ForTutorsRoute,
+  HowItWorksRoute: HowItWorksRoute,
+  ReviewPolicyRoute: ReviewPolicyRoute,
+  TermsRoute: TermsRoute,
+  TutorsSlugRoute: TutorsSlugRoute,
+  TutorsIndexRoute: TutorsIndexRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

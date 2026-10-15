@@ -1,13 +1,22 @@
 // Run after `npm run build`: checks the static output that GitHub Pages will serve.
+// Base-path aware: `BASE_PATH=/ npm run build && BASE_PATH=/ npm run test:build` checks a root build.
 import { test } from "node:test";
 import assert from "node:assert/strict";
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 
+import { profilePages, publicPages } from "../scripts/public-pages.mjs";
+
 const dist = new URL("../dist/client/", import.meta.url);
 const read = (path) => readFileSync(new URL(path, dist), "utf8");
-const html = read("index.html");
+const base = process.env["BASE_PATH"] ?? "/tutorcat/";
+const siteUrl = readFileSync(new URL("../src/config.ts", import.meta.url), "utf8").match(/SITE_URL = "([^"]+)"/)[1];
 const profiles = JSON.parse(readFileSync(new URL("../data/tutors.json", import.meta.url), "utf8")).profiles;
-const files = readdirSync(dist, { recursive: true });
+const files = readdirSync(dist, { recursive: true }).map(String);
+const htmlFiles = files.filter((file) => file.endsWith(".html"));
+// "/tutors/" is served from tutors/index.html.
+const pageFile = (path) => `${path.slice(1)}index.html`;
+const html = read("index.html");
+const attribute = (page, pattern) => page.match(pattern)?.[1];
 
 test("the home page is prerendered with the real catalogue, not an empty app shell", () => {
   assert.match(html, /<h1>/);
@@ -16,19 +25,61 @@ test("the home page is prerendered with the real catalogue, not an empty app she
 });
 
 test("meta tags, canonical URL, social card and favicon", () => {
-  assert.match(html, /<link rel="canonical" href="https:\/\/f00di\.github\.io\/tutorcat\/"/);
-  assert.match(html, /<meta property="og:image" content="https:\/\/f00di\.github\.io\/tutorcat\/social-card\.jpg"/);
+  assert.ok(html.includes(`<link rel="canonical" href="${siteUrl}"`), "home canonical");
+  assert.ok(html.includes(`<meta property="og:image" content="${siteUrl}social-card.jpg"`), "social card");
   assert.match(html, /<meta name="description" content="[^"]{40,}"/);
   for (const file of ["social-card.jpg", "favicon.png"]) assert.ok(existsSync(new URL(file, dist)), `missing ${file}`);
 });
 
-test("every local asset is served from /tutorcat/ and exists", () => {
-  const refs = [...html.matchAll(/(?:src|href)="(\/[^"#]*)"/g)].map((match) => match[1]);
-  assert.ok(refs.length > 3);
-  for (const ref of refs) {
-    assert.ok(ref.startsWith("/tutorcat/"), `${ref} is outside the /tutorcat/ base path`);
-    assert.ok(existsSync(new URL(ref.slice("/tutorcat/".length), dist)), `missing ${ref}`);
+test("every public page is prerendered under the base path with its own title, description, Open Graph tags and canonical", () => {
+  const titles = new Set();
+  for (const path of publicPages()) {
+    assert.ok(existsSync(new URL(pageFile(path), dist)), `${path} was not prerendered`);
+    const page = read(pageFile(path));
+    const title = attribute(page, /<title>([^<]+)<\/title>/);
+    assert.ok(title && !/\b[a-z]+\.[a-z]+[A-Za-z.]*\b/.test(title.replace("Tutorcat", "")), `${path}: missing or untranslated title "${title}"`);
+    assert.ok(!titles.has(title), `${path}: title "${title}" is used by another page`);
+    titles.add(title);
+    assert.match(page, /<meta name="description" content="[^"]{40,}"/, `${path}: description`);
+    assert.match(page, /<meta property="og:title" content="[^"]+"/, `${path}: og:title`);
+    assert.match(page, /<meta property="og:description" content="[^"]{40,}"/, `${path}: og:description`);
+    const url = new URL(path.slice(1), siteUrl).href;
+    assert.ok(page.includes(`<meta property="og:url" content="${url}"`), `${path}: og:url should be ${url}`);
+    assert.equal((page.match(/rel="canonical"/g) ?? []).length, 1, `${path}: exactly one canonical`);
+    assert.ok(page.includes(`<link rel="canonical" href="${url}"`), `${path}: canonical should be ${url}`);
+    assert.match(page, /<h1[\s>]/, `${path}: no h1`);
   }
+});
+
+test("every published profile has its own page with the person's name", () => {
+  assert.equal(profilePages().length, profiles.length);
+  for (const profile of profiles) {
+    const page = read(pageFile(`/tutors/${profile.id}/`));
+    assert.ok(page.includes(profile.name), `${profile.id}: name missing`);
+  }
+});
+
+test("every local link and asset is served from the base path and exists", () => {
+  for (const file of htmlFiles) {
+    const refs = [...read(file).matchAll(/(?:src|href)="(\/[^"#?]*)/g)].map((match) => match[1]);
+    assert.ok(refs.length > 3, `${file}: too few local references`);
+    for (const ref of refs) {
+      assert.ok(ref.startsWith(base), `${file}: ${ref} is outside the ${base} base path`);
+      const target = ref.slice(base.length);
+      assert.ok(existsSync(new URL(target === "" || target.endsWith("/") ? `${target}index.html` : target, dist)), `${file}: ${ref} does not exist`);
+    }
+  }
+});
+
+test("sitemap.xml lists exactly the public pages", () => {
+  const urls = [...read("sitemap.xml").matchAll(/<loc>([^<]+)<\/loc>/g)].map((match) => match[1]).sort();
+  assert.deepEqual(urls, publicPages().map((path) => new URL(path.slice(1), siteUrl).href).sort());
+});
+
+test("unknown URLs get a noindex 404 page", () => {
+  const page = read("404.html");
+  assert.match(page, /<meta name="robots" content="noindex"/);
+  assert.match(page, /<h1[\s>]/);
 });
 
 test("theme and language are applied before first paint", () => {
@@ -40,7 +91,7 @@ test("theme and language are applied before first paint", () => {
 
 test("only the built site is published", () => {
   for (const file of files) {
-    assert.doesNotMatch(String(file), /^(source|scripts|docs|tests|data)(\/|$)|\.xlsx?$/, `${file} must not be published`);
+    assert.doesNotMatch(file, /^(source|scripts|docs|tests|data)(\/|$)|\.xlsx?$/, `${file} must not be published`);
   }
 });
 

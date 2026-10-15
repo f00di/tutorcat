@@ -1,5 +1,7 @@
 import { ArrowRight, ArrowUpRight, Bookmark, Star } from "lucide-react";
+import type { ReactNode } from "react";
 
+import { SiteLink } from "@/components/site-link";
 import { Avatar, PermitBadge, RatingSummary } from "@/components/specialist-card";
 import { Button } from "@/components/ui/button";
 import { useI18n } from "@/lib/i18n";
@@ -15,12 +17,21 @@ import {
   type Profile,
 } from "@/lib/profiles";
 
-type Props = { profile: Profile; saved: boolean; onToggleSave: () => void; onRequest: () => void; onReview: () => void };
+type Props = {
+  profile: Profile;
+  saved: boolean;
+  onToggleSave: () => void;
+  onRequest: () => void;
+  onReview: () => void;
+  // "dialog" (home page): adds a View full profile link. "page" (/tutors/<id>/): the name is the page's h1.
+  variant?: "dialog" | "page";
+  after?: ReactNode;
+};
 
 // Everything here comes from the profile. Tutor-written text (bio, availability, notes, outcomes)
 // is shown as written, never translated; Arabic mode shows the tutor's own Arabic bio if there is one.
-/** A specialist's full profile, for inside DialogShell: avatar, role, subjects, bio, details, verified reviews, Request an introduction and Shortlist. @category Specialists */
-export function ProfileView({ profile, saved, onToggleSave, onRequest, onReview }: Props) {
+/** A specialist's full profile: avatar, role, subjects, bio, details, verified reviews, Request an introduction and Shortlist. Inside DialogShell on the home page (with a View full profile link), or as the body of /tutors/<id>/. @category Specialists */
+export function ProfileView({ profile, saved, onToggleSave, onRequest, onReview, variant = "dialog", after }: Props) {
   const translator = useI18n();
   const { t, label, lang, formatList, formatDate, formatRating } = translator;
   const useArabicBio = lang === "ar" && Boolean(profile.shortBioAr);
@@ -30,13 +41,22 @@ export function ProfileView({ profile, saved, onToggleSave, onRequest, onReview 
   const education = profile.educationOrExperience.split(";").map((part) => part.trim()).filter(Boolean);
   const contact = publicContactHref(profile);
   const reviews = profile.reviews.filter(isVerifiedPublicReview);
+  const page = variant === "page";
+  // On the page the name is the h1, so the sections are h2; in the dialog they stay h3.
+  const H = page ? "h2" : "h3";
 
   return (
     <>
       <Avatar profile={profile} />
-      <h2 id="dialog-title">
-        <bdi>{profile.name}</bdi>
-      </h2>
+      {page ? (
+        <h1>
+          <bdi>{profile.name}</bdi>
+        </h1>
+      ) : (
+        <h2 id="dialog-title">
+          <bdi>{profile.name}</bdi>
+        </h2>
+      )}
       <p>
         <bdi>{displayRole(profile, translator)}</bdi>
       </p>
@@ -49,7 +69,7 @@ export function ProfileView({ profile, saved, onToggleSave, onRequest, onReview 
 
       {bio && (
         <>
-          <h3>{t("profile.about")}</h3>
+          <H>{t("profile.about")}</H>
           <p lang={useArabicBio ? "ar" : "en"} dir="auto">
             {bio}
           </p>
@@ -58,7 +78,7 @@ export function ProfileView({ profile, saved, onToggleSave, onRequest, onReview 
 
       {isTutor(profile) && (
         <>
-          <h3>{t("profile.academic")}</h3>
+          <H>{t("profile.academic")}</H>
           <p>
             {profile.tags.length > 0 && (
               <>
@@ -79,7 +99,7 @@ export function ProfileView({ profile, saved, onToggleSave, onRequest, onReview 
 
       {profile.countries.length > 0 && (
         <>
-          <h3>{t("profile.destination")}</h3>
+          <H>{t("profile.destination")}</H>
           <p>
             {formatList(profile.countries.map((country) => label("destination", country)))}
             {university && (
@@ -94,7 +114,7 @@ export function ProfileView({ profile, saved, onToggleSave, onRequest, onReview 
 
       {education.length > 0 && (
         <>
-          <h3>{t("profile.education")}</h3>
+          <H>{t("profile.education")}</H>
           <ul className="plain">
             {education.map((item) => (
               <li key={item}>
@@ -107,21 +127,21 @@ export function ProfileView({ profile, saved, onToggleSave, onRequest, onReview 
 
       {profile.curricula.length > 0 && (
         <>
-          <h3>{t("profile.curricula")}</h3>
+          <H>{t("profile.curricula")}</H>
           <p>{formatList(profile.curricula.map((curriculum) => label("curriculum", curriculum)))}</p>
         </>
       )}
 
       {profile.languages.length > 0 && (
         <>
-          <h3>{t("profile.languages")}</h3>
+          <H>{t("profile.languages")}</H>
           <p>{formatList(profile.languages.map((language) => label("language", language)))}</p>
         </>
       )}
 
       {profile.availability && (
         <>
-          <h3>{t("profile.availability")}</h3>
+          <H>{t("profile.availability")}</H>
           <p>
             <bdi>{profile.availability}</bdi>
           </p>
@@ -130,14 +150,14 @@ export function ProfileView({ profile, saved, onToggleSave, onRequest, onReview 
 
       {profile.parentNote && (
         <>
-          <h3>{t("profile.parentNote")}</h3>
+          <H>{t("profile.parentNote")}</H>
           <p dir="auto">{profile.parentNote}</p>
         </>
       )}
 
       {profile.outcomes.length > 0 && (
         <>
-          <h3>{t("profile.outcomes")}</h3>
+          <H>{t("profile.outcomes")}</H>
           <ul className="plain">
             {profile.outcomes.map((outcome) => (
               <li key={outcome.join("|")}>
@@ -150,14 +170,14 @@ export function ProfileView({ profile, saved, onToggleSave, onRequest, onReview 
 
       {hasVerifiedPermit(profile) && (
         <>
-          <h3>{t("profile.permit")}</h3>
+          <H>{t("profile.permit")}</H>
           <p>{t("profile.permitDetail", { permit: label("permit", profile.permitCountry) })}</p>
         </>
       )}
 
       {contact && (
         <>
-          <h3>{t("publicContact.title")}</h3>
+          <H>{t("publicContact.title")}</H>
           <p>
             <a className="text-primary underline-offset-4 hover:underline" href={contact.href} {...(contact.type === "email" ? {} : { target: "_blank", rel: "noopener noreferrer" })}>
               {t(`publicContact.${contact.type}`)} <ArrowUpRight className="dir-icon inline size-3.5" />
@@ -168,7 +188,7 @@ export function ProfileView({ profile, saved, onToggleSave, onRequest, onReview 
 
       {(reviews.length > 0 || profile.rating !== null) && (
         <>
-          <h3>{t("profile.reviews")}</h3>
+          <H>{t("profile.reviews")}</H>
           <RatingSummary profile={profile} />
           {reviews.map((review, index) => (
             <article className="review-card" key={`${review.date}-${index}`}>
@@ -187,7 +207,7 @@ export function ProfileView({ profile, saved, onToggleSave, onRequest, onReview 
         </>
       )}
 
-      <h3>{t("profile.family")}</h3>
+      <H>{t("profile.family")}</H>
       <p>{t("profile.familyBody")}</p>
       <div className="dialog-actions">
         <Button onClick={onRequest}>
@@ -200,8 +220,16 @@ export function ProfileView({ profile, saved, onToggleSave, onRequest, onReview 
         <Button variant="link" className="px-0" onClick={onReview}>
           {t("profile.review")}
         </Button>
+        {!page && (
+          <Button asChild variant="link" className="px-0">
+            <SiteLink to="/tutors/$slug/" params={{ slug: profile.id }}>
+              {t("profile.fullProfile")} <ArrowUpRight className="dir-icon" />
+            </SiteLink>
+          </Button>
+        )}
       </div>
       <p className="mt-4">{t("profile.disclaimer")}</p>
+      {after}
     </>
   );
 }
