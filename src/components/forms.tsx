@@ -7,17 +7,17 @@ import { COUNSELOR_SERVICES, applicationDraft, draftText, mailtoHref, requestDra
 import { regions, slug, useI18n } from "@/lib/i18n";
 import type { Profile } from "@/lib/profiles";
 
-// The three forms from the previous site, in Lovable's dialog style. Each prepares an English
+// The three forms from the previous site, in Lovable's dialog style (the report form in report-form.tsx shares these pieces). Each prepares an English
 // draft for the team; nothing is sent from the page. Select values are English on purpose.
 
-const Field = ({ label, children, className = "" }: { label: string; children: ReactNode; className?: string }) => (
+export const Field = ({ label, children, className = "" }: { label: string; children: ReactNode; className?: string }) => (
   <label className={className}>
     <span className="field-label">{label}</span>
     {children}
   </label>
 );
 
-function FormFooter({ submit, status }: { submit: string; status: string }) {
+export function FormFooter({ submit, status }: { submit: string; status: string }) {
   const { t } = useI18n();
   return (
     <>
@@ -35,7 +35,7 @@ function FormFooter({ submit, status }: { submit: string; status: string }) {
 }
 
 // Native validation shows the field messages; the status line explains what is missing.
-function useValidatedSubmit(onValid: (data: FormData, form: HTMLFormElement) => void, invalidKey: string) {
+export function useValidatedSubmit(onValid: (data: FormData, form: HTMLFormElement) => void, invalidKey: string) {
   const { t } = useI18n();
   const [status, setStatus] = useState("");
   const onSubmit = (event: FormEvent<HTMLFormElement>) => {
@@ -52,7 +52,7 @@ function useValidatedSubmit(onValid: (data: FormData, form: HTMLFormElement) => 
   return { status, onSubmit };
 }
 
-const Choices = ({ items }: { items: [value: string, label: string][] }) => (
+export const Choices = ({ items }: { items: [value: string, label: string][] }) => (
   <>
     {items.map(([value, text]) => (
       <option key={value} value={value}>
@@ -343,7 +343,7 @@ export function ReviewForm({ person, profiles, onDraft }: { person: Profile | nu
 
 // Lovable's "draft is ready" step: copy it, or open it in the visitor's email app.
 /** The "your draft is ready" step: shows the draft with Copy request and Open email draft. @category Forms */
-export function DraftReady({ draft, headingId = "dialog-title" }: { draft: Draft; headingId?: string }) {
+export function DraftReady({ draft, headingId = "dialog-title", children }: { draft: Draft; headingId?: string; children?: ReactNode }) {
   const { t } = useI18n();
   const [copied, setCopied] = useState(false);
   // Inline on a page (not in a dialog) the heading takes focus when the draft appears.
@@ -354,6 +354,7 @@ export function DraftReady({ draft, headingId = "dialog-title" }: { draft: Draft
         {t(`draft.title.${draft.kind}`)}
       </h2>
       <p>{t(isContactEmailSet() ? "draft.ready" : "draft.pending")}</p>
+      {children}
       <pre className="draft-text" dir="ltr" lang="en">
         {draftText(draft)}
       </pre>

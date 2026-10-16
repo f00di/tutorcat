@@ -11,6 +11,7 @@ const read = (path) => readFileSync(new URL(path, dist), "utf8");
 const base = process.env["BASE_PATH"] ?? "/tutorcat/";
 const siteUrl = readFileSync(new URL("../src/config.ts", import.meta.url), "utf8").match(/SITE_URL = "([^"]+)"/)[1];
 const profiles = JSON.parse(readFileSync(new URL("../data/tutors.json", import.meta.url), "utf8")).profiles;
+const regions = JSON.parse(readFileSync(new URL("../data/regions.json", import.meta.url), "utf8"));
 const files = readdirSync(dist, { recursive: true }).map(String);
 const htmlFiles = files.filter((file) => file.endsWith(".html"));
 // "/tutors/" is served from tutors/index.html.
@@ -67,6 +68,25 @@ test("every local link and asset is served from the base path and exists", () =>
       assert.ok(ref.startsWith(base), `${file}: ${ref} is outside the ${base} base path`);
       const target = ref.slice(base.length);
       assert.ok(existsSync(new URL(target === "" || target.endsWith("/") ? `${target}index.html` : target, dist)), `${file}: ${ref} does not exist`);
+    }
+  }
+});
+
+test("Report a concern is linked from every page, and each profile page links to it with that person chosen", () => {
+  for (const path of publicPages()) assert.ok(read(pageFile(path)).includes(`href="${base}report/"`), `${path}: no link to ${base}report/`);
+  for (const profile of profiles) {
+    const link = `href="${base}report/?profile=${profile.id}"`;
+    assert.ok(read(pageFile(`/tutors/${profile.id}/`)).includes(link), `${profile.id}: no ${link}`);
+  }
+});
+
+test("the report page shows no emergency number until the owner confirms it in data/regions.json", () => {
+  const page = read(pageFile("/report/"));
+  const body = page.slice(page.indexOf("<body"));
+  for (const country of regions.countries) {
+    for (const item of (country.emergencyNumbers ?? []).filter((entry) => entry.confirmed !== true)) {
+      const shown = body.includes(`tel:${item.number}"`) || new RegExp(`>\\s*${item.number}\\s*<`).test(body);
+      assert.ok(!shown, `${country.name} ${item.number} is shown but not confirmed`);
     }
   }
 });

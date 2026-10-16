@@ -1,5 +1,5 @@
 import { createFileRoute, notFound } from "@tanstack/react-router";
-import { ArrowLeft } from "lucide-react";
+import { ArrowLeft, Flag } from "lucide-react";
 
 import { CatCard } from "@/components/cat-card";
 import { NotFoundContent } from "@/components/not-found";
@@ -58,6 +58,13 @@ function ProfilePage({ profile }: { profile: Profile }) {
               onToggleSave={() => toggle(profile.id)}
               onRequest={() => openDialog({ type: "request", person: profile })}
               onReview={() => openDialog({ type: "review", person: profile })}
+              after={
+                <p className="report-link">
+                  <SiteLink to="/report/" search={{ profile: profile.id }} className="text-link">
+                    <Flag aria-hidden="true" /> {t("profile.report")}
+                  </SiteLink>
+                </p>
+              }
             />
           </article>
         </CatCard>

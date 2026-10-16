@@ -31,3 +31,17 @@ Everything below is a question for you, a local adviser or a lawyer to answer. N
 - [ ] **Visa and immigration advice.** In some study destinations (for example the UK, Canada and Australia) only licensed advisers may give immigration advice. "Visa guidance" is left out of the counselor services and the /for-counselors page until the wording is approved. Decide whether to list it at all, and with what disclaimer.
 - [ ] **Counselor licences or permits in the Gulf.** Unknown for all six countries. The site makes no claim about counselor permits until this is confirmed.
 - [ ] **Commission disclosure.** Counselors who apply on /for-counselors must say whether universities or agents pay them commissions or referral fees. Counselors who apply through the home page's Join dialog aren't asked, so ask them by email before listing. Decide whether profiles should show it.
+
+## Emergency numbers (/report/)
+The Report a concern page tells visitors to contact emergency services first. The numbers are stored in `data/regions.json` (`emergencyNumbers` on each country), each with the official page it came from, and all start as `"confirmed": false`. **The page shows no number until you check its source and set `"confirmed": true`.** Once a number is confirmed it appears in the urgent notice at the top of /report/, under its country (`npm run test:build` checks that no unconfirmed number is shown).
+
+| Country | Stored (unconfirmed) | Notes |
+|---|---|---|
+| United Arab Emirates | 999 police, 998 ambulance, 116111 child protection | u.ae (handling emergencies; children's safety). |
+| Saudi Arabia | 911 unified number (Riyadh, Makkah, Madinah, Eastern Province), 999 police and 997 ambulance elsewhere, 116111 child helpline, 1919 domestic violence | 911 coverage keeps expanding; check which regions it covers now. 116111 is the least certain (one government page). |
+| Qatar | 999 | Hamad Medical Corporation. No official child helpline found. 112 not verified, so left out. |
+| Kuwait | 112 | Ministry of Interior. No official child helpline found; 147 not verified, so left out. |
+| Bahrain | 999, 998 child protection helpline, 992 online child abuse reports | bahrain.bh emergency directory and service page. |
+| Oman | 9999 Royal Oman Police, 1100 child protection | 1100 comes from a UNICEF Oman release, not a government page: the least certain. 1555 not verified, so left out. |
+
+- [ ] Check each number against its `source` link (or a newer official page), then set `"confirmed": true`. Update the `source` if you used another page.
