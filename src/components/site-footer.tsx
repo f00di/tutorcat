@@ -9,6 +9,7 @@ const LINKS: { to: SitePath; label: string }[] = [
   { to: "/for-tutors/", label: "nav.forTutors" },
   { to: "/for-counselors/", label: "nav.forCounselors" },
   { to: "/community-guidelines/", label: "footer.guidelines" },
+  { to: "/report/", label: "footer.report" },
   { to: "/review-policy/", label: "footer.reviewPolicy" },
   { to: "/terms/", label: "footer.terms" },
 ];

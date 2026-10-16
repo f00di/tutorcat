@@ -1,5 +1,5 @@
 {
-  "about": "Public config: Gulf countries and cities where tutors are based or teach, plus the curricula the catalog filter recognises. Add a country or city here; no code change needed. Aliases are matched case-insensitively (dots and hyphens ignored). permitBadge: show the 'Permit verified' badge for permits from this country (UAE only until other countries' rules are confirmed, see docs/gcc-rules-todo.md).",
+  "about": "Public config: Gulf countries and cities where tutors are based or teach, plus the curricula the catalog filter recognises. Add a country or city here; no code change needed. Aliases are matched case-insensitively (dots and hyphens ignored). permitBadge: show the 'Permit verified' badge for permits from this country (UAE only until other countries' rules are confirmed, see docs/gcc-rules-todo.md). emergencyNumbers: emergency and child-protection numbers for the Report a concern page, each with its official source. A number is shown only once its 'confirmed' is true (set by the owner after checking the source); until then none is shown.",
   "countries": [
     {
       "name": "United Arab Emirates",
@@ -11,6 +11,11 @@
       "permitName": "MoHRE Private Teacher Work Permit",
       "permitNameAr": "تصريح عمل المعلم الخصوصي من وزارة الموارد البشرية والتوطين",
       "nationalCurricula": [],
+      "emergencyNumbers": [
+        { "number": "999", "service": "Police", "serviceAr": "الشرطة", "confirmed": false, "source": "https://u.ae/en/information-and-services/justice-safety-and-the-law/Safety/handling-emergencies" },
+        { "number": "998", "service": "Ambulance", "serviceAr": "الإسعاف", "confirmed": false, "source": "https://u.ae/en/information-and-services/justice-safety-and-the-law/Safety/handling-emergencies" },
+        { "number": "116111", "service": "Child protection", "serviceAr": "حماية الطفل", "confirmed": false, "source": "https://u.ae/en/information-and-services/justice-safety-and-the-law/Safety/children-safety" }
+      ],
       "cities": [
         { "name": "Abu Dhabi", "ar": "أبوظبي", "aliases": ["abudhabi", "أبو ظبي"] },
         { "name": "Dubai", "ar": "دبي", "aliases": [] },
@@ -31,6 +36,13 @@
       "permitBadge": false,
       "permitName": "",
       "nationalCurricula": [],
+      "emergencyNumbers": [
+        { "number": "911", "service": "Unified emergency number (Riyadh, Makkah, Madinah and the Eastern Province)", "serviceAr": "رقم الطوارئ الموحد (الرياض ومكة المكرمة والمدينة المنورة والمنطقة الشرقية)", "confirmed": false, "source": "https://www.spa.gov.sa/en/N2566064" },
+        { "number": "999", "service": "Police (other regions)", "serviceAr": "الشرطة (المناطق الأخرى)", "confirmed": false, "source": "https://my.gov.sa/en/content/93" },
+        { "number": "997", "service": "Ambulance (other regions)", "serviceAr": "الإسعاف (المناطق الأخرى)", "confirmed": false, "source": "https://srca.org.sa/en/contact-us/" },
+        { "number": "116111", "service": "Child helpline", "serviceAr": "خط مساندة الطفل", "confirmed": false, "source": "https://my.gov.sa/en/content/human-rights" },
+        { "number": "1919", "service": "Domestic violence reports", "serviceAr": "بلاغات العنف الأسري", "confirmed": false, "source": "https://www.hrsd.gov.sa/en/ministry/about-ministry/about-us/ministry-sectors/767581" }
+      ],
       "cities": [
         { "name": "Riyadh", "ar": "الرياض", "aliases": [] },
         { "name": "Jeddah", "ar": "جدة", "aliases": ["jedda", "jiddah"] },
@@ -50,6 +62,9 @@
       "permitBadge": false,
       "permitName": "",
       "nationalCurricula": [],
+      "emergencyNumbers": [
+        { "number": "999", "service": "Emergency (police, ambulance, fire)", "serviceAr": "الطوارئ (الشرطة والإسعاف والدفاع المدني)", "confirmed": false, "source": "https://hamad.qa/EN/Emergency/Pages/Life-ThreateningMedicalEmergency.aspx" }
+      ],
       "cities": [
         { "name": "Doha", "ar": "الدوحة", "aliases": [] },
         { "name": "Al Rayyan", "ar": "الريان", "aliases": ["rayyan"] },
@@ -66,6 +81,9 @@
       "permitBadge": false,
       "permitName": "",
       "nationalCurricula": [],
+      "emergencyNumbers": [
+        { "number": "112", "service": "Emergency (police, ambulance, fire)", "serviceAr": "الطوارئ (الشرطة والإسعاف والإطفاء)", "confirmed": false, "source": "https://www.moi.gov.kw/main/eservices/civildefence?culture=en" }
+      ],
       "cities": [
         { "name": "Kuwait City", "ar": "مدينة الكويت", "aliases": [] },
         { "name": "Hawalli", "ar": "حولي", "aliases": [] },
@@ -83,6 +101,11 @@
       "permitBadge": false,
       "permitName": "",
       "nationalCurricula": [],
+      "emergencyNumbers": [
+        { "number": "999", "service": "Emergency (police, ambulance, fire)", "serviceAr": "الطوارئ (الشرطة والإسعاف والدفاع المدني)", "confirmed": false, "source": "https://www.bahrain.bh/wps/portal/en/BNP/DirectoryOfEmergencyHotlineNumbers" },
+        { "number": "998", "service": "Child protection helpline", "serviceAr": "خط حماية الطفل", "confirmed": false, "source": "https://www.bahrain.bh/wps/portal/en/BNP/ServicesCatalogue/GSX-UI-PServiceDetails?psID=3512" },
+        { "number": "992", "service": "Online child abuse reports", "serviceAr": "الإبلاغ عن إساءة معاملة الأطفال عبر الإنترنت", "confirmed": false, "source": "https://www.bahrain.bh/wps/portal/en/BNP/DirectoryOfEmergencyHotlineNumbers" }
+      ],
       "cities": [
         { "name": "Manama", "ar": "المنامة", "aliases": [] },
         { "name": "Muharraq", "ar": "المحرق", "aliases": ["al muharraq"] },
@@ -99,6 +122,10 @@
       "permitBadge": false,
       "permitName": "",
       "nationalCurricula": [],
+      "emergencyNumbers": [
+        { "number": "9999", "service": "Emergency (Royal Oman Police)", "serviceAr": "الطوارئ (شرطة عُمان السلطانية)", "confirmed": false, "source": "https://www.rop.gov.om/english/contactus.aspx" },
+        { "number": "1100", "service": "Child protection", "serviceAr": "حماية الطفل", "confirmed": false, "source": "https://www.unicef.org/oman/press-releases/oman-government-and-unicef-join-hands-childrens-safety-security-and-wellbeing" }
+      ],
       "cities": [
         { "name": "Muscat", "ar": "مسقط", "aliases": [] },
         { "name": "Salalah", "ar": "صلالة", "aliases": [] },
