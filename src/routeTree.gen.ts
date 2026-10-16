@@ -16,6 +16,7 @@ import { Route as CounselingRouteImport } from './routes/counseling'
 import { Route as ForCounselorsRouteImport } from './routes/for-counselors'
 import { Route as ForTutorsRouteImport } from './routes/for-tutors'
 import { Route as HowItWorksRouteImport } from './routes/how-it-works'
+import { Route as ReportRouteImport } from './routes/report'
 import { Route as ReviewPolicyRouteImport } from './routes/review-policy'
 import { Route as TermsRouteImport } from './routes/terms'
 import { Route as TutorsIndexRouteImport } from './routes/tutors/index'
@@ -56,6 +57,11 @@ const HowItWorksRoute = HowItWorksRouteImport.update({
   path: '/how-it-works',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ReportRoute = ReportRouteImport.update({
+  id: '/report',
+  path: '/report',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ReviewPolicyRoute = ReviewPolicyRouteImport.update({
   id: '/review-policy',
   path: '/review-policy',
@@ -85,6 +91,7 @@ export interface FileRoutesByFullPath {
   '/for-counselors': typeof ForCounselorsRoute
   '/for-tutors': typeof ForTutorsRoute
   '/how-it-works': typeof HowItWorksRoute
+  '/report': typeof ReportRoute
   '/review-policy': typeof ReviewPolicyRoute
   '/terms': typeof TermsRoute
   '/tutors/$slug': typeof TutorsSlugRoute
@@ -98,6 +105,7 @@ export interface FileRoutesByTo {
   '/for-counselors': typeof ForCounselorsRoute
   '/for-tutors': typeof ForTutorsRoute
   '/how-it-works': typeof HowItWorksRoute
+  '/report': typeof ReportRoute
   '/review-policy': typeof ReviewPolicyRoute
   '/terms': typeof TermsRoute
   '/tutors/$slug': typeof TutorsSlugRoute
@@ -112,6 +120,7 @@ export interface FileRoutesById {
   '/for-counselors': typeof ForCounselorsRoute
   '/for-tutors': typeof ForTutorsRoute
   '/how-it-works': typeof HowItWorksRoute
+  '/report': typeof ReportRoute
   '/review-policy': typeof ReviewPolicyRoute
   '/terms': typeof TermsRoute
   '/tutors/$slug': typeof TutorsSlugRoute
@@ -127,6 +136,7 @@ export interface FileRouteTypes {
     | '/for-counselors'
     | '/for-tutors'
     | '/how-it-works'
+    | '/report'
     | '/review-policy'
     | '/terms'
     | '/tutors/$slug'
@@ -140,6 +150,7 @@ export interface FileRouteTypes {
     | '/for-counselors'
     | '/for-tutors'
     | '/how-it-works'
+    | '/report'
     | '/review-policy'
     | '/terms'
     | '/tutors/$slug'
@@ -153,6 +164,7 @@ export interface FileRouteTypes {
     | '/for-counselors'
     | '/for-tutors'
     | '/how-it-works'
+    | '/report'
     | '/review-policy'
     | '/terms'
     | '/tutors/$slug'
@@ -167,6 +179,7 @@ export interface RootRouteChildren {
   ForCounselorsRoute: typeof ForCounselorsRoute
   ForTutorsRoute: typeof ForTutorsRoute
   HowItWorksRoute: typeof HowItWorksRoute
+  ReportRoute: typeof ReportRoute
   ReviewPolicyRoute: typeof ReviewPolicyRoute
   TermsRoute: typeof TermsRoute
   TutorsSlugRoute: typeof TutorsSlugRoute
@@ -224,6 +237,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof HowItWorksRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/report': {
+      id: '/report'
+      path: '/report'
+      fullPath: '/report'
+      preLoaderRoute: typeof ReportRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/review-policy': {
       id: '/review-policy'
       path: '/review-policy'
@@ -263,6 +283,7 @@ const rootRouteChildren: RootRouteChildren = {
   ForCounselorsRoute: ForCounselorsRoute,
   ForTutorsRoute: ForTutorsRoute,
   HowItWorksRoute: HowItWorksRoute,
+  ReportRoute: ReportRoute,
   ReviewPolicyRoute: ReviewPolicyRoute,
   TermsRoute: TermsRoute,
   TutorsSlugRoute: TutorsSlugRoute,

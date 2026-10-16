@@ -11,6 +11,7 @@ export const STATIC_PAGES = [
   "/for-tutors/",
   "/for-counselors/",
   "/community-guidelines/",
+  "/report/",
   "/terms/",
   "/review-policy/",
 ];

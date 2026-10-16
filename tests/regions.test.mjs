@@ -26,6 +26,18 @@ test("every Gulf country, city and curriculum in data/regions.json has English a
   for (const curriculum of curricula) assert.ok(curriculum.name?.trim() && curriculum.ar?.trim(), `curriculum ${curriculum.name} needs both names`);
 });
 
+test("every emergency number has an official source, both languages and a confirmed flag", () => {
+  for (const country of regions.countries) {
+    for (const item of country.emergencyNumbers ?? []) {
+      const where = `${country.name} ${item.number}`;
+      assert.match(String(item.number), /^\d{3,6}$/, `${where}: number should be digits only`);
+      assert.ok(item.service?.trim() && item.serviceAr?.trim(), `${where}: needs service and serviceAr`);
+      assert.equal(typeof item.confirmed, "boolean", `${where}: "confirmed" must be true or false (false until the owner checks the source)`);
+      assert.match(item.source ?? "", /^https:\/\//, `${where}: add the official https source`);
+    }
+  }
+});
+
 test("every location, curriculum and permit value in tutors.json is defined in data/regions.json", () => {
   const curriculumNames = new Set(curricula.map((curriculum) => curriculum.name));
   for (const profile of profiles) {
