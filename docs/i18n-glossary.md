@@ -20,6 +20,7 @@ The Arabic version (`i18n/ar.json`) is written in Modern Standard Arabic for Gul
 | online / in person / hybrid | عبر الإنترنت / حضوريًا / مدمج | مدمج (blended) is used by Gulf schools. Alternative for hybrid: حضوري وعن بُعد. |
 | Where (filter) | الموقع | Short label. Alternative: أين تقيم؟ |
 | curriculum | المنهج | Board names (IGCSE, A-Level, IB, AP, CBSE) stay in Latin letters, as Gulf parents write them. |
+| report a concern | تقديم بلاغ | "Submit a report": the usual Gulf wording for reporting to an authority or platform. A literal "الإبلاغ عن مخاوف" reads awkwardly. The report form's categories are in `report.category.*`. |
 
 ## Conventions
 - Western digits (0-9), as on UAE sites (`ar-AE-u-nu-latn`). Gregorian month names (يناير، فبراير…).

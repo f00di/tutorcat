@@ -346,3 +346,18 @@ footer { border-top: 1px solid var(--border); background: var(--card); padding: 
 /* Tablets: the header has no room for the Join menu (the Join button is hidden there too), so the
    header stays exactly as before. Phones list both links in the open menu; the footer has them too. */
 @media(min-width:641px) and (max-width:900px) { .nav-menu { display: none; } }
+
+/* /report/ (Report a concern): the urgent-safety notice in the page header, the child-safety note in the
+   form, "What happens next" under the form, and the link on profile pages. */
+.urgent-box { border-inline-start: 3px solid var(--destructive); }
+.rule-box.urgent-box > svg { color: var(--destructive); }
+.urgent-box h2 { font-size: 15px; font-weight: 600; margin: 0 0 6px; }
+.emergency-list { display: grid; gap: 10px; margin: 12px 0 0; }
+.emergency-list dt { font-size: 14px; font-weight: 600; }
+.emergency-list dd { margin: 2px 0 0; font-size: 14px; color: var(--muted-foreground); }
+.emergency-list a { font-weight: 600; color: var(--foreground); }
+.safety-note { margin: 0; padding: 10px 14px; border-radius: 6px; border-inline-start: 3px solid var(--destructive); background: color-mix(in oklch, var(--destructive) 10%, transparent); font-size: 13px; line-height: 1.6; color: var(--foreground) !important; }
+.page-card .report-reference { color: var(--foreground); font-weight: 600; }
+.report-next { max-width: 820px; margin-inline: auto; padding-top: 48px; }
+.report-next .text-link { margin-top: 18px; }
+.report-link { margin: 18px 0 0; }

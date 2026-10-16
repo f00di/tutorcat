@@ -1,8 +1,10 @@
 import { createFileRoute } from "@tanstack/react-router";
+import { ArrowRight } from "lucide-react";
 
 import { CatCard } from "@/components/cat-card";
 import { DraftBanner, PageHeader } from "@/components/page-header";
 import { PageShell } from "@/components/page-shell";
+import { SiteLink } from "@/components/site-link";
 import { useI18n } from "@/lib/i18n";
 import { pageMeta, staticPageHead, usePageMeta } from "@/lib/seo";
 
@@ -46,6 +48,9 @@ function GuidelinesPage() {
             <section>
               <h2>{t("guidelines.concern.title")}</h2>
               <p>{t("guidelines.concern.body")}</p>
+              <SiteLink to="/report/" className="text-link">
+                {t("footer.report")} <ArrowRight className="dir-icon" />
+              </SiteLink>
             </section>
           </div>
         </CatCard>
