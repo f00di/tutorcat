@@ -55,7 +55,7 @@ function CounselingPage() {
         className="page-pathway cat-perch"
         cta={
           counselors.length > 0 && (
-            <Button asChild variant="link" className="px-0">
+            <Button asChild variant="link" size="inline">
               <SiteLink to="/tutors/" search={{ chip: "counselors" }}>
                 {t("pathway.cta")} <ArrowRight className="dir-icon" />
               </SiteLink>
@@ -75,7 +75,7 @@ function CounselingPage() {
           <h2 className="section-title">{t("page.counseling.counselorsTitle")}</h2>
           <div className="specialist-grid">
             {counselors.map((person) => (
-              <SpecialistCard key={person.id} profile={person} tone={toneOf(person)} saved={saved.includes(person.id)} onToggleSave={() => toggle(person.id)} />
+              <SpecialistCard key={person.id} profile={person} tone={toneOf(person)} saved={saved.includes(person.id)} onToggleSave={toggle} />
             ))}
           </div>
         </section>

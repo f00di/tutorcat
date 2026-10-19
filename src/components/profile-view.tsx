@@ -217,11 +217,11 @@ export function ProfileView({ profile, saved, onToggleSave, onRequest, onReview,
           <Bookmark fill={saved ? "currentColor" : "none"} />
           {t(saved ? "profile.shortlisted" : "profile.shortlist")}
         </Button>
-        <Button variant="link" className="px-0" onClick={onReview}>
+        <Button variant="link" size="inline" onClick={onReview}>
           {t("profile.review")}
         </Button>
         {!page && (
-          <Button asChild variant="link" className="px-0">
+          <Button asChild variant="link" size="inline">
             <SiteLink to="/tutors/$slug/" params={{ slug: profile.id }}>
               {t("profile.fullProfile")} <ArrowUpRight className="dir-icon" />
             </SiteLink>

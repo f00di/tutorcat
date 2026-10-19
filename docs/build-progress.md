@@ -12,7 +12,7 @@ Where the multi-page work stands, so a fresh session can continue. Steps 1 and 2
 2. [x] Landing pages: `/for-tutors`, `/for-counselors` (role-preset join form; counselor services + commission disclosure; no visa line), the header Join menu and footer links. Footer year fixed ("2026", not "2,026").
 3. [x] `/report` (Report a concern), with footer and profile-page links; emergency numbers stored unconfirmed and hidden.
 4. [ ] Contact email everywhere (footer "Email us", tests).
-5. [ ] `/privacy` from `docs/legal/privacy-policy.md` (English + Arabic, draft status), self-hosted fonts.
+5. [ ] `/privacy` from `docs/legal/privacy-policy.md` (English + Arabic, draft status). Self-hosted fonts: done in the performance pass below.
 6. [ ] Check the two new profiles (Muhammad Taha, Vidula Veerakumar).
 7. [ ] `docs/inbox-templates.md`.
 8. [ ] `docs/roadmap/` specs A–G.
@@ -35,6 +35,14 @@ Where the multi-page work stands, so a fresh session can continue. Steps 1 and 2
 - Internal links go through `SiteLink`. It keeps `?lang=ar` and falls back to a plain link outside the router (tests, design previews).
 - The cat is also on the new pages (`CatCard`); later sections marked `cat-perch` are its perches.
 - The shortlist is shared between pages during a visit, still in memory only, as before.
+
+## Performance pass (2026-10-19, uncommitted, outside the numbered steps)
+- Fonts self-hosted (Google Fonts removed); hero photo as responsive AVIF with JPEG fallback (phones: 24 KB instead of 164 KB).
+- Arabic text is a plain JSON file the boot script starts downloading on Arabic visits, instead of after the app has started.
+- Dialog contents load separately and are preloaded when idle; Button lost class-variance-authority, tailwind-merge and Radix Slot (removed from package.json). First-load JavaScript: 12–14 KB less (gzipped) on every page except `/report/` (8 KB).
+- Cheaper re-renders: memoised catalogue cards and filtering, cached Intl formatters and region lookups.
+- `/tutors/` links with filters no longer flash the full list first (`html.filters-pending`).
+- Checked: npm test, typecheck, build, test:build; screenshots before/after (home, /tutors/, a profile, /for-tutors/ × 390/1440 px × light/dark × English/Arabic): English identical except AVIF compression in the desktop hero; Arabic identical except a sub-pixel difference in the finder dropdown text in fast-forwarded screenshots (real-time captures of the dropdown look the same); no console errors on 7 pages × 2 languages.
 
 ## Done in step 3 (Report a concern)
 - `/report/` (`src/routes/report.tsx`, form in `src/components/report-form.tsx`). Linked from the footer on every page, from each profile page (`/report/?profile=<id>`, that person already chosen) and from the community guidelines.

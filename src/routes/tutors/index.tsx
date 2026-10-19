@@ -1,12 +1,13 @@
 import { createFileRoute, useNavigate } from "@tanstack/react-router";
 import { ArrowRight } from "lucide-react";
+import { useEffect, useMemo } from "react";
 
 import { CatCard } from "@/components/cat-card";
 import { CatalogueResults } from "@/components/catalogue";
 import { FinderForm } from "@/components/finder";
 import { PageHeader } from "@/components/page-header";
 import { PageShell, useOpenDialog } from "@/components/page-shell";
-import { SpecialistCard, toneOf } from "@/components/specialist-card";
+import { MemoSpecialistCard, toneOf } from "@/components/specialist-card";
 import { Button } from "@/components/ui/button";
 import {
   NO_FILTERS,
@@ -47,11 +48,18 @@ function TutorsPage() {
   const hydrated = useHydrated();
   const urlSearch = Route.useSearch();
   const search = hydrated ? urlSearch : NO_SEARCH;
-  const applied: Filters = { mode: search.mode ?? NO_FILTERS.mode, topic: search.topic ?? "", curriculum: search.curriculum ?? "", where: search.where ?? "" };
-  const chips = catalogueChips(translator, saved);
+  // The boot script holds back the results while a link's filters are pending (src/lib/theme.ts).
+  useEffect(() => {
+    if (hydrated) document.documentElement.classList.remove("filters-pending");
+  }, [hydrated]);
+  const applied = useMemo<Filters>(
+    () => ({ mode: search.mode ?? NO_FILTERS.mode, topic: search.topic ?? "", curriculum: search.curriculum ?? "", where: search.where ?? "" }),
+    [search.mode, search.topic, search.curriculum, search.where]
+  );
+  const chips = useMemo(() => catalogueChips(translator, saved), [translator, saved]);
   const activeChip = chips.find((item) => item.id === search.chip) ?? chips[0]!;
   const sort = search.sort ?? "featured";
-  const visible = visibleProfiles(applied, activeChip, sort);
+  const visible = useMemo(() => visibleProfiles(applied, activeChip, sort), [applied, activeChip, sort]);
 
   // Replace (not push) the URL, so Back leaves the page instead of undoing each filter.
   const go = (next: CatalogueSearch) =>
@@ -95,7 +103,7 @@ function TutorsPage() {
           onReset={() => go(withoutDefaults({ sort: search.sort }))}
           visible={visible}
           renderCard={(person) => (
-            <SpecialistCard key={person.id} profile={person} tone={toneOf(person)} saved={saved.includes(person.id)} onToggleSave={() => toggle(person.id)} />
+            <MemoSpecialistCard key={person.id} profile={person} tone={toneOf(person)} saved={saved.includes(person.id)} onToggleSave={toggle} />
           )}
         />
         <p className="help-line">
