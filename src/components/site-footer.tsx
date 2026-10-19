@@ -1,5 +1,6 @@
 import { Logo } from "@/components/logo";
 import { SiteLink, type SitePath } from "@/components/site-link";
+import { CONTACT_EMAIL, isContactEmailSet } from "@/config";
 import { useI18n } from "@/lib/i18n";
 
 const LINKS: { to: SitePath; label: string }[] = [
@@ -12,9 +13,10 @@ const LINKS: { to: SitePath; label: string }[] = [
   { to: "/report/", label: "footer.report" },
   { to: "/review-policy/", label: "footer.reviewPolicy" },
   { to: "/terms/", label: "footer.terms" },
+  { to: "/privacy/", label: "footer.privacy" },
 ];
 
-/** The site footer on every page: links to every page (including Report a concern), then the logo, tagline and copyright. @category Layout */
+/** The site footer on every page: links to every page (including Report a concern and the privacy policy), then the logo, tagline, the team's email and copyright. @category Layout */
 export function SiteFooter() {
   const { t } = useI18n();
   return (
@@ -31,6 +33,15 @@ export function SiteFooter() {
       <div className="shell footer-inner">
         <Logo className="logo footer-logo" label="Tutorcat" />
         <p>{t("footer.tagline")}</p>
+        {/* The team inbox (CONTACT_EMAIL), left-to-right even on Arabic pages; hidden if it's ever unset. */}
+        {isContactEmailSet() && (
+          <p className="footer-email">
+            {t("footer.email")}{" "}
+            <bdi dir="ltr">
+              <a href={`mailto:${CONTACT_EMAIL}`}>{CONTACT_EMAIL}</a>
+            </bdi>
+          </p>
+        )}
         {/* A year is text, not a quantity: "2026", never "2,026". */}
         <p>{t("footer.legal", { year: String(new Date().getFullYear()) })}</p>
       </div>
