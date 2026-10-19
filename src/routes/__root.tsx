@@ -1,6 +1,8 @@
 import { HeadContent, Outlet, Scripts, createRootRoute } from "@tanstack/react-router";
 import { type ReactNode } from "react";
 
+import dmSansLatin from "../assets/fonts/dm-sans-latin.woff2?url";
+import manropeLatin from "../assets/fonts/manrope-latin.woff2?url";
 import { LoadingBuffer } from "../components/loading-buffer";
 import { NotFoundContent } from "../components/not-found";
 import { PageShell } from "../components/page-shell";
@@ -35,13 +37,10 @@ export const Route = createRootRoute({
     ],
     links: [
       { rel: "stylesheet", href: appCss },
+      // Fonts are self-hosted (src/styles.css); the Latin body and heading files load alongside the CSS.
+      { rel: "preload", href: dmSansLatin, as: "font", type: "font/woff2", crossOrigin: "anonymous" },
+      { rel: "preload", href: manropeLatin, as: "font", type: "font/woff2", crossOrigin: "anonymous" },
       { rel: "icon", href: `${base}favicon.png`, type: "image/png" },
-      { rel: "preconnect", href: "https://fonts.googleapis.com" },
-      { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
-      {
-        rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=IBM+Plex+Sans+Arabic:wght@400;500;600;700&family=Manrope:wght@400;500;600;700&display=swap",
-      },
     ],
   }),
   shellComponent: RootShell,

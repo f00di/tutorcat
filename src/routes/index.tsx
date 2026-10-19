@@ -1,19 +1,21 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { ArrowRight, ArrowUpRight, GraduationCap, Monitor, Users } from "lucide-react";
-import { useCallback, useRef, useState } from "react";
+import { useCallback, useMemo, useRef, useState } from "react";
 
 import sessionImage from "@/assets/tutorcat-session.jpg";
+import sessionImage768 from "@/assets/tutorcat-session-768.jpg";
+import sessionAvif768 from "@/assets/tutorcat-session-768.avif";
+import sessionAvif1280 from "@/assets/tutorcat-session-1280.avif";
+import sessionAvif1536 from "@/assets/tutorcat-session-1536.avif";
 import { CatPaws, CatPeek } from "@/components/cat";
 import { CatalogueResults } from "@/components/catalogue";
 import { DialogShell } from "@/components/dialog-shell";
 import { Finder } from "@/components/finder";
-import { DraftReady } from "@/components/forms";
-import { ProfileView } from "@/components/profile-view";
+import { DraftReady, JoinContent, ProfileView, RequestContent, ReviewContent, ShortlistContent, usePreloadDialogs } from "@/components/lazy-dialogs";
 import { CounselingSection, StepsSection } from "@/components/sections";
-import { JoinContent, RequestContent, ReviewContent, ShortlistContent } from "@/components/site-dialogs";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader } from "@/components/site-header";
-import { SpecialistCard, toneOf } from "@/components/specialist-card";
+import { MemoSpecialistCard, toneOf } from "@/components/specialist-card";
 import { Button } from "@/components/ui/button";
 import { SITE_URL, isContactEmailSet } from "@/config";
 import { useCat } from "@/lib/cat";
@@ -60,11 +62,16 @@ function Index() {
   const catHeadRef = useRef<HTMLDivElement>(null);
   const catPawsRef = useRef<HTMLDivElement>(null);
   useCat(catWrapRef, catHeadRef, catPawsRef);
+  usePreloadDialogs({ profile: true });
 
-  const open = (next: DialogState) => {
-    if (!dialog) opener.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
-    setDialog(next);
-  };
+  // Stable, so the memoised cards don't re-render when a dialog opens (same as PageShell).
+  const open = useCallback((next: DialogState) => {
+    setDialog((current) => {
+      if (!current) opener.current = document.activeElement instanceof HTMLElement ? document.activeElement : null;
+      return next;
+    });
+  }, []);
+  const openProfile = useCallback((person: Profile) => open({ type: "profile", person }), [open]);
   const close = useCallback(() => {
     setDialog(null);
     opener.current?.focus();
@@ -84,16 +91,30 @@ function Index() {
   };
 
   // Every option and card comes from data/tutors.json and data/regions.json (src/lib/catalogue.ts).
-  const chips = catalogueChips(translator, saved);
+  // Memoised: typing in the finder re-renders the page, but the list only changes on Find my match.
+  const chips = useMemo(() => catalogueChips(translator, saved), [translator, saved]);
   const activeChip = chips.find((item) => item.id === chip) ?? chips[0]!;
-  const visible = visibleProfiles(applied, activeChip, sort);
+  const visible = useMemo(() => visibleProfiles(applied, activeChip, sort), [applied, activeChip, sort]);
 
   return (
     <>
       <SiteHeader savedCount={saved.length} onShortlist={() => open({ type: "shortlist" })} onJoin={() => open({ type: "join" })} />
       <main id="main">
         <section className="hero">
-          <img src={sessionImage} className="hero-photo" alt={t("hero.imageAlt")} width={1536} height={1024} />
+          {/* Phones get the 768px file (it shows faded there); AVIF where supported, JPEG otherwise. */}
+          <picture>
+            <source type="image/avif" srcSet={`${sessionAvif768} 768w, ${sessionAvif1280} 1280w, ${sessionAvif1536} 1536w`} sizes="100vw" />
+            <img
+              src={sessionImage}
+              srcSet={`${sessionImage768} 768w, ${sessionImage} 1536w`}
+              sizes="100vw"
+              className="hero-photo"
+              alt={t("hero.imageAlt")}
+              width={1536}
+              height={1024}
+              fetchPriority="high"
+            />
+          </picture>
           <div className="shell hero-inner">
             <div className="eyebrow">
               <span>{t("hero.eyebrow")}</span>
@@ -164,13 +185,13 @@ function Index() {
             onReset={reset}
             visible={visible}
             renderCard={(person) => (
-              <SpecialistCard
+              <MemoSpecialistCard
                 key={person.id}
                 profile={person}
                 tone={toneOf(person)}
                 saved={saved.includes(person.id)}
-                onToggleSave={() => toggleSaved(person.id)}
-                onOpen={() => open({ type: "profile", person })}
+                onToggleSave={toggleSaved}
+                onOpen={openProfile}
               />
             )}
           />
@@ -188,7 +209,7 @@ function Index() {
             destinations.length > 0 && (
               <Button
                 variant="link"
-                className="px-0"
+                size="inline"
                 onClick={() => {
                   setMode("counseling");
                   setTopic("");

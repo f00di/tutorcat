@@ -1,8 +1,7 @@
 import { createContext, useCallback, useContext, useRef, useState, type ReactNode } from "react";
 
 import { DialogShell } from "@/components/dialog-shell";
-import { DraftReady } from "@/components/forms";
-import { JoinContent, RequestContent, ReviewContent, ShortlistContent } from "@/components/site-dialogs";
+import { DraftReady, JoinContent, RequestContent, ReviewContent, ShortlistContent, usePreloadDialogs } from "@/components/lazy-dialogs";
 import { SiteFooter } from "@/components/site-footer";
 import { SiteHeader, type NavPage } from "@/components/site-header";
 import type { Draft } from "@/lib/drafts";
@@ -26,6 +25,7 @@ export function PageShell({ page = "other", children }: { page?: NavPage; childr
   const { saved } = useShortlist();
   const [dialog, setDialog] = useState<DialogState>(null);
   const opener = useRef<HTMLElement | null>(null);
+  usePreloadDialogs();
 
   // Same focus handling as the home page: focus returns to whatever opened the dialog.
   const open = useCallback((next: DialogState) => {

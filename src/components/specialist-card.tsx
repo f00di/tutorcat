@@ -1,5 +1,5 @@
 import { ArrowUpRight, BookOpen, Bookmark, Globe2, GraduationCap, ShieldCheck } from "lucide-react";
-import { useState } from "react";
+import { memo, useState } from "react";
 
 import { SiteLink } from "@/components/site-link";
 import { Button } from "@/components/ui/button";
@@ -79,10 +79,12 @@ export function RatingSummary({ profile }: { profile: Profile }) {
 export type Tone = "sage" | "peach" | "lavender";
 const TONES: Tone[] = ["sage", "peach", "lavender"];
 // The same colour for each person as on the home page (by position in data/tutors.json).
-export const toneOf = (profile: Profile): Tone => TONES[Math.max(0, profiles.findIndex((item) => item.id === profile.id)) % TONES.length] ?? "sage";
+const positions = new Map(profiles.map((profile, index) => [profile.id, index]));
+export const toneOf = (profile: Profile): Tone => TONES[(positions.get(profile.id) ?? 0) % TONES.length] ?? "sage";
 
 // With onOpen (home page) View profile opens the profile dialog; without it, it links to the profile page.
-type CardProps = { profile: Profile; tone: Tone; saved: boolean; onToggleSave: () => void; onOpen?: () => void };
+// The callbacks get the person, so a page can pass one stable function for every card.
+type CardProps = { profile: Profile; tone: Tone; saved: boolean; onToggleSave: (id: string) => void; onOpen?: (profile: Profile) => void };
 
 /** A tutor or counselor card: tone-coloured cover with avatar and save button, then name, role, subjects, levels, study destination, experience, location and View profile. @category Specialists */
 export function SpecialistCard({ profile, tone, saved, onToggleSave, onOpen }: CardProps) {
@@ -103,7 +105,7 @@ export function SpecialistCard({ profile, tone, saved, onToggleSave, onOpen }: C
           aria-label={t(saved ? "card.remove" : "card.save", { name: profile.name })}
           aria-pressed={saved}
           title={t(saved ? "card.removeTitle" : "card.saveTitle")}
-          onClick={onToggleSave}
+          onClick={() => onToggleSave(profile.id)}
         >
           <Bookmark fill={saved ? "currentColor" : "none"} />
         </Button>
@@ -143,7 +145,7 @@ export function SpecialistCard({ profile, tone, saved, onToggleSave, onOpen }: C
         <div className="profile-footer">
           <span className="online">{describeLocation(profile, translator)}</span>
           {onOpen ? (
-            <Button variant="outline" onClick={onOpen}>
+            <Button variant="outline" onClick={() => onOpen(profile)}>
               {t("card.view")} <ArrowUpRight className="dir-icon" />
             </Button>
           ) : (
@@ -158,3 +160,7 @@ export function SpecialistCard({ profile, tone, saved, onToggleSave, onOpen }: C
     </article>
   );
 }
+
+// For the catalogue grids: a card only re-renders when its own props (or the language) change,
+// not on every finder change or dialog open. Pass stable onToggleSave/onOpen functions.
+export const MemoSpecialistCard = memo(SpecialistCard);
