@@ -111,7 +111,7 @@ export function SiteHeader({ savedCount, onShortlist, onJoin, page }: Props) {
           )}
           <JoinMenu inline={menuOpen} />
           {menuOpen && (
-            <Button variant="link" className="px-0" onClick={onJoin}>
+            <Button variant="link" size="inline" onClick={onJoin}>
               {t("nav.join")} <ArrowUpRight className="dir-icon" />
             </Button>
           )}

@@ -1,5 +1,14 @@
 import "@testing-library/jest-dom/vitest";
 
+import ar from "../../i18n/ar.json";
+import arUrl from "../../i18n/ar.json?url";
+
+// jsdom can't fetch the site's own files: the Arabic text (fetched from its URL by loadCatalog in
+// src/lib/i18n.tsx) comes straight from i18n/ar.json.
+const networkFetch = globalThis.fetch;
+globalThis.fetch = ((input: RequestInfo | URL, init?: RequestInit) =>
+  String(input) === arUrl ? Promise.resolve(new Response(JSON.stringify(ar))) : networkFetch(input, init)) as typeof fetch;
+
 Object.defineProperty(window, "scrollTo", {
   writable: true,
   value: () => {},

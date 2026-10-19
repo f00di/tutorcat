@@ -1,6 +1,8 @@
 // Light/dark theme: follows the system setting until the visitor picks one with the header toggle.
 import { useCallback, useEffect, useState } from "react";
 
+import { CATALOG_URLS } from "./i18n";
+
 export type Theme = "light" | "dark";
 export const THEME_STORAGE_KEY = "tutorcat.theme";
 
@@ -53,6 +55,9 @@ export function useTheme() {
 
 // Runs in <head> before first paint, so there is no flash of the wrong theme or direction.
 // Theme: saved choice, else the system setting. Language: ?lang=ar or a remembered Arabic choice
-// sets lang/dir and shows the loading screen until the Arabic text is in (1.5 s safety net).
+// sets lang/dir, starts downloading the Arabic text (loadCatalog in src/lib/i18n.tsx picks it up)
+// and shows the loading screen until it is in (1.5 s safety net).
+// /tutors/ opened from a link with filters: the results wait for them (html.filters-pending, removed
+// by the page once they apply; 3 s safety net) instead of showing everyone first.
 // ?loading shows the loading screen for previewing (click it to close).
-export const BOOT_SCRIPT = `(function(){var d=document.documentElement,t,l;try{t=localStorage.getItem("${THEME_STORAGE_KEY}")}catch(e){}if(t!=="light"&&t!=="dark")t=window.matchMedia&&matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light";if(t==="dark")d.classList.add("dark");d.style.colorScheme=t;l=new URLSearchParams(location.search).get("lang");try{l=l||localStorage.getItem("tutorcat.lang")}catch(e){}if(l==="ar"){d.lang="ar";d.dir="rtl";d.classList.add("i18n-pending");setTimeout(function(){d.classList.remove("i18n-pending")},1500)}if(new URLSearchParams(location.search).has("loading"))d.classList.add("buffer-preview")})();`;
+export const BOOT_SCRIPT = `(function(){var d=document.documentElement,t,l;try{t=localStorage.getItem("${THEME_STORAGE_KEY}")}catch(e){}if(t!=="light"&&t!=="dark")t=window.matchMedia&&matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light";if(t==="dark")d.classList.add("dark");d.style.colorScheme=t;l=new URLSearchParams(location.search).get("lang");try{l=l||localStorage.getItem("tutorcat.lang")}catch(e){}if(l==="ar"){d.lang="ar";d.dir="rtl";d.classList.add("i18n-pending");setTimeout(function(){d.classList.remove("i18n-pending")},1500);var p=document.createElement("link");p.rel="preload";p.as="fetch";p.crossOrigin="anonymous";p.href=${JSON.stringify(CATALOG_URLS.ar)};document.head.appendChild(p)}if(/\\/tutors\\/?$/.test(location.pathname)&&/[?&](mode|topic|curriculum|where|chip|sort)=/.test(location.search)){d.classList.add("filters-pending");setTimeout(function(){d.classList.remove("filters-pending")},3000)}if(new URLSearchParams(location.search).has("loading"))d.classList.add("buffer-preview")})();`;
