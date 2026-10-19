@@ -1,11 +1,23 @@
 # Build progress
 
-Where the multi-page work stands, so a fresh session can continue. Steps 1 and 2 are merged into `main` (PRs #4 and #5). The rest is on branch `finish-pages-privacy-contact`, uncommitted: nothing is committed, pushed or deployed until the owner says so.
+Where the work stands, so a fresh session can continue. Steps 1–3 below are merged into `main` (PRs #4, #5, #6). The performance pass is committed locally on `perf-pass` (not pushed). Nothing is committed, pushed or deployed until the owner says so (see "Working rules" in CLAUDE.md).
 
 ## Ground rules
-- The home page (`/`) must look and work exactly as before. Allowed additions only: header Join menu, footer links (+ contact email line), the "View full profile" link in the profile dialog, the privacy-policy link next to form consents.
+- The home page (`/`) must look and work exactly as before. Allowed additions only: header Join menu, footer links (+ contact email line), the "View full profile" link in the profile dialog, the privacy-policy link next to form consents, and (launch brief) the empty state, the "Match me" action and the language links.
 - No new services, accounts, env vars or server code. Static prerendered files on GitHub Pages under `/tutorcat/` (and still with `BASE_PATH=/`).
-- Files changed outside this work and kept as they are: `src/config.ts` (CONTACT_EMAIL), `CLAUDE.md`, `data/tutors.json` (never edit by hand), `docs/legal/privacy-policy.md`.
+- Files changed outside this work and kept as they are: `src/config.ts` (CONTACT_EMAIL, SITE_URL; the launch plan only adds `LEGAL_STATUS` and `PAID_PLANS_ENABLED`), `data/tutors.json` (never edit by hand), `docs/legal/privacy-policy.md` (only the changes the owner approved).
+
+## Launch brief (approved plan, 2026-10-19)
+Launch = the founding period: free listings, no payments, forms as email drafts to CONTACT_EMAIL, free hosting on GitHub Pages. One branch per topic; stop after each step; commit and merge into local `main` only when the owner says; go-live = push `main`.
+- [ ] **Step 0, working rules:** perf work committed on `perf-pass` ✓; 5 merged local branches deleted ✓; "Working rules" in CLAUDE.md ✓; merge `perf-pass` into local `main` (waiting for the owner).
+- [ ] **Step 1** (`finish-pages-privacy-contact`): steps 4–10 of the list below (QA moves to step 6 of this brief). Profiles to check: Muhammad Taha, Vidula Veerakumar, Syed Feras Jamshed.
+- [ ] **Step 2** (`matching`): honest coverage from the data (every coverage sentence listed for approval), "Online" label for online-only matches, the Match request form, and the new empty state ("Tell us what you need…", pre-filled).
+- [ ] **Step 3** (`matching`): "Match me" as the main action on `/` and `/tutors/`; two placements shown with screenshots, owner chooses. No response-time promise.
+- [ ] **Step 4** (`arabic-guides`): every public page prerendered at `/ar/…` (hreflang, canonicals, sitemap with both languages); `?lang=ar` and remembered Arabic go to the `/ar/` page; guides: studying abroad (overview), the UK, the US (outlines approved first).
+- [ ] **Step 5** (`legal-gate`): `PAID_PLANS_ENABLED = false` ("Coming soon", no payment action, test); legal pages draft + noindex until marked final.
+- [ ] **Step 6** (`launch-qa`): internal-link check in `test:build`, `BASE_PATH=/` in CI, `npm run qa` (Playwright + axe: screenshots, console errors, keyboard), Lighthouse mobile, audits.
+- [ ] **Steps 7–8** (`launch-docs`): `docs/domain-switch.md`, `docs/launch-checklist.md` (three columns), `docs/roadmap/later.md`.
+- [ ] **Step 9:** all checks, home-page safety net, screenshots, scores, proposed commits, go-live step.
 
 ## Order (approved plan)
 1. [x] Step 1: back to green, plus the first new pages.
@@ -13,9 +25,9 @@ Where the multi-page work stands, so a fresh session can continue. Steps 1 and 2
 3. [x] `/report` (Report a concern), with footer and profile-page links; emergency numbers stored unconfirmed and hidden.
 4. [ ] Contact email everywhere (footer "Email us", tests).
 5. [ ] `/privacy` from `docs/legal/privacy-policy.md` (English + Arabic, draft status). Self-hosted fonts: done in the performance pass below.
-6. [ ] Check the two new profiles (Muhammad Taha, Vidula Veerakumar).
+6. [ ] Check the new profiles (Muhammad Taha, Vidula Veerakumar, Syed Feras Jamshed).
 7. [ ] `docs/inbox-templates.md`.
-8. [ ] `docs/roadmap/` specs A–G.
+8. [ ] `docs/roadmap/` specs A–H (H = plans and billing).
 9. [ ] QA (all checks, `BASE_PATH=/`, before/after screenshots), CLAUDE.md update.
 10. [ ] Application intake tool (`npm run tutors:add`).
 11. [ ] Proposed commits by topic; wait for the go-ahead.

@@ -2,6 +2,12 @@
 
 Directory of tutors and study-destination counselors for Gulf families. The page is Lovable's redesign (React 19 + TanStack Start + Tailwind v4), prerendered to static HTML and deployed to GitHub Pages at https://f00di.github.io/tutorcat/. Tutor/counselor profiles come from `data/tutors.json`.
 
+## Working rules
+- One Claude Code session at a time on this repo.
+- One branch per topic; merge it before starting the next.
+- No commit, push or deploy until the owner says so. Pushing `main` deploys (`.github/workflows/deploy-pages.yml`).
+- Keep `docs/build-progress.md` current: update it at the end of every step.
+
 ## Stack and commands
 - `npm install`, then `npm run dev` (http://localhost:3000/tutorcat/). `npm run build` prerenders `/` into `dist/client/` (vite `base` + router `basepath` = `/tutorcat/`; set `BASE_PATH=/` for a custom domain, and update `SITE_URL` in `src/config.ts`). Preview a build by serving `dist/client` under a `/tutorcat/` folder.
 - Page: `src/routes/index.tsx`. Pieces: `src/components/` (header, card, profile view, forms, dialog shell, `ui/button.tsx` is the only shadcn component kept), `src/lib/` (`profiles.ts` data rules, `i18n.tsx`, `drafts.ts` team emails, `theme.ts`, `cat.ts`), `src/styles.css` (all tokens and layout), `src/config.ts` (`CONTACT_EMAIL`, `SITE_URL`).
