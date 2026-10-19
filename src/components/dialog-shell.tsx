@@ -1,5 +1,5 @@
 import { X } from "lucide-react";
-import { useEffect, useRef, type ReactNode } from "react";
+import { Suspense, useEffect, useRef, type ReactNode } from "react";
 
 import { Button } from "@/components/ui/button";
 import { useI18n } from "@/lib/i18n";
@@ -57,7 +57,8 @@ export function DialogShell({ onClose, contentKey, children }: Props) {
         <Button variant="ghost" size="icon" className="dialog-close" aria-label={t("dialog.close")} onClick={onClose}>
           <X />
         </Button>
-        {children}
+        {/* A dialog from lazy-dialogs.tsx may still be loading; usually it was preloaded. */}
+        <Suspense fallback={null}>{children}</Suspense>
       </div>
     </div>
   );

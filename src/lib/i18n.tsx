@@ -5,6 +5,7 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 
 import en from "../../i18n/en.json";
+import arUrl from "../../i18n/ar.json?url";
 import regionsData from "../../data/regions.json";
 
 export type Lang = "en" | "ar";
@@ -27,10 +28,39 @@ export const allKnownCurricula: Curriculum[] = [
   ...regionsData.countries.flatMap((country) => (country.nationalCurricula ?? []) as Curriculum[]),
 ];
 
+// label() lookups, built once. The first entry with a name wins, as with Array.find.
+const byName = <T extends { name: string }>(items: T[]) => {
+  const map = new Map<string, T>();
+  for (const item of items) if (!map.has(item.name)) map.set(item.name, item);
+  return map;
+};
+const countriesByName = byName(regionsData.countries);
+const citiesByName = byName(regionsData.countries.flatMap((country) => country.cities));
+const curriculaByName = byName(allKnownCurricula);
+
+// English is bundled. Other languages are plain JSON files fetched when needed; on an Arabic visit
+// the boot script (src/lib/theme.ts) starts that download before the app's code, and this fetch
+// picks it up instead of waiting for the app to start.
+export const CATALOG_URLS = { ar: arUrl } satisfies Partial<Record<Lang, string>>;
+const catalogUrls: Partial<Record<Lang, string>> = CATALOG_URLS;
 const catalogs: Partial<Record<Lang, Catalog>> = { en };
-export const loadCatalog = async (lang: Lang) => {
-  if (!catalogs[lang]) catalogs[lang] = (await import(`../../i18n/${lang}.json`)).default as Catalog;
-  return catalogs[lang]!;
+const loading: Partial<Record<Lang, Promise<Catalog>>> = {};
+export const loadCatalog = async (lang: Lang): Promise<Catalog> => {
+  const loaded = catalogs[lang];
+  if (loaded) return loaded;
+  const pending =
+    loading[lang] ??
+    fetch(catalogUrls[lang] ?? "").then((response) => {
+      if (!response.ok) throw new Error(`${response.status} ${response.url}`);
+      return response.json() as Promise<Catalog>;
+    });
+  loading[lang] = pending;
+  try {
+    return (catalogs[lang] = await pending);
+  } finally {
+    // Done or failed: a failed download is tried again on the next switch.
+    delete loading[lang];
+  }
 };
 
 export const slug = (value: string) =>
@@ -45,13 +75,19 @@ export const isLang = (value: unknown): value is Lang => value === "en" || value
 export function createTranslator(lang: Lang, catalog: Catalog = catalogs[lang] ?? en) {
   const { locale, dir, name } = LANGS[lang];
   const lookup = (key: string) => catalog[key] ?? (en as Catalog)[key];
-  const formatNumber = (value: number, options?: Intl.NumberFormatOptions) => new Intl.NumberFormat(locale, options).format(value);
+  // Intl formatters are slow to create, so each translator makes its own once.
+  const plurals = new Intl.PluralRules(locale);
+  const numbers = new Intl.NumberFormat(locale);
+  const ratings = new Intl.NumberFormat(locale, { minimumFractionDigits: 1, maximumFractionDigits: 1 });
+  const lists = new Intl.ListFormat(locale, { type: "conjunction" });
+  const dates = new Intl.DateTimeFormat(locale, { year: "numeric", month: "short", day: "numeric" });
+  const formatNumber = (value: number, options?: Intl.NumberFormatOptions) => (options ? new Intl.NumberFormat(locale, options) : numbers).format(value);
 
   const t = (key: string, params: Params = {}) => {
     let value = lookup(key);
     if (value && typeof value === "object") {
       const forms = value as Record<string, string>;
-      value = forms[new Intl.PluralRules(locale).select(Number(params["count"]) || 0)] ?? forms["other"];
+      value = forms[plurals.select(Number(params["count"]) || 0)] ?? forms["other"];
     }
     if (typeof value !== "string") return key;
     // In right-to-left text, names and lists are isolated so Latin words and punctuation keep their order.
@@ -66,16 +102,16 @@ export function createTranslator(lang: Lang, catalog: Catalog = catalogs[lang] ?
   const label = (kind: string, value: string | undefined | null): string => {
     if (!value) return "";
     const ar = lang === "ar";
-    const country = regions.countries.find((item) => item.name === value);
+    const country = countriesByName.get(value);
     if ((kind === "country" || kind === "countryShort") && country) {
       return kind === "countryShort" ? (ar ? country.shortAr : country.short) || country.name : (ar && country.ar) || country.name;
     }
     if (kind === "city") {
-      const city = regions.countries.flatMap((item) => item.cities).find((item) => item.name === value);
+      const city = citiesByName.get(value);
       if (city) return (ar && city.ar) || city.name;
     }
     if (kind === "curriculum") {
-      const curriculum = allKnownCurricula.find((item) => item.name === value);
+      const curriculum = curriculaByName.get(value);
       if (curriculum) return (ar && curriculum.ar) || curriculum.name;
     }
     if (kind === "permit") {
@@ -94,14 +130,12 @@ export function createTranslator(lang: Lang, catalog: Catalog = catalogs[lang] ?
     t,
     label,
     formatNumber,
-    formatRating: (value: number) => formatNumber(value, { minimumFractionDigits: 1, maximumFractionDigits: 1 }),
+    formatRating: (value: number) => ratings.format(value),
     // "a, b and c" in the current language.
-    formatList: (items: string[]) => new Intl.ListFormat(locale, { type: "conjunction" }).format(items),
+    formatList: (items: string[]) => lists.format(items),
     formatDate: (value: string) => {
       const date = new Date(value);
-      return value && !Number.isNaN(date.getTime())
-        ? new Intl.DateTimeFormat(locale, { year: "numeric", month: "short", day: "numeric" }).format(date)
-        : value;
+      return value && !Number.isNaN(date.getTime()) ? dates.format(date) : value;
     },
   };
 }
