@@ -22,6 +22,7 @@ Our forms do not send anything to us by themselves. Each form prepares an email 
 | Ask for an introduction | Your name, email, the student's level, the type of support needed, the tutor or counselor you chose (optional), your message | To reply to you and introduce you to a tutor or counselor |
 | Apply to join as a tutor or counselor | Full name, email, phone (optional), whether you tutor or counsel, country, city and area, years of experience, online or in-person sessions, subjects, destination countries, languages, availability, photo link, profile link, experience, bio, your consents | To check your application and, if it is approved, publish your profile |
 | Submit a review | Your name, email, the tutor or counselor reviewed, your rating, session type, your comment, whether we may publish it | To confirm the review with the tutor, check it against our review rules, and publish it if you allowed that |
+| Report a concern | What happened, who it is about (optional), when and how it happened (optional), your name and contact details (optional), your confirmation that the report is true to the best of your knowledge | To look into the concern and keep the site safe. Reports are never published, and we do not tell the person reported who made the report |
 | Browse the site | Your language and theme (light or dark) choice, saved only in your own browser | To remember your choices. This is never sent to us. |
 
 Your shortlist of saved tutors is not stored anywhere. It disappears when you close the page.
@@ -54,13 +55,12 @@ A few outside services are involved when you use the site. Each has its own priv
 | Service | When | What it receives |
 | --- | --- | --- |
 | GitHub Pages (hosting) | Every visit | Technical data such as your IP address and browser type, in its server logs |
-| Google Fonts | Every visit, to show the site's fonts | Your IP address and browser details |
 | Your email provider | When you send us a form email | Whatever you send, under your provider's terms |
 | WhatsApp | Only if you tap a tutor's WhatsApp link | You leave our site, and WhatsApp's policy applies |
 
 **International transfers.** These services may process data outside the Gulf, for example in the United States. Emails you send us are stored with [our email provider] in [location]. [Safeguards for transfers abroad: to be confirmed.]
 
-Links: [GitHub privacy statement](https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement) · [Google Fonts privacy](https://developers.google.com/fonts/faq/privacy) · [WhatsApp privacy policy](https://www.whatsapp.com/legal/privacy-policy)
+Links: [GitHub privacy statement](https://docs.github.com/en/site-policy/privacy-policies/github-general-privacy-statement) · [WhatsApp privacy policy](https://www.whatsapp.com/legal/privacy-policy)
 
 ## 5. Children
 
@@ -112,7 +112,7 @@ We will update this policy before we add any of the following:
 
 - accounts for tutors and counselors
 - tutor tools that store students, lessons, invoices or bank details
-- a reporting page that stores reports
+- a reporting system that stores reports itself (today, the report page only prepares an email that you send us yourself)
 - profile view statistics
 - online payments
 
@@ -128,7 +128,9 @@ Last updated: [date of publication]
 - [ ] Retention periods in section 6.
 - [ ] Minimum age, and whether under-18 students may submit forms at all.
 - [ ] Does the tutor listing consent cover a public, downloadable profile data file?
-- [ ] Consider self-hosting the fonts so Google Fonts no longer receives visitors' IP addresses.
+- [x] Fonts are self-hosted since 2026-10-19, so Google Fonts no longer receives visitors' IP addresses (its row and link were removed from section 4).
+- [ ] Approve two additions from 2026-10-19: the "Report a concern" row in section 2, and the reporting line in section 8.
+- [ ] Section 2 names only the language and theme choices kept in the browser. The browser also keeps the scroll position for the Back button (session storage, cleared when the tab closes, never sent to us). Mention it?
 - [ ] An Arabic version reviewed by a lawyer, and which language prevails if the two differ.
 - [ ] Link the review rules to the defamation and moderation policy.
 - [ ] Update this policy before each upcoming feature in section 8 goes live, especially the report page (child-safety data), accounts, bank details and payments.

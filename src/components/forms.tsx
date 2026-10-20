@@ -1,6 +1,7 @@
 import { ArrowRight, Check, Copy, Mail } from "lucide-react";
 import { useState, type FormEvent, type ReactNode } from "react";
 
+import { SiteLink } from "@/components/site-link";
 import { Button } from "@/components/ui/button";
 import { isContactEmailSet } from "@/config";
 import { COUNSELOR_SERVICES, applicationDraft, draftText, mailtoHref, requestDraft, reviewDraft, type Draft } from "@/lib/drafts";
@@ -30,6 +31,9 @@ export function FormFooter({ submit, status }: { submit: string; status: string 
         {submit} <ArrowRight className="dir-icon" />
       </Button>
       <p className="form-note">{t(isContactEmailSet() ? "form.noteReady" : "form.notePending")}</p>
+      <p className="form-note">
+        {t("form.privacy")} <SiteLink to="/privacy/">{t("footer.privacy")}</SiteLink>
+      </p>
     </>
   );
 }

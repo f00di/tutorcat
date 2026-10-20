@@ -16,6 +16,7 @@ import { Route as CounselingRouteImport } from './routes/counseling'
 import { Route as ForCounselorsRouteImport } from './routes/for-counselors'
 import { Route as ForTutorsRouteImport } from './routes/for-tutors'
 import { Route as HowItWorksRouteImport } from './routes/how-it-works'
+import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as ReportRouteImport } from './routes/report'
 import { Route as ReviewPolicyRouteImport } from './routes/review-policy'
 import { Route as TermsRouteImport } from './routes/terms'
@@ -57,6 +58,11 @@ const HowItWorksRoute = HowItWorksRouteImport.update({
   path: '/how-it-works',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PrivacyRoute = PrivacyRouteImport.update({
+  id: '/privacy',
+  path: '/privacy',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ReportRoute = ReportRouteImport.update({
   id: '/report',
   path: '/report',
@@ -91,6 +97,7 @@ export interface FileRoutesByFullPath {
   '/for-counselors': typeof ForCounselorsRoute
   '/for-tutors': typeof ForTutorsRoute
   '/how-it-works': typeof HowItWorksRoute
+  '/privacy': typeof PrivacyRoute
   '/report': typeof ReportRoute
   '/review-policy': typeof ReviewPolicyRoute
   '/terms': typeof TermsRoute
@@ -105,6 +112,7 @@ export interface FileRoutesByTo {
   '/for-counselors': typeof ForCounselorsRoute
   '/for-tutors': typeof ForTutorsRoute
   '/how-it-works': typeof HowItWorksRoute
+  '/privacy': typeof PrivacyRoute
   '/report': typeof ReportRoute
   '/review-policy': typeof ReviewPolicyRoute
   '/terms': typeof TermsRoute
@@ -120,6 +128,7 @@ export interface FileRoutesById {
   '/for-counselors': typeof ForCounselorsRoute
   '/for-tutors': typeof ForTutorsRoute
   '/how-it-works': typeof HowItWorksRoute
+  '/privacy': typeof PrivacyRoute
   '/report': typeof ReportRoute
   '/review-policy': typeof ReviewPolicyRoute
   '/terms': typeof TermsRoute
@@ -136,6 +145,7 @@ export interface FileRouteTypes {
     | '/for-counselors'
     | '/for-tutors'
     | '/how-it-works'
+    | '/privacy'
     | '/report'
     | '/review-policy'
     | '/terms'
@@ -150,6 +160,7 @@ export interface FileRouteTypes {
     | '/for-counselors'
     | '/for-tutors'
     | '/how-it-works'
+    | '/privacy'
     | '/report'
     | '/review-policy'
     | '/terms'
@@ -164,6 +175,7 @@ export interface FileRouteTypes {
     | '/for-counselors'
     | '/for-tutors'
     | '/how-it-works'
+    | '/privacy'
     | '/report'
     | '/review-policy'
     | '/terms'
@@ -179,6 +191,7 @@ export interface RootRouteChildren {
   ForCounselorsRoute: typeof ForCounselorsRoute
   ForTutorsRoute: typeof ForTutorsRoute
   HowItWorksRoute: typeof HowItWorksRoute
+  PrivacyRoute: typeof PrivacyRoute
   ReportRoute: typeof ReportRoute
   ReviewPolicyRoute: typeof ReviewPolicyRoute
   TermsRoute: typeof TermsRoute
@@ -237,6 +250,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof HowItWorksRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/privacy': {
+      id: '/privacy'
+      path: '/privacy'
+      fullPath: '/privacy'
+      preLoaderRoute: typeof PrivacyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/report': {
       id: '/report'
       path: '/report'
@@ -283,6 +303,7 @@ const rootRouteChildren: RootRouteChildren = {
   ForCounselorsRoute: ForCounselorsRoute,
   ForTutorsRoute: ForTutorsRoute,
   HowItWorksRoute: HowItWorksRoute,
+  PrivacyRoute: PrivacyRoute,
   ReportRoute: ReportRoute,
   ReviewPolicyRoute: ReviewPolicyRoute,
   TermsRoute: TermsRoute,

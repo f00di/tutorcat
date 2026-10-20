@@ -9,8 +9,9 @@ Where the work stands, so a fresh session can continue. Steps 1–3 below are me
 
 ## Launch brief (approved plan, 2026-10-19)
 Launch = the founding period: free listings, no payments, forms as email drafts to CONTACT_EMAIL, free hosting on GitHub Pages. One branch per topic; stop after each step; commit and merge into local `main` only when the owner says; go-live = push `main`.
-- [ ] **Step 0, working rules:** perf work committed on `perf-pass` ✓; 5 merged local branches deleted ✓; "Working rules" in CLAUDE.md ✓; merge `perf-pass` into local `main` (waiting for the owner).
-- [ ] **Step 1** (`finish-pages-privacy-contact`): steps 4–10 of the list below (QA moves to step 6 of this brief). Profiles to check: Muhammad Taha, Vidula Veerakumar, Syed Feras Jamshed.
+- [x] **Step 0, working rules:** perf work committed on `perf-pass`; 5 merged local branches deleted; "Working rules" in CLAUDE.md; `perf-pass` merged into `main` by the owner (PR #7, deployed).
+- [ ] **Step 1** (`finish-pages-privacy-contact`): steps 4–10 of the list below (QA moves to step 6 of this brief). Profiles to check: Muhammad Taha, Vidula Veerakumar, Syed Feras Jamshed. **1a–1b done, uncommitted** (see "Done in launch Step 1a–1b"); next: 1c–1f.
+- [ ] **Then the Tutor planner (beta)** on its own branch `planner` (approved plan: `/planner/`, own week grid, strings in `i18n/planner.{en,ar}.json`, IndexedDB only), P1–P5; then launch Steps 2–9.
 - [ ] **Step 2** (`matching`): honest coverage from the data (every coverage sentence listed for approval), "Online" label for online-only matches, the Match request form, and the new empty state ("Tell us what you need…", pre-filled).
 - [ ] **Step 3** (`matching`): "Match me" as the main action on `/` and `/tutors/`; two placements shown with screenshots, owner chooses. No response-time promise.
 - [ ] **Step 4** (`arabic-guides`): every public page prerendered at `/ar/…` (hreflang, canonicals, sitemap with both languages); `?lang=ar` and remembered Arabic go to the `/ar/` page; guides: studying abroad (overview), the UK, the US (outlines approved first).
@@ -23,8 +24,8 @@ Launch = the founding period: free listings, no payments, forms as email drafts 
 1. [x] Step 1: back to green, plus the first new pages.
 2. [x] Landing pages: `/for-tutors`, `/for-counselors` (role-preset join form; counselor services + commission disclosure; no visa line), the header Join menu and footer links. Footer year fixed ("2026", not "2,026").
 3. [x] `/report` (Report a concern), with footer and profile-page links; emergency numbers stored unconfirmed and hidden.
-4. [ ] Contact email everywhere (footer "Email us", tests).
-5. [ ] `/privacy` from `docs/legal/privacy-policy.md` (English + Arabic, draft status). Self-hosted fonts: done in the performance pass below.
+4. [x] Contact email everywhere (footer "Email us", tests).
+5. [x] `/privacy` from `docs/legal/privacy-policy.md` (English + Arabic, draft status). Self-hosted fonts: done in the performance pass below.
 6. [ ] Check the new profiles (Muhammad Taha, Vidula Veerakumar, Syed Feras Jamshed).
 7. [ ] `docs/inbox-templates.md`.
 8. [ ] `docs/roadmap/` specs A–H (H = plans and billing).
@@ -48,7 +49,14 @@ Launch = the founding period: free listings, no payments, forms as email drafts 
 - The cat is also on the new pages (`CatCard`); later sections marked `cat-perch` are its perches.
 - The shortlist is shared between pages during a visit, still in memory only, as before.
 
-## Performance pass (2026-10-19, uncommitted, outside the numbered steps)
+## Done in launch Step 1a–1b (2026-10-19, uncommitted)
+- **Contact email:** footer line "Email us: tutorcatsupport@gmail.com" on every page (from `CONTACT_EMAIL`, left-to-right inside Arabic), hidden if the email is ever unset.
+- **/privacy:** sections 1–8 of the policy in English and Arabic (`src/content/legal/`), contents list with `#section-1…8` anchors, Draft note, highlighted [placeholders], noindex, not in the sitemap (`LEGAL_STATUS.privacy = "draft"`). Footer link; "How we use your details: Privacy policy" under every form (request, join, review, report).
+- **Policy edits** (`docs/legal/privacy-policy.md`): Google Fonts removed (fonts are self-hosted). **For the owner's approval** (listed in its internal checklist): a "Report a concern" row in section 2, the reporting line in section 8, and whether to mention the scroll position the browser keeps for the Back button.
+- **Tests:** `tests/privacy.test.mjs` (English copy = docs sections 1–8; Arabic has the same sections, placeholders and email slots; internal notes never in `src/`; only CONTACT_EMAIL; storage only theme/lang, no cookies; fetch only the Arabic text; known URLs only), `src/test/privacy.test.tsx` (page and renderer), `src/test/legal-status.test.ts`, and `test:build` (email on every page, no other email shipped, drafts noindex + not in the sitemap, internal notes never shipped, nothing loaded from other sites).
+- **Not yet decided by the owner:** the Arabic policy needs a native-speaker and a legal review.
+
+## Performance pass (2026-10-19, merged in PR #7, outside the numbered steps)
 - Fonts self-hosted (Google Fonts removed); hero photo as responsive AVIF with JPEG fallback (phones: 24 KB instead of 164 KB).
 - Arabic text is a plain JSON file the boot script starts downloading on Arabic visits, instead of after the app has started.
 - Dialog contents load separately and are preloaded when idle; Button lost class-variance-authority, tailwind-merge and Radix Slot (removed from package.json). First-load JavaScript: 12–14 KB less (gzipped) on every page except `/report/` (8 KB).
