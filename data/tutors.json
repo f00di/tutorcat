@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-10-15T05:29:26.578Z",
+  "lastUpdated": "2026-10-20T03:30:18.301Z",
   "sourceSheet": "Profiles",
   "profiles": [
     {
@@ -7,7 +7,7 @@
       "name": "Hassan Ansari",
       "initials": "HA",
       "profileType": "Tutor + Counselor",
-      "role": "",
+      "role": "Maths & computer science tutor and US university counselor",
       "subjects": [
         "Math",
         "Computer Science"
@@ -20,7 +20,14 @@
       "location": "",
       "baseCountry": "",
       "city": "",
-      "servesCountries": [],
+      "servesCountries": [
+        "United Arab Emirates",
+        "Saudi Arabia",
+        "Qatar",
+        "Kuwait",
+        "Bahrain",
+        "Oman"
+      ],
       "sessionModes": [
         "Online"
       ],
@@ -65,7 +72,7 @@
       "name": "Shweta Nundlall",
       "initials": "SN",
       "profileType": "Tutor + Counselor",
-      "role": "",
+      "role": "Psychology & English tutor and South Africa university counselor",
       "subjects": [
         "Psychology",
         "English Language",
@@ -79,7 +86,14 @@
       "location": "",
       "baseCountry": "",
       "city": "",
-      "servesCountries": [],
+      "servesCountries": [
+        "United Arab Emirates",
+        "Saudi Arabia",
+        "Qatar",
+        "Kuwait",
+        "Bahrain",
+        "Oman"
+      ],
       "sessionModes": [
         "Online"
       ],
@@ -124,7 +138,7 @@
       "name": "Shady Bolos",
       "initials": "SB",
       "profileType": "Tutor + Counselor",
-      "role": "",
+      "role": "Maths & sciences tutor and Czech Republic university counselor",
       "subjects": [
         "Math",
         "Biology",
@@ -138,7 +152,14 @@
       "location": "",
       "baseCountry": "",
       "city": "",
-      "servesCountries": [],
+      "servesCountries": [
+        "United Arab Emirates",
+        "Saudi Arabia",
+        "Qatar",
+        "Kuwait",
+        "Bahrain",
+        "Oman"
+      ],
       "sessionModes": [
         "Online"
       ],
@@ -193,7 +214,14 @@
       "location": "",
       "baseCountry": "United Arab Emirates",
       "city": "Abu Dhabi",
-      "servesCountries": [],
+      "servesCountries": [
+        "United Arab Emirates",
+        "Saudi Arabia",
+        "Qatar",
+        "Kuwait",
+        "Bahrain",
+        "Oman"
+      ],
       "sessionModes": [
         "Online"
       ],
@@ -251,7 +279,14 @@
       "location": "",
       "baseCountry": "",
       "city": "",
-      "servesCountries": [],
+      "servesCountries": [
+        "United Arab Emirates",
+        "Saudi Arabia",
+        "Qatar",
+        "Kuwait",
+        "Bahrain",
+        "Oman"
+      ],
       "sessionModes": [
         "Online"
       ],
@@ -303,7 +338,14 @@
       "location": "",
       "baseCountry": "United Arab Emirates",
       "city": "Abu Dhabi",
-      "servesCountries": [],
+      "servesCountries": [
+        "United Arab Emirates",
+        "Saudi Arabia",
+        "Qatar",
+        "Kuwait",
+        "Bahrain",
+        "Oman"
+      ],
       "sessionModes": [
         "Hybrid"
       ],
