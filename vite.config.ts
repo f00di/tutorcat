@@ -3,19 +3,19 @@ import { tanstackStart } from "@tanstack/react-start/plugin/vite";
 import viteReact from "@vitejs/plugin-react";
 import { defineConfig, type Plugin } from "vite";
 
-import { publicPages } from "./scripts/public-pages.mjs";
+import { publicPages, sitemapPages } from "./scripts/public-pages.mjs";
 import { SITE_URL } from "./src/config";
 
 // GitHub Pages serves the site from /tutorcat/. For a custom domain, build with BASE_PATH=/
 const base = process.env["BASE_PATH"] ?? "/tutorcat/";
 
-// sitemap.xml with every public page, at SITE_URL (src/config.ts).
+// sitemap.xml with every public page except drafts, at SITE_URL (src/config.ts).
 function sitemap(): Plugin {
   return {
     name: "tutorcat-sitemap",
     applyToEnvironment: (environment) => environment.name === "client",
     generateBundle() {
-      const urls = publicPages().map((path) => `  <url><loc>${new URL(path.slice(1), SITE_URL).href}</loc></url>`);
+      const urls = sitemapPages().map((path) => `  <url><loc>${new URL(path.slice(1), SITE_URL).href}</loc></url>`);
       const source = `<?xml version="1.0" encoding="UTF-8"?>\n<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">\n${urls.join("\n")}\n</urlset>\n`;
       this.emitFile({ type: "asset", fileName: "sitemap.xml", source });
     },

@@ -285,6 +285,26 @@ footer { border-top: 1px solid var(--border); background: var(--card); padding: 
 .numbered-list li::marker { color: var(--primary); font-weight: 600; }
 .link-row { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; }
 .draft-banner { margin: 0 0 22px; padding: 10px 14px; border-radius: 6px; border-inline-start: 3px solid var(--sunshine); background: color-mix(in oklch, var(--sunshine) 18%, transparent); font-size: 13px; line-height: 1.6; color: var(--foreground) !important; }
+/* Footer email line and the privacy link under every form. */
+.footer-email a, .form-note a { color: var(--primary); text-decoration: underline; text-underline-offset: 3px; }
+/* Long legal pages from src/content/ (src/lib/markdown.tsx). */
+.legal-doc h2 { margin-top: 30px; scroll-margin-top: 16px; }
+.legal-doc p { margin: 0 0 12px; }
+.legal-doc .fact-list { margin: 4px 0 16px; }
+.legal-doc strong { color: var(--foreground); font-weight: 600; }
+.legal-doc mark.placeholder { background: transparent; color: inherit; }
+.legal-doc.is-draft mark.placeholder { background: color-mix(in oklch, var(--sunshine) 35%, transparent); color: var(--foreground); border-radius: 3px; padding: 0 2px; }
+.legal-toc { margin: 0 0 8px; padding: 14px 18px; border: 1px solid var(--border); border-radius: 6px; background: var(--muted); }
+.legal-toc h2 { margin: 0 0 6px !important; font-size: 13px !important; }
+.legal-toc ol { margin: 0; padding-inline-start: 20px; display: grid; gap: 4px; font-size: 13px; list-style: decimal; }
+.legal-toc li::marker { color: var(--muted-foreground); }
+.legal-toc a { color: var(--primary); } .legal-toc a:hover { text-decoration: underline; text-underline-offset: 3px; }
+.md-table { margin: 14px 0; overflow-x: auto; }
+.md-table table { width: 100%; border-collapse: collapse; font-size: 13px; line-height: 1.6; }
+.md-table th, .md-table td { padding: 9px 10px; border-bottom: 1px solid var(--border); text-align: start; vertical-align: top; color: var(--muted-foreground); }
+.md-table th { color: var(--foreground); font-weight: 600; background: var(--muted); }
+/* Phones: each row becomes a small card of "label: value" lines. */
+@media(max-width:640px) { .md-table thead { display: none; } .md-table tr { display: grid; gap: 4px; padding: 10px 0; border-bottom: 1px solid var(--border); } .md-table td { display: grid; grid-template-columns: 38% 1fr; gap: 10px; padding: 0; border: 0; } .md-table td::before { content: attr(data-label); color: var(--foreground); font-weight: 600; } }
 /* A profile page reads like the profile dialog, at page width. */
 .profile-page h1 { font-size: 30px; font-weight: 600; margin: 14px 0 6px; }
 .profile-page h2 { font-size: 15px; margin: 24px 0 8px; }

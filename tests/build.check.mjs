@@ -4,12 +4,14 @@ import { test } from "node:test";
 import assert from "node:assert/strict";
 import { existsSync, readdirSync, readFileSync } from "node:fs";
 
-import { profilePages, publicPages } from "../scripts/public-pages.mjs";
+import { draftPages, profilePages, publicPages, sitemapPages } from "../scripts/public-pages.mjs";
 
 const dist = new URL("../dist/client/", import.meta.url);
 const read = (path) => readFileSync(new URL(path, dist), "utf8");
 const base = process.env["BASE_PATH"] ?? "/tutorcat/";
-const siteUrl = readFileSync(new URL("../src/config.ts", import.meta.url), "utf8").match(/SITE_URL = "([^"]+)"/)[1];
+const config = readFileSync(new URL("../src/config.ts", import.meta.url), "utf8");
+const siteUrl = config.match(/SITE_URL = "([^"]+)"/)[1];
+const contactEmail = config.match(/CONTACT_EMAIL = "([^"]+)"/)[1];
 const profiles = JSON.parse(readFileSync(new URL("../data/tutors.json", import.meta.url), "utf8")).profiles;
 const regions = JSON.parse(readFileSync(new URL("../data/regions.json", import.meta.url), "utf8"));
 const files = readdirSync(dist, { recursive: true }).map(String);
@@ -91,9 +93,54 @@ test("the report page shows no emergency number until the owner confirms it in d
   }
 });
 
-test("sitemap.xml lists exactly the public pages", () => {
+test("sitemap.xml lists exactly the public pages that aren't drafts", () => {
   const urls = [...read("sitemap.xml").matchAll(/<loc>([^<]+)<\/loc>/g)].map((match) => match[1]).sort();
-  assert.deepEqual(urls, publicPages().map((path) => new URL(path.slice(1), siteUrl).href).sort());
+  assert.deepEqual(urls, sitemapPages().map((path) => new URL(path.slice(1), siteUrl).href).sort());
+});
+
+test("draft legal pages are prerendered with a Draft note and noindex, and kept out of the sitemap", () => {
+  const sitemap = read("sitemap.xml");
+  for (const path of draftPages()) {
+    const page = read(pageFile(path));
+    assert.match(page, /<meta name="robots" content="noindex"/, `${path}: noindex`);
+    assert.match(page, /class="draft-banner"/, `${path}: Draft note`);
+    assert.ok(!sitemap.includes(new URL(path.slice(1), siteUrl).href), `${path} is a draft but in the sitemap`);
+  }
+});
+
+test("every page shows the team's email address", () => {
+  for (const file of [...publicPages().map(pageFile), "404.html"]) {
+    assert.ok(read(file).includes(`href="mailto:${contactEmail}"`), `${file}: no mailto:${contactEmail}`);
+  }
+});
+
+test("no email address in the build other than the team's (and the form's example placeholder)", () => {
+  const allowed = new Set([contactEmail, "you@example.com"]);
+  for (const file of files.filter((name) => /\.(html|js|css|json|xml)$/.test(name))) {
+    for (const [address] of read(file).matchAll(/[\w.%+-]+@[\w-]+(?:\.[\w-]+)*\.[a-z]{2,}/gi)) {
+      assert.ok(allowed.has(address), `${file} contains ${address}`);
+    }
+  }
+});
+
+test("the privacy policy's internal notes are never published", () => {
+  for (const file of files.filter((name) => /\.(html|js|json)$/.test(name))) {
+    assert.doesNotMatch(read(file), /Before publishing|internal, never publish/, `${file} contains the policy's internal notes`);
+  }
+});
+
+test("nothing is loaded from another site: scripts, styles, fonts, icons and images come from the base path", () => {
+  const loaded = /<(?:script|img|source)\b[^>]*\b(?:src|srcset|srcSet)="([^"]+)"|<link\b(?=[^>]*\brel="(?:stylesheet|preload|modulepreload|icon)")[^>]*\bhref="([^"]+)"/g;
+  for (const file of htmlFiles) {
+    for (const match of read(file).matchAll(loaded)) {
+      for (const url of (match[1] ?? match[2] ?? "").split(",").map((part) => part.trim().split(/\s+/)[0] ?? "")) {
+        assert.ok(url.startsWith(base), `${file} loads ${url} from outside the site`);
+      }
+    }
+  }
+  for (const file of files.filter((name) => /\.(html|js)$/.test(name))) {
+    assert.doesNotMatch(read(file), /googletagmanager|google-analytics|gtag\(|fonts\.googleapis|plausible\.io|clarity\.ms|hotjar|facebook\.net\/.*fbevents/, `${file} loads a tracker or third-party font`);
+  }
 });
 
 test("unknown URLs get a noindex 404 page", () => {

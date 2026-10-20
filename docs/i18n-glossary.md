@@ -2,6 +2,8 @@
 
 The Arabic version (`i18n/ar.json`) is written in Modern Standard Arabic for Gulf parents. It is **not yet reviewed by a native speaker**. The strings I am least sure about are listed under `_meta.lowConfidence` in `i18n/ar.json`. Use the same term everywhere; change it here and in `ar.json` together.
 
+The Arabic privacy policy (`src/content/legal/privacy.ar.md`) needs both a native-speaker and a legal review. Law names follow the official Arabic titles where known (المرسوم بقانون اتحادي رقم 45 لسنة 2021, نظام حماية البيانات الشخصية); the regulators are [placeholders] until confirmed. Its first line says the English version prevails.
+
 | English | Arabic | Why / alternatives |
 |---|---|---|
 | tutor | مدرّس (مدرّس خصوصي when it must be explicit) | Common Gulf usage for a private tutor. معلّم reads more like a school teacher. |
