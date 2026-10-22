@@ -23,6 +23,9 @@ The Arabic privacy policy (`src/content/legal/privacy.ar.md`) needs both a nativ
 | Where (filter) | الموقع | Short label. Alternative: أين تقيم؟ |
 | curriculum | المنهج | Board names (IGCSE, A-Level, IB, AP, CBSE) stay in Latin letters, as Gulf parents write them. |
 | report a concern | تقديم بلاغ | "Submit a report": the usual Gulf wording for reporting to an authority or platform. A literal "الإبلاغ عن مخاوف" reads awkwardly. The report form's categories are in `report.category.*`. |
+| Tutorcat Desk (the planner app) | Tutorcat Desk | A product name, so it stays in Latin letters like "Tutorcat". |
+| blackout (time) | وقت محجوب، الأوقات المحجوبة | The Desk's own Arabic. Keep the two in step. |
+| sample data | بيانات تجريبية | The Desk's own Arabic, used on the "Sample data" tags under its screenshots. |
 
 ## Conventions
 - Western digits (0-9), as on UAE sites (`ar-AE-u-nu-latn`). Gregorian month names (يناير، فبراير…).
