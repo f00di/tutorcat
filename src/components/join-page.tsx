@@ -1,12 +1,12 @@
 import { useRouter } from "@tanstack/react-router";
-import { ArrowDown, ArrowRight, ArrowUpRight, BadgeCheck, CalendarDays, FileText, Languages, NotebookPen, Package, ShieldCheck, Star } from "lucide-react";
+import { ArrowDown, ArrowRight, ArrowUpRight, BadgeCheck, Languages, ShieldCheck } from "lucide-react";
 import { useEffect, useState, type ReactNode } from "react";
 
 import { CatCard } from "@/components/cat-card";
+import { DeskSection } from "@/components/desk-section";
 import { FinderForm } from "@/components/finder";
 import { DraftReady, JoinForm } from "@/components/forms";
 import { CounselingSection } from "@/components/sections";
-import { SampleInvoice } from "@/components/sample-invoice";
 import { SiteLink } from "@/components/site-link";
 import { SpecialistCard, toneOf } from "@/components/specialist-card";
 import { Button } from "@/components/ui/button";
@@ -26,18 +26,6 @@ const FOUNDING_SPOTS: Record<JoinKind, number> = { tutor: 50, counselor: 25 };
 // Until then the hero shows a real profile card. See docs/build-progress.md ("needs a real photo").
 const HERO_PHOTO: Partial<Record<JoinKind, { src: string; alt: string }>> = {};
 
-const TOOLS: Record<JoinKind, { key: string; icon: typeof CalendarDays }[]> = {
-  tutor: [
-    { key: "schedule", icon: CalendarDays },
-    { key: "log", icon: NotebookPen },
-    { key: "invoices", icon: FileText },
-  ],
-  counselor: [
-    { key: "consultations", icon: CalendarDays },
-    { key: "packages", icon: Package },
-  ],
-};
-
 const FAQ: Record<JoinKind, string[]> = {
   tutor: ["cost", "contact", "permit", "payments", "both", "review"],
   counselor: ["cost", "contact", "experience", "commission", "both", "review"],
@@ -47,7 +35,7 @@ const Section = ({ children, className = "" }: { children: ReactNode; className?
   <section className={`shell page-section cat-perch ${className}`.trim()}>{children}</section>
 );
 
-/** /for-tutors and /for-counselors: hero, founding offer and later pricing, what families see, planned tools ("Coming soon"), FAQ and the application form preset to the role. Render it inside PageShell. @category Layout */
+/** /for-tutors and /for-counselors: hero, founding offer and later pricing, what families see, Tutorcat Desk, FAQ and the application form preset to the role. Render it inside PageShell. @category Layout */
 export function JoinPage({ kind }: { kind: JoinKind }) {
   const translator = useI18n();
   const { t, label } = translator;
@@ -201,29 +189,7 @@ export function JoinPage({ kind }: { kind: JoinKind }) {
         </Section>
       )}
 
-      <Section>
-        <div className="eyebrow">
-          <Star size={14} aria-hidden="true" /> {t("join.tools.eyebrow")}
-        </div>
-        <h2 className="section-title">{t(`join.tools.${kind}Title`)}</h2>
-        <p className="page-lead">{t("join.tools.intro")}</p>
-        <div className={kind === "tutor" ? "tools-layout" : ""}>
-          <div className="tool-grid">
-            {TOOLS[kind].map(({ key, icon: Icon }) => (
-              <div key={key} className="tool-card">
-                <Icon aria-hidden="true" />
-                <div>
-                  <h3>
-                    {t(`join.tools.${key}.title`)} <span className="soon-badge">{t("join.tools.soon")}</span>
-                  </h3>
-                  <p>{t(`join.tools.${key}.body`)}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-          {kind === "tutor" && <SampleInvoice />}
-        </div>
-      </Section>
+      <DeskSection kind={kind} />
 
       <Section className="join-faq">
         <h2 className="section-title">{t("join.faq.title")}</h2>

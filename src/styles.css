@@ -344,38 +344,29 @@ footer { border-top: 1px solid var(--border); background: var(--card); padding: 
 .rule-box { display: flex; gap: 14px; align-items: flex-start; margin-top: 24px; padding: 20px; border: 1px solid var(--border); border-radius: 8px; background: var(--card); max-width: 760px; }
 .rule-box > svg { width: 22px; height: 22px; flex: none; color: var(--primary); margin-top: 2px; }
 .rule-box h3 { font-size: 15px; margin: 0 0 6px; } .rule-box p { font-size: 14px; line-height: 1.7; color: var(--muted-foreground); margin: 0 0 6px; }
-.tools-layout { display: grid; grid-template-columns: 1fr 1.05fr; gap: 32px; align-items: start; margin-top: 24px; }
-.tool-grid { display: grid; gap: 14px; margin-top: 24px; } .tools-layout .tool-grid { margin-top: 0; }
+.tool-grid { display: grid; gap: 14px; margin-top: 24px; }
 .tool-card { display: flex; gap: 14px; padding: 18px; border: 1px solid var(--border); border-radius: 8px; background: var(--card); }
 .tool-card > svg { width: 22px; height: 22px; flex: none; color: var(--primary); }
 .tool-card h3 { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font-size: 15px; margin: 0 0 6px; }
 .tool-card p { font-size: 13px; line-height: 1.7; color: var(--muted-foreground); margin: 0; }
-.soon-badge { padding: 2px 9px; border-radius: 50px; background: var(--secondary); color: var(--primary); font-family: var(--font-body); font-size: 10px; font-weight: 600; }
 .join-faq details { padding: 17px 0; border-bottom: 1px solid var(--border); font-size: 14px; max-width: 760px; }
 .join-faq summary { cursor: pointer; font-weight: 500; } .join-faq details p { color: var(--muted-foreground); line-height: 1.8; margin-bottom: 0; }
 .apply-layout { display: grid; grid-template-columns: .8fr 1.2fr; gap: 48px; align-items: start; }
 
-/* The example invoice: printed-paper look in both themes (planned PDF layout, docs/roadmap Spec D). */
-.sample-invoice { --invoice-accent: oklch(.36 .06 225); position: relative; margin: 0; padding: 26px; border: 1px solid oklch(.88 .01 230); border-radius: 8px; background: oklch(1 0 0); color: oklch(.25 .02 230); box-shadow: var(--shadow-soft); font-size: 12px; }
+/* Tutorcat Desk: features beside the two notes and the button, then the sample screenshots, each tagged "Sample data". */
+.desk-layout { display: grid; grid-template-columns: 1fr 1fr; gap: 32px; align-items: start; margin-top: 24px; }
+.desk-layout .tool-grid, .desk-layout .rule-box:first-child { margin-top: 0; }
+.desk-layout .rule-box { margin-top: 14px; }
+.desk-layout .page-note { margin: 22px 0; }
+.desk-shots { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 36px 24px; margin: 48px 0 0; padding: 0; list-style: none; }
+.desk-shot { position: relative; margin: 0; }
+.desk-shot img { display: block; width: 100%; height: auto; border: 1px solid var(--border); border-radius: 8px; background: var(--muted); box-shadow: var(--shadow-soft); }
+.desk-shot figcaption { margin-top: 10px; font-size: 13px; line-height: 1.6; color: var(--muted-foreground); }
 .sample-badge { position: absolute; top: -11px; inset-inline-start: 18px; padding: 3px 10px; border-radius: 50px; background: var(--sunshine); color: oklch(.25 .02 230); font-size: 10px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; }
 :root:lang(ar) .sample-badge { letter-spacing: 0; text-transform: none; }
-.invoice-top { display: flex; justify-content: space-between; gap: 16px; margin-bottom: 18px; }
-.invoice-top div { display: grid; gap: 3px; } .invoice-top span { color: oklch(.5 .02 230); font-size: 11px; }
-.invoice-title { text-align: end; } .invoice-title strong { font-family: var(--font-heading); font-size: 26px; letter-spacing: .08em; color: var(--invoice-accent); }
-:root:lang(ar) .invoice-title strong { letter-spacing: 0; }
-.invoice-details { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; margin: 0 0 16px; }
-.invoice-details dt { font-size: 10px; color: oklch(.5 .02 230); } .invoice-details dd { margin: 3px 0 0; font-weight: 600; }
-.sample-invoice table { width: 100%; border-collapse: collapse; }
-.sample-invoice th { padding: 8px 10px; background: var(--invoice-accent); color: oklch(1 0 0); font-weight: 600; text-align: start; }
-.sample-invoice td { padding: 8px 10px; border-bottom: 1px solid oklch(.92 .005 230); }
-.sample-invoice th:not(:first-child), .sample-invoice td:not(:first-child) { text-align: end; }
-.invoice-totals { display: flex; justify-content: space-between; align-items: center; gap: 12px; margin-top: 14px; }
-.invoice-total { display: grid; gap: 2px; padding: 10px 16px; border: 2px solid var(--invoice-accent); border-radius: 6px; text-align: end; }
-.invoice-total strong { font-size: 18px; color: var(--invoice-accent); }
-.invoice-payment, .invoice-footer { margin: 14px 0 0; font-size: 11px; color: oklch(.45 .02 230); }
 
-@media(max-width:900px) { .join-hero-inner, .founding-box, .tools-layout, .apply-layout { grid-template-columns: 1fr; gap: 28px; } .join-hero-visual { max-width: 420px; } }
-@media(max-width:640px) { .join-hero { padding: 38px 0 44px; } .join-hero h1 { font-size: 31px; } .founding-box { padding: 22px; } .main-nav.is-open a { padding-block: 2px; } .invoice-details { grid-template-columns: 1fr 1fr; } .sample-invoice { padding: 20px 16px; } .sample-invoice th, .sample-invoice td { padding: 7px 6px; } }
+@media(max-width:900px) { .join-hero-inner, .founding-box, .desk-layout, .apply-layout { grid-template-columns: 1fr; gap: 28px; } .join-hero-visual { max-width: 420px; } }
+@media(max-width:640px) { .join-hero { padding: 38px 0 44px; } .join-hero h1 { font-size: 31px; } .founding-box { padding: 22px; } .main-nav.is-open a { padding-block: 2px; } .desk-shots { grid-template-columns: 1fr; } }
 :root:lang(ar) .join-hero h1 { line-height: 1.4; }
 /* Tablets: the header has no room for the Join menu (the Join button is hidden there too), so the
    header stays exactly as before. Phones list both links in the open menu; the footer has them too. */

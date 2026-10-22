@@ -56,6 +56,23 @@ Launch = the founding period: free listings, no payments, forms as email drafts 
 - **Tests:** `tests/privacy.test.mjs` (English copy = docs sections 1–8; Arabic has the same sections, placeholders and email slots; internal notes never in `src/`; only CONTACT_EMAIL; storage only theme/lang, no cookies; fetch only the Arabic text; known URLs only), `src/test/privacy.test.tsx` (page and renderer), `src/test/legal-status.test.ts`, and `test:build` (email on every page, no other email shipped, drafts noindex + not in the sitemap, internal notes never shipped, nothing loaded from other sites).
 - **Not yet decided by the owner:** the Arabic policy needs a native-speaker and a legal review.
 
+## Tutorcat Desk on the site (branch `tutorcat-desk`, 2026-10-19, uncommitted)
+Tutorcat Desk is the separate planner app for tutors. It's invite-only: people apply through the join form, and approved ones get the Desk link by email. Its address never goes on this site, in its build or in this repo. Plan steps: 1 Desk section, 2 join-form checkbox, 3 inbox template, 4 tests, 5 docs.
+- [x] **Step 1, Desk section** (`src/components/desk-section.tsx`):
+  - It replaces the "Tools on the way" section on `/for-tutors` and `/for-counselors`, in the same place.
+  - Contents: 5 feature cards, "Free for tutors/counselors listed on Tutorcat", "Your data stays on your device", an invite-only line, and the button "Apply to get Tutorcat Desk" → `#apply` (the join form, already preset to the role).
+  - 4 screenshots per language, each tagged "Sample data": Today, Schedule, a lesson's notes, an invoice.
+  - The example invoice (`sample-invoice.tsx`, its CSS and the `invoice.*` / `join.tools.*` strings) is gone. The real Desk invoice screenshot replaces it, and the "Sample data" tag reuses `.sample-badge`.
+- **Screenshots** (`src/assets/desk/<screen>-<en|ar>-<640|1280>.avif` + `-1280.jpg`):
+  - Taken from the Desk's `main` build with "Try it with sample data" (Sara A., Omar K., tutor name "Sample Tutor"), in Dubai time and light theme.
+  - Today, Schedule and Notes are 1280×800; the invoice is 1680×1050, because narrower windows squeeze the Desk's invoice line inputs.
+  - AVIF is 8–13 KB at 640 px and 25–42 KB at 1280 px. All are lazy, so the first load fetches none of them (checked).
+  - Retake them when the Desk's look changes.
+- Checked: npm test, typecheck, build, test:build.
+  - Home `<main>` matches `main`, HTML and pixels, at 390/768/1440 × light/dark × EN/AR.
+  - Both pages at 390/1440 × light/dark × EN/AR: no console errors, no horizontal overflow.
+- [ ] Steps 2–5.
+
 ## Performance pass (2026-10-19, merged in PR #7, outside the numbered steps)
 - Fonts self-hosted (Google Fonts removed); hero photo as responsive AVIF with JPEG fallback (phones: 24 KB instead of 164 KB).
 - Arabic text is a plain JSON file the boot script starts downloading on Arabic visits, instead of after the app has started.
